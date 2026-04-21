@@ -1,15 +1,21 @@
-import { addAutocomplete } from './commands/add.js'
 import { pathToFileURL } from 'node:url'
+import { addComponents } from './commands/add.js'
+import { initProject } from './commands/init.js'
 
 export async function main(argv = process.argv.slice(2)): Promise<void> {
   const [command, target] = argv
 
-  if (command === 'add' && target === 'autocomplete') {
-    await addAutocomplete()
+  if (command === 'init') {
+    await initProject()
     return
   }
 
-  console.error('Unknown command. Available: add autocomplete')
+  if (command === 'add') {
+    await addComponents({ targets: target ? [target] : [] })
+    return
+  }
+
+  console.error('Unknown command. Available: init, add [component]')
   process.exitCode = 1
 }
 

@@ -16,7 +16,7 @@ describe('main', () => {
 
     await main(['unknown'])
 
-    expect(error).toHaveBeenCalledWith('Unknown command. Available: add autocomplete')
+    expect(error).toHaveBeenCalledWith('Unknown command. Available: init, add [component]')
     expect(process.exitCode).toBe(1)
   })
 })

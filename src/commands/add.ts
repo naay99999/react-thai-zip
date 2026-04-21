@@ -1,50 +1,66 @@
 import path from 'node:path'
 import prompts from 'prompts'
-import { detectPM } from '../utils/detectPM.js'
-import { detectProjectStructure } from '../utils/detectProjectStructure.js'
-import { detectTailwind } from '../utils/detectTailwind.js'
-import { installTailwind } from '../utils/installTailwind.js'
 import { installPackage } from '../utils/install.js'
-import { copyTemplate } from '../utils/copyTemplate.js'
+import { copyTemplate, getTemplatePath } from '../utils/copyTemplate.js'
 import { pathExists } from '../utils/fs.js'
+import { configExists, readConfig } from '../utils/config.js'
+import { hasPackageDependency } from '../utils/packageJson.js'
+import { getComponentTemplateFile, registryComponents, resolveRegistryComponent } from '../registry.js'
+import { initProject } from './init.js'
 
-type AddAutocompleteOptions = {
+type AddComponentsOptions = {
   cwd?: string
+  targets?: string[]
 }
 
-export async function addAutocomplete(options: AddAutocompleteOptions = {}): Promise<void> {
+export async function addComponents(options: AddComponentsOptions = {}): Promise<void> {
   const cwd = options.cwd ?? process.cwd()
-  const pm = await detectPM(cwd)
-  const destination = await detectProjectStructure(cwd)
+  const targets = options.targets ?? []
 
-  console.log(`Detected package manager: ${pm}`)
-  console.log(`Component destination: ${path.relative(cwd, destination.filePath)}`)
+  if (!(await configExists(cwd))) {
+    const response = await prompts({
+      type: 'confirm',
+      name: 'init',
+      message: 'No thaizip.config.json found. Run init now?',
+      initial: true,
+    })
 
-  const hasTailwind = await detectTailwind(cwd)
-  if (!hasTailwind) {
+    if (!response.init) {
+      console.log('\nRun `npx react-thaizip init` before adding components.')
+      process.exitCode = 1
+      return
+    }
+
+    await initProject({ cwd })
+  }
+
+  const config = await readConfig(cwd)
+  const selectedTargets = await selectComponents(targets)
+  if (selectedTargets.length === 0) {
+    console.log('\nNo components selected.')
+    return
+  }
+
+  const missingDependencies = await getMissingDependencies(cwd, selectedTargets.flatMap((component) => component.dependencies))
+  if (missingDependencies.length > 0) {
     const response = await prompts({
       type: 'confirm',
       name: 'install',
-      message: 'Tailwind not detected. Install it?',
+      message: `Install missing dependencies (${missingDependencies.join(', ')})?`,
       initial: true,
     })
 
     if (!response.install) {
-      console.log('\nTailwind CSS is required for the generated component styles.')
-      console.log('Install it manually, then run this command again:')
-      console.log('  npm install -D tailwindcss postcss autoprefixer')
-      console.log('  npx tailwindcss init -p')
+      console.log('\nSkipped writing components. Install the missing dependencies, then run this command again.')
       process.exitCode = 1
       return
     }
 
     try {
-      await installTailwind({ cwd, pm })
+      await installPackage(missingDependencies, { cwd, pm: config.packageManager })
     } catch (error) {
-      console.error('\nFailed to install Tailwind CSS.')
-      console.error('Install it manually, then run this command again:')
-      console.error('  npm install -D tailwindcss postcss autoprefixer')
-      console.error('  npx tailwindcss init -p')
+      console.error('\nFailed to install dependencies.')
+      console.error(`Install them manually, then run this command again: ${missingDependencies.join(', ')}`)
       if (error instanceof Error) {
         console.error(`\n${error.message}`)
       }
@@ -53,45 +69,82 @@ export async function addAutocomplete(options: AddAutocompleteOptions = {}): Pro
     }
   }
 
-  try {
-    await installPackage(['thaizip'], { cwd, pm })
-  } catch (error) {
-    console.error('\nFailed to install thaizip.')
-    console.error(`Install it manually with your package manager, then run this command again:`)
-    console.error(`  ${pm === 'npm' ? 'npm install thaizip' : `${pm} add thaizip`}`)
-    if (error instanceof Error) {
-      console.error(`\n${error.message}`)
+  const language = config.typescript ? 'ts' : 'js'
+
+  for (const component of selectedTargets) {
+    const fileName = getComponentTemplateFile(component, language)
+    const destination = path.join(cwd, config.componentDir, fileName)
+
+    let overwrite = false
+    if (await pathExists(destination)) {
+      const response = await prompts({
+        type: 'confirm',
+        name: 'overwrite',
+        message: `${path.relative(cwd, destination)} already exists. Overwrite?`,
+        initial: false,
+      })
+      overwrite = Boolean(response.overwrite)
     }
-    process.exitCode = 1
-    return
-  }
 
-  let overwrite = false
-  if (await pathExists(destination.filePath)) {
-    const response = await prompts({
-      type: 'confirm',
-      name: 'overwrite',
-      message: `${path.relative(cwd, destination.filePath)} already exists. Overwrite?`,
-      initial: false,
+    const copied = await copyTemplate({
+      destination,
+      overwrite,
+      templatePath: getTemplatePath(fileName, language),
     })
-    overwrite = Boolean(response.overwrite)
+
+    if (copied === 'skipped') {
+      console.log(`\nSkipped ${component.name}.`)
+      continue
+    }
+
+    const importPath = `./${path.relative(cwd, destination).replace(/\\/g, '/').replace(/\.(tsx|jsx)$/, '')}`
+    console.log(`\n${component.name} added successfully.`)
+    console.log(`Import it from:`)
+    console.log(`  import { ${component.name} } from '${importPath}'`)
+  }
+}
+
+async function getMissingDependencies(cwd: string, dependencies: string[]): Promise<string[]> {
+  const uniqueDependencies = Array.from(new Set(dependencies))
+  const missingDependencies: string[] = []
+
+  for (const dependency of uniqueDependencies) {
+    if (!(await hasPackageDependency(dependency, cwd))) {
+      missingDependencies.push(dependency)
+    }
   }
 
-  const copied = await copyTemplate({
-    destination: destination.filePath,
-    overwrite,
+  return missingDependencies
+}
+
+async function selectComponents(targets: string[]) {
+  if (targets.length > 0) {
+    return targets.map((target) => {
+      const component = resolveRegistryComponent(target)
+      if (!component) {
+        throw new Error(`Unknown component: ${target}`)
+      }
+      return component
+    })
+  }
+
+  const response = await prompts({
+    type: 'multiselect',
+    name: 'components',
+    message: 'Which components would you like to add?',
+    choices: registryComponents.map((component) => ({
+      title: component.name,
+      description: component.description,
+      value: component.name,
+    })),
   })
 
-  if (copied === 'skipped') {
-    console.log('\nSkipped writing component.')
-    return
-  }
-
-  const importPath = `./${path.relative(cwd, destination.filePath).replace(/\\/g, '/').replace(/\.tsx$/, '')}`
-
-  console.log('\nThaiAddressAutocomplete added successfully.')
-  console.log(`\nImport it from:`)
-  console.log(`  import { ThaiAddressAutocomplete } from '${importPath}'`)
-  console.log('\nUsage:')
-  console.log(`  <ThaiAddressAutocomplete onSelect={(address) => console.log(address)} />`)
+  const selected = Array.isArray(response.components) ? response.components : []
+  return selected.map((name) => {
+    const component = resolveRegistryComponent(String(name))
+    if (!component) {
+      throw new Error(`Unknown component: ${name}`)
+    }
+    return component
+  })
 }
