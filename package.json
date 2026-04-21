@@ -4,7 +4,7 @@
   "description": "CLI scaffold tool for adding thaizip React address autocomplete components.",
   "type": "module",
   "bin": {
-    "react-thaizip": "./dist/cli.js"
+    "react-thaizip": "dist/cli.js"
   },
   "files": [
     "dist",
@@ -24,6 +24,10 @@
     "nextjs",
     "thaizip"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/naay99999/react-thai-zip.git"
+  },
   "author": "narablyat",
   "license": "MIT",
   "engines": {
