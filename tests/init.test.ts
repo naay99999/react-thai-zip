@@ -32,7 +32,7 @@ describe('initProject', () => {
     await mkdir(path.join(cwd, 'app'))
     await writeFile(path.join(cwd, 'tsconfig.json'), '{}')
     await writeFile(path.join(cwd, 'tailwind.config.ts'), '')
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.3.0' } }))
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.4.0' } }))
     mockedPrompts.mockResolvedValueOnce({})
 
     await initProject({ cwd })
@@ -44,7 +44,7 @@ describe('initProject', () => {
       packageManager: 'npm',
       corePackage: {
         name: 'thaizip',
-        version: '^0.3.0',
+        version: '^0.4.0',
       },
       registryVersion: '0.1.1',
     })
@@ -53,7 +53,7 @@ describe('initProject', () => {
   it('asks for TypeScript preference when language is unknown', async () => {
     const cwd = await tempDir()
     await writeFile(path.join(cwd, 'tailwind.config.ts'), '')
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.3.0' } }))
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.4.0' } }))
     mockedPrompts.mockResolvedValueOnce({ typescript: false }).mockResolvedValueOnce({})
 
     await initProject({ cwd })

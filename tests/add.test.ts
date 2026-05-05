@@ -15,7 +15,7 @@ async function tempDir() {
   return mkdtemp(path.join(os.tmpdir(), 'react-thaizip-'))
 }
 
-async function writeBaseProject(cwd: string, typescript = true, dependencies: Record<string, string> = { thaizip: '^0.3.0' }) {
+async function writeBaseProject(cwd: string, typescript = true, dependencies: Record<string, string> = { thaizip: '^0.4.0' }) {
   await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies }))
   await writeConfig(
     {
@@ -24,7 +24,7 @@ async function writeBaseProject(cwd: string, typescript = true, dependencies: Re
       packageManager: 'npm',
       corePackage: {
         name: 'thaizip',
-        version: '^0.3.0',
+        version: '^0.4.0',
       },
       registryVersion: '0.1.0',
     },
@@ -113,6 +113,120 @@ describe('addComponents', () => {
     await addComponents({ cwd, targets: ['autocomplete'] })
 
     await expect(readFile(destination, 'utf8')).resolves.toBe('existing content')
+  })
+
+  it('Autocomplete clear button uses ✕ not x (TypeScript)', async () => {
+    const cwd = await tempDir()
+    await writeBaseProject(cwd)
+    await addComponents({ cwd, targets: ['autocomplete'] })
+    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressAutocomplete.tsx'), 'utf8')
+    expect(content).toContain('✕')
+  })
+
+  it('Autocomplete clear button uses ✕ not x (JavaScript)', async () => {
+    const cwd = await tempDir()
+    await writeBaseProject(cwd, false)
+    await addComponents({ cwd, targets: ['autocomplete'] })
+    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressAutocomplete.jsx'), 'utf8')
+    expect(content).toContain('✕')
+  })
+
+  it('PostalCodeForm uses Thai labels (TypeScript)', async () => {
+    const cwd = await tempDir()
+    await writeBaseProject(cwd)
+    await addComponents({ cwd, targets: ['ThaiAddressPostalForm'] })
+    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressPostalCodeForm.tsx'), 'utf8')
+    expect(content).toContain('รหัสไปรษณีย์')
+    expect(content).toContain('จังหวัด')
+    expect(content).toContain('อำเภอ')
+    expect(content).toContain('ตำบล')
+  })
+
+  it('PostalCodeForm uses htmlFor to associate labels with inputs (TypeScript)', async () => {
+    const cwd = await tempDir()
+    await writeBaseProject(cwd)
+    await addComponents({ cwd, targets: ['ThaiAddressPostalForm'] })
+    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressPostalCodeForm.tsx'), 'utf8')
+    expect(content).toContain('htmlFor')
+    expect(content).toContain('useId')
+  })
+
+  it('PostalCodeForm uses Thai labels (JavaScript)', async () => {
+    const cwd = await tempDir()
+    await writeBaseProject(cwd, false)
+    await addComponents({ cwd, targets: ['ThaiAddressPostalForm'] })
+    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressPostalCodeForm.jsx'), 'utf8')
+    expect(content).toContain('รหัสไปรษณีย์')
+    expect(content).toContain('จังหวัด')
+    expect(content).toContain('อำเภอ')
+    expect(content).toContain('ตำบล')
+  })
+
+  it('PostalCodeForm uses htmlFor to associate labels with inputs (JavaScript)', async () => {
+    const cwd = await tempDir()
+    await writeBaseProject(cwd, false)
+    await addComponents({ cwd, targets: ['ThaiAddressPostalForm'] })
+    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressPostalCodeForm.jsx'), 'utf8')
+    expect(content).toContain('htmlFor')
+    expect(content).toContain('useId')
+  })
+
+  it('CascadeSelect uses Thai labels for all dropdowns (TypeScript)', async () => {
+    const cwd = await tempDir()
+    await writeBaseProject(cwd)
+    await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
+    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressCascadeSelect.tsx'), 'utf8')
+    expect(content).toContain('จังหวัด')
+    expect(content).toContain('อำเภอ')
+    expect(content).toContain('ตำบล')
+    expect(content).toContain('รหัสไปรษณีย์')
+  })
+
+  it('CascadeSelect uses htmlFor to associate labels with selects (TypeScript)', async () => {
+    const cwd = await tempDir()
+    await writeBaseProject(cwd)
+    await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
+    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressCascadeSelect.tsx'), 'utf8')
+    expect(content).toContain('htmlFor')
+    expect(content).toContain('useId')
+  })
+
+  it('CascadeSelect accepts onClear prop and resets downstream selections (TypeScript)', async () => {
+    const cwd = await tempDir()
+    await writeBaseProject(cwd)
+    await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
+    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressCascadeSelect.tsx'), 'utf8')
+    expect(content).toContain('onClear')
+    expect(content).toContain('onClear?.()')
+  })
+
+  it('CascadeSelect uses Thai labels for all dropdowns (JavaScript)', async () => {
+    const cwd = await tempDir()
+    await writeBaseProject(cwd, false)
+    await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
+    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressCascadeSelect.jsx'), 'utf8')
+    expect(content).toContain('จังหวัด')
+    expect(content).toContain('อำเภอ')
+    expect(content).toContain('ตำบล')
+    expect(content).toContain('รหัสไปรษณีย์')
+  })
+
+  it('CascadeSelect uses htmlFor to associate labels with selects (JavaScript)', async () => {
+    const cwd = await tempDir()
+    await writeBaseProject(cwd, false)
+    await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
+    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressCascadeSelect.jsx'), 'utf8')
+    expect(content).toContain('htmlFor')
+    expect(content).toContain('useId')
+  })
+
+  it('CascadeSelect accepts onClear prop and resets downstream selections (JavaScript)', async () => {
+    const cwd = await tempDir()
+    await writeBaseProject(cwd, false)
+    await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
+    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressCascadeSelect.jsx'), 'utf8')
+    expect(content).toContain('onClear')
+    expect(content).toContain('onClear?.()')
   })
 
 })

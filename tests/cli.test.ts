@@ -1,5 +1,13 @@
 import { main } from '../src/cli.js'
 
+vi.mock('../src/commands/add.js', () => ({
+  addComponents: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock('../src/commands/init.js', () => ({
+  initProject: vi.fn().mockResolvedValue(undefined),
+}))
+
 describe('main', () => {
   const originalError = console.error
   const originalExitCode = process.exitCode
@@ -18,5 +26,13 @@ describe('main', () => {
 
     expect(error).toHaveBeenCalledWith('Unknown command. Available: init, add [component]')
     expect(process.exitCode).toBe(1)
+  })
+
+  it('passes all targets when multiple component names are given', async () => {
+    const { addComponents } = await import('../src/commands/add.js')
+
+    await main(['add', 'autocomplete', 'cascade-select'])
+
+    expect(vi.mocked(addComponents)).toHaveBeenCalledWith({ targets: ['autocomplete', 'cascade-select'] })
   })
 })

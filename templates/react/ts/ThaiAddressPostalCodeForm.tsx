@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { loadDefaultIndex } from 'thaizip/data'
 import { useThaiAddressAutocomplete } from 'thaizip'
 import type { ResolvedThaiAddress, ThaiAddressSuggestion, TrigramIndex } from 'thaizip'
@@ -42,6 +42,7 @@ type ReadyProps = Props & {
 
 function ThaiAddressPostalCodeFormReady({ index, onSelect, onClear }: ReadyProps) {
   const [address, setAddress] = useState<ResolvedThaiAddress | null>(null)
+  const id = useId()
   const { query, setQuery, suggestions, isOpen, selectSuggestion, clear } = useThaiAddressAutocomplete({
     index,
     limit: 10,
@@ -65,8 +66,9 @@ function ThaiAddressPostalCodeFormReady({ index, onSelect, onClear }: ReadyProps
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="relative space-y-1">
-          <label className="text-sm font-semibold">Postal Code</label>
+          <label htmlFor={`${id}-zip`} className="text-sm font-semibold">รหัสไปรษณีย์</label>
           <input
+            id={`${id}-zip`}
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
             value={query}
             onChange={(event) => {
@@ -89,18 +91,18 @@ function ThaiAddressPostalCodeFormReady({ index, onSelect, onClear }: ReadyProps
         </div>
 
         <div className="space-y-1">
-          <label className="text-sm font-semibold">Sub District</label>
-          <input className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-600 outline-none" value={address?.subdistrict ?? ''} readOnly />
+          <label htmlFor={`${id}-subdistrict`} className="text-sm font-semibold">ตำบล/แขวง</label>
+          <input id={`${id}-subdistrict`} className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-600 outline-none" value={address?.subdistrict ?? ''} readOnly />
         </div>
 
         <div className="space-y-1">
-          <label className="text-sm font-semibold">District</label>
-          <input className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-600 outline-none" value={address?.district ?? ''} readOnly />
+          <label htmlFor={`${id}-district`} className="text-sm font-semibold">อำเภอ/เขต</label>
+          <input id={`${id}-district`} className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-600 outline-none" value={address?.district ?? ''} readOnly />
         </div>
 
         <div className="space-y-1">
-          <label className="text-sm font-semibold">Province</label>
-          <input className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-600 outline-none" value={address?.province ?? ''} readOnly />
+          <label htmlFor={`${id}-province`} className="text-sm font-semibold">จังหวัด</label>
+          <input id={`${id}-province`} className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-600 outline-none" value={address?.province ?? ''} readOnly />
         </div>
       </div>
 

@@ -3,7 +3,7 @@ import { addComponents } from './commands/add.js'
 import { initProject } from './commands/init.js'
 
 export async function main(argv = process.argv.slice(2)): Promise<void> {
-  const [command, target] = argv
+  const [command, ...targets] = argv
 
   if (command === 'init') {
     await initProject()
@@ -11,7 +11,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
   }
 
   if (command === 'add') {
-    await addComponents({ targets: target ? [target] : [] })
+    await addComponents({ targets })
     return
   }
 

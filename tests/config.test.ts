@@ -1,13 +1,17 @@
 import { mkdtemp, readFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
-import { configExists, getConfigPath, readConfig, writeConfig } from '../src/utils/config.js'
+import { CORE_PACKAGE_VERSION, configExists, getConfigPath, readConfig, writeConfig } from '../src/utils/config.js'
 
 async function tempDir() {
   return mkdtemp(path.join(os.tmpdir(), 'react-thaizip-'))
 }
 
 describe('config', () => {
+  it('CORE_PACKAGE_VERSION matches the current thaizip release', () => {
+    expect(CORE_PACKAGE_VERSION).toBe('^0.4.0')
+  })
+
   it('writes and reads thaizip.config.json', async () => {
     const cwd = await tempDir()
     const config = {

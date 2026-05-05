@@ -137,7 +137,7 @@ function ThaiAddressAutocompleteReady({
             onClick={handleClear}
             aria-label="Clear address"
           >
-            x
+            ✕
           </button>
         )}
       </div>

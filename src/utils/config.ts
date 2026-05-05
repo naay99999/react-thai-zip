@@ -6,7 +6,7 @@ import { pathExists } from './fs.js'
 
 export const CONFIG_FILE = 'thaizip.config.json'
 export const CORE_PACKAGE_NAME = 'thaizip'
-export const CORE_PACKAGE_VERSION = '^0.3.0'
+export const CORE_PACKAGE_VERSION = '^0.4.0'
 
 export type ThaiZipConfig = {
   typescript: boolean

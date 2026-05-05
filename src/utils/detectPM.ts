@@ -11,6 +11,7 @@ export type PackageManagerCommands = {
 }
 
 const lockfiles: Array<{ file: string; pm: PackageManager }> = [
+  { file: 'bun.lock', pm: 'bun' },
   { file: 'bun.lockb', pm: 'bun' },
   { file: 'pnpm-lock.yaml', pm: 'pnpm' },
   { file: 'yarn.lock', pm: 'yarn' },

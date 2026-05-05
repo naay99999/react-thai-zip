@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useId, useMemo, useState } from 'react'
 import { loadDefaultIndex } from 'thaizip/data'
 
-export function ThaiAddressCascadeSelect({ onSelect }) {
+export function ThaiAddressCascadeSelect({ onSelect, onClear }) {
   const [index, setIndex] = useState(null)
   const [error, setError] = useState(null)
 
@@ -26,10 +26,11 @@ export function ThaiAddressCascadeSelect({ onSelect }) {
   if (error) return <p className="text-sm text-red-600">{error}</p>
   if (!index) return <select className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" disabled><option>กำลังโหลด...</option></select>
 
-  return <ThaiAddressCascadeSelectReady index={index} onSelect={onSelect} />
+  return <ThaiAddressCascadeSelectReady index={index} onSelect={onSelect} onClear={onClear} />
 }
 
-function ThaiAddressCascadeSelectReady({ index, onSelect }) {
+function ThaiAddressCascadeSelectReady({ index, onSelect, onClear }) {
+  const id = useId()
   const provinces = useMemo(() => getUniqueProvinces(index.records), [index.records])
   const [provinceId, setProvinceId] = useState(null)
   const [amphureId, setAmphureId] = useState(null)
@@ -50,19 +51,21 @@ function ThaiAddressCascadeSelectReady({ index, onSelect }) {
     setAmphureId(null)
     setTambonId(null)
     setZipCode('')
+    onClear?.()
   }
 
   function onDistrictChange(value) {
     setAmphureId(value ? Number(value) : null)
     setTambonId(null)
     setZipCode('')
+    onClear?.()
   }
 
   function onSubDistrictChange(value) {
-    const id = value ? Number(value) : null
-    setTambonId(id)
-    if (id !== null) {
-      const record = index.records.find((item) => item.tambonId === id)
+    const tambonIdValue = value ? Number(value) : null
+    setTambonId(tambonIdValue)
+    if (tambonIdValue !== null) {
+      const record = index.records.find((item) => item.tambonId === tambonIdValue)
       const zip = record?.zipCode ?? ''
       setZipCode(zip)
       if (record) {
@@ -83,32 +86,32 @@ function ThaiAddressCascadeSelectReady({ index, onSelect }) {
   return (
     <div className="grid grid-cols-2 gap-4">
       <div className="space-y-1">
-        <label className="text-sm font-semibold">Province</label>
-        <select className={selectClass} value={provinceId ?? ''} onChange={(event) => onProvinceChange(event.target.value)}>
-          <option value="">Select province</option>
+        <label htmlFor={`${id}-province`} className="text-sm font-semibold">จังหวัด</label>
+        <select id={`${id}-province`} className={selectClass} value={provinceId ?? ''} onChange={(event) => onProvinceChange(event.target.value)}>
+          <option value="">เลือกจังหวัด</option>
           {provinces.map((province) => <option key={province.id} value={province.id}>{province.nameTh}</option>)}
         </select>
       </div>
 
       <div className="space-y-1">
-        <label className="text-sm font-semibold">District</label>
-        <select className={selectClass} value={amphureId ?? ''} onChange={(event) => onDistrictChange(event.target.value)} disabled={provinceId === null}>
-          <option value="">Select district</option>
+        <label htmlFor={`${id}-district`} className="text-sm font-semibold">อำเภอ/เขต</label>
+        <select id={`${id}-district`} className={selectClass} value={amphureId ?? ''} onChange={(event) => onDistrictChange(event.target.value)} disabled={provinceId === null}>
+          <option value="">เลือกอำเภอ/เขต</option>
           {districts.map((district) => <option key={district.id} value={district.id}>{district.nameTh}</option>)}
         </select>
       </div>
 
       <div className="space-y-1">
-        <label className="text-sm font-semibold">Sub District</label>
-        <select className={selectClass} value={tambonId ?? ''} onChange={(event) => onSubDistrictChange(event.target.value)} disabled={amphureId === null}>
-          <option value="">Select sub district</option>
+        <label htmlFor={`${id}-subdistrict`} className="text-sm font-semibold">ตำบล/แขวง</label>
+        <select id={`${id}-subdistrict`} className={selectClass} value={tambonId ?? ''} onChange={(event) => onSubDistrictChange(event.target.value)} disabled={amphureId === null}>
+          <option value="">เลือกตำบล/แขวง</option>
           {subDistricts.map((subDistrict) => <option key={subDistrict.id} value={subDistrict.id}>{subDistrict.nameTh}</option>)}
         </select>
       </div>
 
       <div className="space-y-1">
-        <label className="text-sm font-semibold">Postal Code</label>
-        <input className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-600 outline-none" value={zipCode} readOnly />
+        <label htmlFor={`${id}-zip`} className="text-sm font-semibold">รหัสไปรษณีย์</label>
+        <input id={`${id}-zip`} className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-600 outline-none" value={zipCode} readOnly />
       </div>
     </div>
   )

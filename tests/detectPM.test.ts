@@ -8,10 +8,16 @@ async function tempDir() {
 }
 
 describe('detectPM', () => {
-  it('detects bun first', async () => {
+  it('detects bun from bun.lockb', async () => {
     const cwd = await tempDir()
     await writeFile(path.join(cwd, 'bun.lockb'), '')
     await writeFile(path.join(cwd, 'package-lock.json'), '')
+    await expect(detectPM(cwd)).resolves.toBe('bun')
+  })
+
+  it('detects bun from bun.lock text format (Bun 1.1+)', async () => {
+    const cwd = await tempDir()
+    await writeFile(path.join(cwd, 'bun.lock'), '')
     await expect(detectPM(cwd)).resolves.toBe('bun')
   })
 
