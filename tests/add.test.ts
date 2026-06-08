@@ -131,15 +131,16 @@ describe('addComponents', () => {
     expect(content).toContain('✕')
   })
 
-  it('PostalCodeForm uses Thai labels (TypeScript)', async () => {
+  it('PostalCodeForm uses English default labels and supports texts prop (TypeScript)', async () => {
     const cwd = await tempDir()
     await writeBaseProject(cwd)
     await addComponents({ cwd, targets: ['ThaiAddressPostalForm'] })
     const content = await readFile(path.join(cwd, 'components', 'ThaiAddressPostalCodeForm.tsx'), 'utf8')
-    expect(content).toContain('รหัสไปรษณีย์')
-    expect(content).toContain('จังหวัด')
-    expect(content).toContain('อำเภอ')
-    expect(content).toContain('ตำบล')
+    expect(content).toContain("postalCodeLabel: 'Postal Code'")
+    expect(content).toContain("subdistrictLabel: 'Sub District'")
+    expect(content).toContain("districtLabel: 'District'")
+    expect(content).toContain("provinceLabel: 'Province'")
+    expect(content).toContain('texts?: Partial<Texts>')
   })
 
   it('PostalCodeForm uses htmlFor to associate labels with inputs (TypeScript)', async () => {
@@ -151,15 +152,29 @@ describe('addComponents', () => {
     expect(content).toContain('useId')
   })
 
-  it('PostalCodeForm uses Thai labels (JavaScript)', async () => {
+  it('PostalCodeForm has ARIA combobox and keyboard navigation (TypeScript)', async () => {
+    const cwd = await tempDir()
+    await writeBaseProject(cwd)
+    await addComponents({ cwd, targets: ['ThaiAddressPostalForm'] })
+    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressPostalCodeForm.tsx'), 'utf8')
+    expect(content).toContain('role="combobox"')
+    expect(content).toContain('role="listbox"')
+    expect(content).toContain('role="option"')
+    expect(content).toContain('aria-expanded')
+    expect(content).toContain('ArrowDown')
+  })
+
+  it('PostalCodeForm uses English default labels and supports texts prop (JavaScript)', async () => {
     const cwd = await tempDir()
     await writeBaseProject(cwd, false)
     await addComponents({ cwd, targets: ['ThaiAddressPostalForm'] })
     const content = await readFile(path.join(cwd, 'components', 'ThaiAddressPostalCodeForm.jsx'), 'utf8')
-    expect(content).toContain('รหัสไปรษณีย์')
-    expect(content).toContain('จังหวัด')
-    expect(content).toContain('อำเภอ')
-    expect(content).toContain('ตำบล')
+    expect(content).toContain("postalCodeLabel: 'Postal Code'")
+    expect(content).toContain("subdistrictLabel: 'Sub District'")
+    expect(content).toContain("districtLabel: 'District'")
+    expect(content).toContain("provinceLabel: 'Province'")
+    expect(content).not.toContain('import type')
+    expect(content).not.toContain('type Texts')
   })
 
   it('PostalCodeForm uses htmlFor to associate labels with inputs (JavaScript)', async () => {
@@ -171,15 +186,28 @@ describe('addComponents', () => {
     expect(content).toContain('useId')
   })
 
-  it('CascadeSelect uses Thai labels for all dropdowns (TypeScript)', async () => {
+  it('PostalCodeForm has ARIA combobox and keyboard navigation (JavaScript)', async () => {
+    const cwd = await tempDir()
+    await writeBaseProject(cwd, false)
+    await addComponents({ cwd, targets: ['ThaiAddressPostalForm'] })
+    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressPostalCodeForm.jsx'), 'utf8')
+    expect(content).toContain('role="combobox"')
+    expect(content).toContain('role="listbox"')
+    expect(content).toContain('role="option"')
+    expect(content).toContain('aria-expanded')
+    expect(content).toContain('ArrowDown')
+  })
+
+  it('CascadeSelect uses English default labels and supports texts prop (TypeScript)', async () => {
     const cwd = await tempDir()
     await writeBaseProject(cwd)
     await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
     const content = await readFile(path.join(cwd, 'components', 'ThaiAddressCascadeSelect.tsx'), 'utf8')
-    expect(content).toContain('จังหวัด')
-    expect(content).toContain('อำเภอ')
-    expect(content).toContain('ตำบล')
-    expect(content).toContain('รหัสไปรษณีย์')
+    expect(content).toContain("provinceLabel: 'Province'")
+    expect(content).toContain("districtLabel: 'District'")
+    expect(content).toContain("subdistrictLabel: 'Sub District'")
+    expect(content).toContain("postalCodeLabel: 'Postal Code'")
+    expect(content).toContain('texts?: Partial<Texts>')
   })
 
   it('CascadeSelect uses htmlFor to associate labels with selects (TypeScript)', async () => {
@@ -200,15 +228,17 @@ describe('addComponents', () => {
     expect(content).toContain('onClear?.()')
   })
 
-  it('CascadeSelect uses Thai labels for all dropdowns (JavaScript)', async () => {
+  it('CascadeSelect uses English default labels and supports texts prop (JavaScript)', async () => {
     const cwd = await tempDir()
     await writeBaseProject(cwd, false)
     await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
     const content = await readFile(path.join(cwd, 'components', 'ThaiAddressCascadeSelect.jsx'), 'utf8')
-    expect(content).toContain('จังหวัด')
-    expect(content).toContain('อำเภอ')
-    expect(content).toContain('ตำบล')
-    expect(content).toContain('รหัสไปรษณีย์')
+    expect(content).toContain("provinceLabel: 'Province'")
+    expect(content).toContain("districtLabel: 'District'")
+    expect(content).toContain("subdistrictLabel: 'Sub District'")
+    expect(content).toContain("postalCodeLabel: 'Postal Code'")
+    expect(content).not.toContain('import type')
+    expect(content).not.toContain('type Texts')
   })
 
   it('CascadeSelect uses htmlFor to associate labels with selects (JavaScript)', async () => {

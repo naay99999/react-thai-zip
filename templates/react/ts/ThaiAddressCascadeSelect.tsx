@@ -4,16 +4,60 @@ import { useEffect, useId, useMemo, useState } from 'react'
 import { loadDefaultIndex } from 'thaizip/data'
 import type { ThaiAddressRecord, TrigramIndex } from 'thaizip'
 
+type Texts = {
+  provinceLabel: string
+  districtLabel: string
+  subdistrictLabel: string
+  postalCodeLabel: string
+  selectProvinceOption: string
+  selectDistrictOption: string
+  selectSubdistrictOption: string
+  loadingText: string
+  errorText: string
+}
+
+const defaultTexts: Texts = {
+  provinceLabel: 'Province',
+  districtLabel: 'District',
+  subdistrictLabel: 'Sub District',
+  postalCodeLabel: 'Postal Code',
+  selectProvinceOption: 'Select province',
+  selectDistrictOption: 'Select district',
+  selectSubdistrictOption: 'Select sub-district',
+  loadingText: 'Loading...',
+  errorText: 'Failed to load address data',
+}
+
 type Props = {
+  texts?: Partial<Texts>
   onSelect?: (result: { province: string; district: string; subdistrict: string; postalCode: string }) => void
   onClear?: () => void
+  containerClassName?: string
+  fieldClassName?: string
+  labelClassName?: string
+  selectClassName?: string
+  readOnlyInputClassName?: string
+}
+
+function joinClassNames(...classes: Array<string | undefined | false>): string {
+  return classes.filter(Boolean).join(' ')
 }
 
 type ProvinceOption = { id: number; nameTh: string }
 type DistrictOption = { id: number; nameTh: string }
 type SubDistrictOption = { id: number; nameTh: string; zipCode: string }
 
-export function ThaiAddressCascadeSelect({ onSelect, onClear }: Props) {
+export function ThaiAddressCascadeSelect({
+  texts,
+  onSelect,
+  onClear,
+  containerClassName,
+  fieldClassName,
+  labelClassName,
+  selectClassName,
+  readOnlyInputClassName,
+}: Props) {
+  const t: Texts = { ...defaultTexts, ...texts }
   const [index, setIndex] = useState<TrigramIndex | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -25,7 +69,7 @@ export function ThaiAddressCascadeSelect({ onSelect, onClear }: Props) {
         if (active) setIndex(nextIndex)
       })
       .catch(() => {
-        if (active) setError('ไม่สามารถโหลดข้อมูลที่อยู่ได้')
+        if (active) setError(t.errorText)
       })
 
     return () => {
@@ -33,17 +77,52 @@ export function ThaiAddressCascadeSelect({ onSelect, onClear }: Props) {
     }
   }, [])
 
-  if (error) return <p className="text-sm text-red-600">{error}</p>
-  if (!index) return <select className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" disabled><option>กำลังโหลด...</option></select>
+  if (error) return <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+  if (!index) {
+    return (
+      <select
+        className={joinClassNames(
+          'w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-500 disabled:cursor-not-allowed dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400',
+          selectClassName,
+        )}
+        disabled
+      >
+        <option>{t.loadingText}</option>
+      </select>
+    )
+  }
 
-  return <ThaiAddressCascadeSelectReady index={index} onSelect={onSelect} onClear={onClear} />
+  return (
+    <ThaiAddressCascadeSelectReady
+      index={index}
+      texts={t}
+      onSelect={onSelect}
+      onClear={onClear}
+      containerClassName={containerClassName}
+      fieldClassName={fieldClassName}
+      labelClassName={labelClassName}
+      selectClassName={selectClassName}
+      readOnlyInputClassName={readOnlyInputClassName}
+    />
+  )
 }
 
-type ReadyProps = Props & {
+type ReadyProps = Omit<Props, 'texts'> & {
   index: TrigramIndex
+  texts: Texts
 }
 
-function ThaiAddressCascadeSelectReady({ index, onSelect, onClear }: ReadyProps) {
+function ThaiAddressCascadeSelectReady({
+  index,
+  texts,
+  onSelect,
+  onClear,
+  containerClassName,
+  fieldClassName,
+  labelClassName,
+  selectClassName,
+  readOnlyInputClassName,
+}: ReadyProps) {
   const id = useId()
   const provinces = useMemo(() => getUniqueProvinces(index.records), [index.records])
   const [provinceId, setProvinceId] = useState<number | null>(null)
@@ -95,37 +174,45 @@ function ThaiAddressCascadeSelectReady({ index, onSelect, onClear }: ReadyProps)
     }
   }
 
-  const selectClass = 'w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200 disabled:opacity-40'
+  const selectClass = joinClassNames(
+    'w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-50 dark:focus:border-slate-400 dark:focus:ring-slate-800',
+    selectClassName,
+  )
+  const readOnlyClass = joinClassNames(
+    'w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300',
+    readOnlyInputClassName,
+  )
+  const labelClass = joinClassNames('text-sm font-semibold text-slate-900 dark:text-slate-100', labelClassName)
 
   return (
-    <div className="grid grid-cols-2 gap-4">
-      <div className="space-y-1">
-        <label htmlFor={`${id}-province`} className="text-sm font-semibold">จังหวัด</label>
+    <div className={joinClassNames('grid grid-cols-2 gap-4', containerClassName)}>
+      <div className={joinClassNames('space-y-1', fieldClassName)}>
+        <label htmlFor={`${id}-province`} className={labelClass}>{texts.provinceLabel}</label>
         <select id={`${id}-province`} className={selectClass} value={provinceId ?? ''} onChange={(event) => onProvinceChange(event.target.value)}>
-          <option value="">เลือกจังหวัด</option>
+          <option value="">{texts.selectProvinceOption}</option>
           {provinces.map((province) => <option key={province.id} value={province.id}>{province.nameTh}</option>)}
         </select>
       </div>
 
-      <div className="space-y-1">
-        <label htmlFor={`${id}-district`} className="text-sm font-semibold">อำเภอ/เขต</label>
+      <div className={joinClassNames('space-y-1', fieldClassName)}>
+        <label htmlFor={`${id}-district`} className={labelClass}>{texts.districtLabel}</label>
         <select id={`${id}-district`} className={selectClass} value={amphureId ?? ''} onChange={(event) => onDistrictChange(event.target.value)} disabled={provinceId === null}>
-          <option value="">เลือกอำเภอ/เขต</option>
+          <option value="">{texts.selectDistrictOption}</option>
           {districts.map((district) => <option key={district.id} value={district.id}>{district.nameTh}</option>)}
         </select>
       </div>
 
-      <div className="space-y-1">
-        <label htmlFor={`${id}-subdistrict`} className="text-sm font-semibold">ตำบล/แขวง</label>
+      <div className={joinClassNames('space-y-1', fieldClassName)}>
+        <label htmlFor={`${id}-subdistrict`} className={labelClass}>{texts.subdistrictLabel}</label>
         <select id={`${id}-subdistrict`} className={selectClass} value={tambonId ?? ''} onChange={(event) => onSubDistrictChange(event.target.value)} disabled={amphureId === null}>
-          <option value="">เลือกตำบล/แขวง</option>
+          <option value="">{texts.selectSubdistrictOption}</option>
           {subDistricts.map((subDistrict) => <option key={subDistrict.id} value={subDistrict.id}>{subDistrict.nameTh}</option>)}
         </select>
       </div>
 
-      <div className="space-y-1">
-        <label htmlFor={`${id}-zip`} className="text-sm font-semibold">รหัสไปรษณีย์</label>
-        <input id={`${id}-zip`} className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-600 outline-none" value={zipCode} readOnly />
+      <div className={joinClassNames('space-y-1', fieldClassName)}>
+        <label htmlFor={`${id}-zip`} className={labelClass}>{texts.postalCodeLabel}</label>
+        <input id={`${id}-zip`} className={readOnlyClass} value={zipCode} readOnly />
       </div>
     </div>
   )

@@ -18,11 +18,36 @@ npx react-thaizip add ThaiAddressDisplayFields
 npx react-thaizip add ThaiAddressCascadeSelect
 ```
 
-Legacy aliases from older docs are also supported:
+Shorter aliases also resolve to the same components:
 
 ```bash
 npx react-thaizip add autocomplete
+npx react-thaizip add postal
+npx react-thaizip add cascade
+npx react-thaizip add fields
+```
+
+Legacy aliases from older docs are also supported:
+
+```bash
 npx react-thaizip add ThaiAddressPostalForm
 npx react-thaizip add ThaiAddressSearch
 npx react-thaizip add ThaiAddressForm
 ```
+
+## Customizing labels (`texts` prop)
+
+Every generated component ships with English default labels and accepts an optional `texts` prop for overriding any subset of them — useful for Thai-language UIs or other locales:
+
+```tsx
+<ThaiAddressCascadeSelect
+  texts={{
+    provinceLabel: 'จังหวัด',
+    districtLabel: 'อำเภอ/เขต',
+    subdistrictLabel: 'ตำบล/แขวง',
+    postalCodeLabel: 'รหัสไปรษณีย์',
+  }}
+/>
+```
+
+`texts` is `Partial<Texts>`, so you only need to supply the keys you want to change — anything you omit falls back to the English default. Each component exports its own `Texts` type covering its labels, placeholders, and status messages (e.g. `loadingText`, `errorText`).

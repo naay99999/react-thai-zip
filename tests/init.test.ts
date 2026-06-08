@@ -46,7 +46,7 @@ describe('initProject', () => {
         name: 'thaizip',
         version: '^0.4.0',
       },
-      registryVersion: '0.1.1',
+      registryVersion: '0.2.0',
     })
   })
 

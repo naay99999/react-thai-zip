@@ -19,7 +19,7 @@ export const registryComponents = [
   {
     name: 'ThaiAddressPostalCodeForm',
     description: 'Postal-code-first Thai address form',
-    aliases: ['postal-code-form', 'postal-form', 'ThaiAddressForm', 'ThaiAddressPostalForm', 'ThaiAddressPostalCodeForm'],
+    aliases: ['postal', 'postal-code-form', 'postal-form', 'ThaiAddressForm', 'ThaiAddressPostalForm', 'ThaiAddressPostalCodeForm'],
     requiresTailwind: true,
     dependencies: ['thaizip'],
   },
@@ -33,7 +33,7 @@ export const registryComponents = [
   {
     name: 'ThaiAddressCascadeSelect',
     description: 'Province to district to sub-district select flow',
-    aliases: ['cascade-select', 'ThaiAddressCascadeSelect'],
+    aliases: ['cascade', 'cascade-select', 'ThaiAddressCascadeSelect'],
     requiresTailwind: true,
     dependencies: ['thaizip'],
   },
