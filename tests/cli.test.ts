@@ -35,4 +35,15 @@ describe('main', () => {
 
     expect(vi.mocked(addComponents)).toHaveBeenCalledWith({ targets: ['autocomplete', 'cascade-select'] })
   })
+
+  it('extracts --lang and passes it separately from targets', async () => {
+    const { addComponents } = await import('../src/commands/add.js')
+
+    await main(['add', 'autocomplete', '--lang', 'th', 'cascade-select'])
+
+    expect(vi.mocked(addComponents)).toHaveBeenCalledWith({
+      targets: ['autocomplete', 'cascade-select'],
+      lang: 'th',
+    })
+  })
 })

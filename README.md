@@ -51,3 +51,20 @@ Every generated component ships with English default labels and accepts an optio
 ```
 
 `texts` is `Partial<Texts>`, so you only need to supply the keys you want to change — anything you omit falls back to the English default. Each component exports its own `Texts` type covering its labels, placeholders, and status messages (e.g. `loadingText`, `errorText`).
+
+Prefer scaffolding straight to Thai labels instead of overriding `texts` yourself? Pass `--lang th` to `add` and the generated component's `defaultTexts` will be pre-filled in Thai:
+
+```bash
+npx react-thaizip add ThaiAddressCascadeSelect --lang th
+```
+
+## `ThaiAddressCascadeSelect`: `onClear`
+
+`ThaiAddressCascadeSelect` accepts an optional `onClear` callback that fires whenever the user resets the province or district selection (clearing any dependent district/sub-district/postal-code state):
+
+```tsx
+<ThaiAddressCascadeSelect
+  onSelect={(result) => console.log(result)}
+  onClear={() => console.log('selection cleared')}
+/>
+```

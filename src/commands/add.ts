@@ -1,4 +1,5 @@
 import path from 'node:path'
+import { readFile, writeFile } from 'node:fs/promises'
 import prompts from 'prompts'
 import { installPackage } from '../utils/install.js'
 import { copyTemplate, getTemplatePath } from '../utils/copyTemplate.js'
@@ -6,11 +7,13 @@ import { pathExists } from '../utils/fs.js'
 import { configExists, readConfig } from '../utils/config.js'
 import { hasPackageDependency } from '../utils/packageJson.js'
 import { getComponentTemplateFile, registryComponents, resolveRegistryComponent } from '../registry.js'
+import { localizeDefaultTexts } from '../locales.js'
 import { initProject } from './init.js'
 
 type AddComponentsOptions = {
   cwd?: string
   targets?: string[]
+  lang?: string
 }
 
 export async function addComponents(options: AddComponentsOptions = {}): Promise<void> {
@@ -95,6 +98,11 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
     if (copied === 'skipped') {
       console.log(`\nSkipped ${component.name}.`)
       continue
+    }
+
+    if (options.lang) {
+      const content = await readFile(destination, 'utf8')
+      await writeFile(destination, localizeDefaultTexts(content, options.lang, component.name), 'utf8')
     }
 
     const importPath = `./${path.relative(cwd, destination).replace(/\\/g, '/').replace(/\.(tsx|jsx)$/, '')}`

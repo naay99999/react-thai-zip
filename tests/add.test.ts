@@ -210,6 +210,35 @@ describe('addComponents', () => {
     expect(content).toContain('texts?: Partial<Texts>')
   })
 
+  it('writes Thai default labels into defaultTexts when lang is "th" (TypeScript)', async () => {
+    const cwd = await tempDir()
+    await writeBaseProject(cwd)
+    await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'], lang: 'th' })
+    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressCascadeSelect.tsx'), 'utf8')
+    expect(content).toContain("provinceLabel: 'จังหวัด'")
+    expect(content).toContain("districtLabel: 'อำเภอ/เขต'")
+    expect(content).toContain("subdistrictLabel: 'ตำบล/แขวง'")
+    expect(content).toContain("postalCodeLabel: 'รหัสไปรษณีย์'")
+    expect(content).not.toContain("provinceLabel: 'Province'")
+  })
+
+  it('writes Thai default labels into defaultTexts when lang is "th" (JavaScript)', async () => {
+    const cwd = await tempDir()
+    await writeBaseProject(cwd, false)
+    await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'], lang: 'th' })
+    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressCascadeSelect.jsx'), 'utf8')
+    expect(content).toContain("provinceLabel: 'จังหวัด'")
+    expect(content).not.toContain("provinceLabel: 'Province'")
+  })
+
+  it('keeps English default labels when lang is omitted', async () => {
+    const cwd = await tempDir()
+    await writeBaseProject(cwd)
+    await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
+    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressCascadeSelect.tsx'), 'utf8')
+    expect(content).toContain("provinceLabel: 'Province'")
+  })
+
   it('CascadeSelect uses htmlFor to associate labels with selects (TypeScript)', async () => {
     const cwd = await tempDir()
     await writeBaseProject(cwd)
