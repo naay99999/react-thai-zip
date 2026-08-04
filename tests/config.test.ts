@@ -31,7 +31,7 @@ describe('config', () => {
     expect(extractVersionAnchor(CORE_PACKAGE_VERSION)).not.toBeNull()
   })
 
-  it('CORE_PACKAGE_VERSION is at least the version whose exports the templates rely on (thaizip/react, added in 0.6.0)', () => {
+  it('CORE_PACKAGE_VERSION is at least the version whose cascade/enumeration API and bilingual labels the templates rely on (0.7.0)', () => {
     const anchor = extractVersionAnchor(CORE_PACKAGE_VERSION)
     expect(anchor).not.toBeNull()
     expect(isVersionAtLeast(anchor as string, MINIMUM_THAIZIP_VERSION)).toBe(true)
@@ -119,5 +119,30 @@ describe('readConfig migration', () => {
     const cwd = await mkdtemp(path.join(tmpdir(), 'thaizip-config-'))
     await writeFile(path.join(cwd, 'thaizip.config.json'), JSON.stringify({ componentDir: 42 }))
     await expect(readConfig(cwd)).rejects.toThrow(/react-thaizip init/)
+  })
+  it('rejects a legacy config that migrates to an invalid packageManager instead of writing it to disk', async () => {
+    const cwd = await mkdtemp(path.join(tmpdir(), 'thaizip-config-'))
+    const configPath = path.join(cwd, 'thaizip.config.json')
+    await writeFile(configPath, JSON.stringify({
+      typescript: true, componentDir: 'components', packageManager: 'deno',
+      corePackage: { name: 'thaizip', version: '>=0.6.0' }, registryVersion: '0.2.1',
+    }))
+    await expect(readConfig(cwd)).rejects.toThrow(/react-thaizip init/)
+    const onDisk = JSON.parse(await readFile(configPath, 'utf8'))
+    expect(onDisk.libDir).toBeUndefined()
+  })
+  it('rejects a legacy config missing registryVersion instead of self-bricking on the next read', async () => {
+    const cwd = await mkdtemp(path.join(tmpdir(), 'thaizip-config-'))
+    const configPath = path.join(cwd, 'thaizip.config.json')
+    await writeFile(configPath, JSON.stringify({
+      typescript: true, componentDir: 'components', packageManager: 'npm',
+      corePackage: { name: 'thaizip', version: '>=0.6.0' },
+    }))
+    await expect(readConfig(cwd)).rejects.toThrow(/react-thaizip init/)
+    // A second read must fail the same way, not throw some other error —
+    // proof nothing invalid was written to disk on the first attempt.
+    await expect(readConfig(cwd)).rejects.toThrow(/react-thaizip init/)
+    const onDisk = JSON.parse(await readFile(configPath, 'utf8'))
+    expect(onDisk.libDir).toBeUndefined()
   })
 })

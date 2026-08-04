@@ -45,16 +45,17 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
   const missingDependencies = await getMissingDependencies(cwd, selectedTargets.flatMap((component) => component.dependencies))
 
   // thaizip already being present doesn't mean it's new enough — the
-  // templates import from the `thaizip/react` subpath (added in 0.6.0), so a
-  // project that installed an older thaizip before this CLI was updated
-  // would otherwise pass the name-only dependency check above and then
-  // receive a component that fails to resolve at build time.
+  // templates rely on the cascade/enumeration API and bilingual (en/th)
+  // labels added in 0.7.0, so a project that installed an older thaizip
+  // before this CLI was updated would otherwise pass the name-only
+  // dependency check above and then receive a component that fails to
+  // resolve at build time.
   const needsCorePackage = selectedTargets.some((component) => component.dependencies.includes(CORE_PACKAGE_NAME))
   if (needsCorePackage && !missingDependencies.includes(CORE_PACKAGE_NAME)) {
     const versionCheck = await checkCorePackageVersion(cwd)
     if (!versionCheck.ok) {
       console.error(
-        `\n${CORE_PACKAGE_NAME} >=${MINIMUM_THAIZIP_VERSION} is required for the \`${CORE_PACKAGE_NAME}/react\` subpath used by these components; found ${versionCheck.found}.`,
+        `\n${CORE_PACKAGE_NAME} >=${MINIMUM_THAIZIP_VERSION} is required for the cascade/enumeration API and bilingual labels used by these components; found ${versionCheck.found}.`,
       )
       console.error(`Run \`npm i ${CORE_PACKAGE_NAME}@latest\` (or your package manager's equivalent), then run this command again.`)
       process.exitCode = 1

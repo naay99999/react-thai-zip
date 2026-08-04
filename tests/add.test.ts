@@ -111,7 +111,7 @@ describe('addComponents', () => {
     expect(content).toContain('onClear?.()')
   })
 
-  it('blocks scaffolding and explains why when thaizip is declared below the version required for thaizip/react', async () => {
+  it('blocks scaffolding and explains why when thaizip is declared below the version required for the cascade/enumeration API', async () => {
     const cwd = await tempDir()
     await writeBaseProject(cwd, { thaizip: '^0.4.0' })
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})

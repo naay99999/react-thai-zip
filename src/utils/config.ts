@@ -120,9 +120,20 @@ export async function readConfig(cwd = process.cwd(), options?: { tailwind?: Tai
   if (typeof parsed === 'object' && parsed !== null) {
     const migrated = migrateLegacyConfig(parsed as Record<string, unknown>, options?.tailwind ?? { version: 4, css: '' })
     if (migrated) {
-      await writeConfig(migrated, cwd)
-      console.log('Migrated thaizip.config.json to v2.')
-      return migrated
+      const revalidated = validateConfig(migrated)
+      if (revalidated.ok) {
+        await writeConfig(revalidated.config, cwd)
+        console.log('Migrated thaizip.config.json to v2.')
+        return revalidated.config
+      }
+      // The v1 shape was recognized, but migration produced something that
+      // still fails validation (e.g. an unsupported packageManager, or a
+      // missing registryVersion) — fall through to the same invalid-config
+      // error as if migration had never been attempted, rather than writing
+      // a broken v2 file to disk.
+      throw new Error(
+        `Invalid thaizip.config.json:\n  - ${revalidated.errors.join('\n  - ')}\nRe-run \`npx react-thaizip init\` to regenerate it.`,
+      )
     }
   }
 
