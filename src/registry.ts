@@ -33,6 +33,24 @@ export const registryItems: RegistryItem[] = [
     dependencies: ['thaizip'],
     registryDependencies: [],
   },
+  {
+    name: 'utils',
+    description: 'cn() class-name helper (clsx + tailwind-merge)',
+    aliases: ['utils', 'cn'],
+    type: 'lib',
+    files: [{ source: 'react/ts/lib/utils.ts', target: { dir: 'libDir', file: 'utils.ts' } }],
+    dependencies: ['clsx', 'tailwind-merge'],
+    registryDependencies: [],
+  },
+  {
+    name: 'use-thai-address-index',
+    description: 'Shared hook that loads the bundled thaizip address index',
+    aliases: ['use-thai-address-index', 'index-hook'],
+    type: 'hook',
+    files: [{ source: 'react/ts/hooks/use-thai-address-index.ts', target: { dir: 'hooksDir', file: 'use-thai-address-index.ts' } }],
+    dependencies: ['thaizip'],
+    registryDependencies: [],
+  },
 ]
 
 export function resolveRegistryItem(target: string, registry: RegistryItem[] = registryItems): RegistryItem | undefined {

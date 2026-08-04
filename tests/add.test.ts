@@ -231,6 +231,16 @@ describe('addComponents', () => {
     await expect(pathExists(path.join(cwd, 'app/components', 'ThaiAddressAutocomplete.tsx'))).resolves.toBe(false)
   })
 
+  it('scaffolds the real utils and use-thai-address-index items into libDir/hooksDir', async () => {
+    const cwd = await tempProjectWithConfigV2()
+    await addComponents({ cwd, targets: ['utils', 'use-thai-address-index'], yes: true })
+    const utils = await readFile(path.join(cwd, 'lib/utils.ts'), 'utf8')
+    expect(utils).toContain('twMerge(clsx(inputs))')
+    const hook = await readFile(path.join(cwd, 'hooks/use-thai-address-index.ts'), 'utf8')
+    expect(hook).toContain('loadDefaultIndex')
+    expect(hook).toContain("'use client'")
+  })
+
   it('exits 1 without throwing when bootstrap init cannot write a config (Tailwind missing)', async () => {
     const cwd = await tempDir()
     await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: {} }))
