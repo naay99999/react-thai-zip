@@ -6,32 +6,25 @@ export type ProjectStructure = 'app-router' | 'pages-router' | 'fallback'
 export type ProjectDestination = {
   structure: ProjectStructure
   directory: string
-  filePath: string
 }
 
 export async function detectProjectStructure(cwd = process.cwd()): Promise<ProjectDestination> {
   if (await pathExists(path.join(cwd, 'app'))) {
-    const directory = path.join(cwd, 'app', 'components')
     return {
       structure: 'app-router',
-      directory,
-      filePath: path.join(directory, 'ThaiAddressAutocomplete.tsx'),
+      directory: path.join(cwd, 'app', 'components'),
     }
   }
 
   if (await pathExists(path.join(cwd, 'pages'))) {
-    const directory = path.join(cwd, 'components')
     return {
       structure: 'pages-router',
-      directory,
-      filePath: path.join(directory, 'ThaiAddressAutocomplete.tsx'),
+      directory: path.join(cwd, 'components'),
     }
   }
 
-  const directory = path.join(cwd, 'src', 'components')
   return {
     structure: 'fallback',
-    directory,
-    filePath: path.join(directory, 'ThaiAddressAutocomplete.tsx'),
+    directory: path.join(cwd, 'src', 'components'),
   }
 }

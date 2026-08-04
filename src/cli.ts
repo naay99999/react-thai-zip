@@ -2,6 +2,22 @@ import { pathToFileURL } from 'node:url'
 import { addComponents } from './commands/add.js'
 import { initProject } from './commands/init.js'
 
+function extractLangOption(args: string[]): { lang?: string; targets: string[] } {
+  const targets: string[] = []
+  let lang: string | undefined
+
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--lang') {
+      lang = args[i + 1]
+      i++
+      continue
+    }
+    targets.push(args[i])
+  }
+
+  return { lang, targets }
+}
+
 export async function main(argv = process.argv.slice(2)): Promise<void> {
   const [command, ...targets] = argv
 
@@ -11,7 +27,8 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
   }
 
   if (command === 'add') {
-    await addComponents({ targets })
+    const { lang, targets: remainingTargets } = extractLangOption(targets)
+    await addComponents(lang ? { targets: remainingTargets, lang } : { targets: remainingTargets })
     return
   }
 

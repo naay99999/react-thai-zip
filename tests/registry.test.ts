@@ -4,11 +4,13 @@ describe('registry', () => {
   it.each([
     ['autocomplete', 'ThaiAddressAutocomplete'],
     ['ThaiAddressAutocomplete', 'ThaiAddressAutocomplete'],
+    ['postal', 'ThaiAddressPostalCodeForm'],
     ['postal-form', 'ThaiAddressPostalCodeForm'],
     ['ThaiAddressPostalForm', 'ThaiAddressPostalCodeForm'],
     ['ThaiAddressForm', 'ThaiAddressPostalCodeForm'],
     ['fields', 'ThaiAddressDisplayFields'],
     ['ThaiAddressSearch', 'ThaiAddressDisplayFields'],
+    ['cascade', 'ThaiAddressCascadeSelect'],
     ['cascade-select', 'ThaiAddressCascadeSelect'],
   ])('resolves %s to %s', (alias, expected) => {
     expect(resolveRegistryComponent(alias)?.name).toBe(expected)

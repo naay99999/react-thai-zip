@@ -13,7 +13,7 @@ describe('detectProjectStructure', () => {
     await mkdir(path.join(cwd, 'app'))
     const result = await detectProjectStructure(cwd)
     expect(result.structure).toBe('app-router')
-    expect(result.filePath).toBe(path.join(cwd, 'app', 'components', 'ThaiAddressAutocomplete.tsx'))
+    expect(result.directory).toBe(path.join(cwd, 'app', 'components'))
   })
 
   it('uses components for Pages Router projects', async () => {
@@ -21,13 +21,13 @@ describe('detectProjectStructure', () => {
     await mkdir(path.join(cwd, 'pages'))
     const result = await detectProjectStructure(cwd)
     expect(result.structure).toBe('pages-router')
-    expect(result.filePath).toBe(path.join(cwd, 'components', 'ThaiAddressAutocomplete.tsx'))
+    expect(result.directory).toBe(path.join(cwd, 'components'))
   })
 
   it('uses src/components as fallback', async () => {
     const cwd = await tempDir()
     const result = await detectProjectStructure(cwd)
     expect(result.structure).toBe('fallback')
-    expect(result.filePath).toBe(path.join(cwd, 'src', 'components', 'ThaiAddressAutocomplete.tsx'))
+    expect(result.directory).toBe(path.join(cwd, 'src', 'components'))
   })
 })

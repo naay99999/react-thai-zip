@@ -6,7 +6,17 @@ import { pathExists } from './fs.js'
 
 export const CONFIG_FILE = 'thaizip.config.json'
 export const CORE_PACKAGE_NAME = 'thaizip'
-export const CORE_PACKAGE_VERSION = '^0.4.0'
+// thaizip 0.6.0 introduced the `thaizip/react` subpath that the scaffolded
+// templates import from; the exports map has been unchanged through the
+// currently-published 2.0.0 (verified via `npm view thaizip@latest exports`),
+// so this is left as an open-ended floor rather than a caret range that
+// would exclude the real "latest" tag.
+export const CORE_PACKAGE_VERSION = '>=0.6.0'
+// Minimum thaizip version required for the `thaizip/react` subpath used by
+// every scaffolded component. Kept separate from CORE_PACKAGE_VERSION (a
+// range string) so version-gate logic has a single plain version to compare
+// against.
+export const MINIMUM_THAIZIP_VERSION = '0.6.0'
 
 export type ThaiZipConfig = {
   typescript: boolean
