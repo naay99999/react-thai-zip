@@ -36,6 +36,13 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
     }
 
     await initProject({ cwd, yes })
+
+    if (!(await configExists(cwd))) {
+      // init already printed why it bailed (e.g. Tailwind missing) — don't
+      // pile a config-not-found stack trace on top of that message.
+      process.exitCode = 1
+      return
+    }
   }
 
   const detected = await detectTailwind(cwd)

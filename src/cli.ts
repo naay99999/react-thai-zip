@@ -45,7 +45,7 @@ function printHelp(): void {
     '  --version, -v    Print the CLI version',
     '',
     'Components:',
-    ...registryItems.map((item) => `  ${item.name}  ${item.description}`),
+    ...registryItems.filter((item) => item.type === 'component').map((item) => `  ${item.name}  ${item.description}`),
   ]
   console.log(lines.join('\n'))
 }

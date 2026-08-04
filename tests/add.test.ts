@@ -196,4 +196,50 @@ describe('addComponents', () => {
     expect(await readFile(path.join(cwd, 'app/components/ThaiAddressAutocomplete.tsx'), 'utf8')).toBe('// modified\n')
     void first
   })
+
+  it('migrates a legacy v1 config on disk and scaffolds normally', async () => {
+    const cwd = await tempDir()
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await mkdir(path.join(cwd, 'app'), { recursive: true })
+    await writeFile(path.join(cwd, 'app', 'globals.css'), '@import "tailwindcss";\n')
+    await writeFile(
+      path.join(cwd, 'thaizip.config.json'),
+      JSON.stringify({ componentDir: 'app/components', packageManager: 'npm', registryVersion: '0.1.0' }),
+    )
+
+    await addComponents({ cwd, targets: ['autocomplete'], yes: true })
+
+    const migrated = JSON.parse(await readFile(path.join(cwd, 'thaizip.config.json'), 'utf8'))
+    expect(migrated.typescript).toBe(true)
+    expect(migrated.libDir).toBe('lib')
+    expect(migrated.hooksDir).toBe('hooks')
+    expect(migrated.tailwind).toEqual({ version: 4, css: 'app/globals.css' })
+    await expect(pathExists(path.join(cwd, 'app/components', 'ThaiAddressAutocomplete.tsx'))).resolves.toBe(true)
+  })
+
+  it('rejects a legacy config with typescript: false instead of silently migrating it to TypeScript', async () => {
+    const cwd = await tempDir()
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await mkdir(path.join(cwd, 'app'), { recursive: true })
+    await writeFile(path.join(cwd, 'app', 'globals.css'), '@import "tailwindcss";\n')
+    await writeFile(
+      path.join(cwd, 'thaizip.config.json'),
+      JSON.stringify({ typescript: false, componentDir: 'app/components', packageManager: 'npm', registryVersion: '0.1.0' }),
+    )
+
+    await expect(addComponents({ cwd, targets: ['autocomplete'], yes: true })).rejects.toThrow(/no longer supported/)
+    await expect(pathExists(path.join(cwd, 'app/components', 'ThaiAddressAutocomplete.tsx'))).resolves.toBe(false)
+  })
+
+  it('exits 1 without throwing when bootstrap init cannot write a config (Tailwind missing)', async () => {
+    const cwd = await tempDir()
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: {} }))
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    await expect(addComponents({ cwd, targets: ['autocomplete'], yes: true })).resolves.toBeUndefined()
+
+    expect(process.exitCode).toBe(1)
+    await expect(pathExists(path.join(cwd, 'thaizip.config.json'))).resolves.toBe(false)
+    consoleError.mockRestore()
+  })
 })
