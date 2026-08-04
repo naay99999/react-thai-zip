@@ -146,6 +146,8 @@ function ThaiAddressPostalCodeFormReady({
 
   function handleSelect(item: ThaiAddressSuggestion) {
     const resolved = selectSuggestion(item)
+    // thaizip >=0.7.0 returns null for a stale suggestion instead of throwing
+    if (!resolved) return
     setAddress(resolved)
     onSelect?.(resolved)
   }

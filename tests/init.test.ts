@@ -3,6 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import prompts from 'prompts'
 import { initProject } from '../src/commands/init.js'
+import { getRegistryVersion } from '../src/utils/config.js'
 
 vi.mock('prompts', () => ({
   default: vi.fn(),
@@ -46,7 +47,8 @@ describe('initProject', () => {
         name: 'thaizip',
         version: '>=0.6.0',
       },
-      registryVersion: '0.2.0',
+      // Derived, not pinned: a hardcoded version here silently rots on every release.
+      registryVersion: await getRegistryVersion(),
     })
   })
 
