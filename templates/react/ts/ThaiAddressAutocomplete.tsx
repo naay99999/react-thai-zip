@@ -137,6 +137,8 @@ function ThaiAddressAutocompleteReady({
 
   function handleSelect(item: (typeof suggestions)[number]) {
     const resolved = selectSuggestion(item)
+    // thaizip >=0.7.0 returns null for a stale suggestion instead of throwing
+    if (!resolved) return
     setDisplayValue(item.label)
     clear()
     onSelect?.(resolved)
