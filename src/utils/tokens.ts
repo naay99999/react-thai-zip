@@ -7,6 +7,7 @@ export function hasShadcnTokens(css: string): boolean {
 export function buildTokenBlock(version: 3 | 4): string {
   if (version === 4) {
     return `/* react-thaizip design tokens */
+@custom-variant dark (&:is(.dark *));
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);

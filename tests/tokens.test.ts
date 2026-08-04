@@ -17,6 +17,12 @@ describe('tokens', () => {
     expect(buildTokenBlock(3)).toContain('--background: 0 0% 100%;')
   })
 
+  it('v4 block enables class-based dark mode via @custom-variant', () => {
+    // Without this, Tailwind v4 defaults `dark:` to a prefers-color-scheme
+    // media query, so the emitted `.dark { ... }` block never applies.
+    expect(buildTokenBlock(4)).toContain('@custom-variant dark (&:is(.dark *));')
+  })
+
   it('ensureTokens appends once and skips when tokens exist', async () => {
     const dir = await mkdtemp(path.join(tmpdir(), 'thaizip-tokens-'))
     const css = path.join(dir, 'globals.css')
