@@ -16,6 +16,11 @@ const IMPORT_ALIASES: ReadonlyArray<{ pattern: RegExp; dirKey: 'libDir' | 'hooks
  * relative paths from `destinationDir` to `<cwd>/<config.libDir|hooksDir>/*`
  * (no file extension, POSIX separators, `./`-prefixed when not already
  * relative).
+ *
+ * The regex rewrites any quoted `@/lib/...` or `@/hooks/...` substring
+ * unconditionally — it doesn't parse the file as JS/TS — so this is only
+ * safe to run over trusted, maintainer-authored template content, not
+ * arbitrary user files.
  */
 export function rewriteTemplateImports(content: string, destinationDir: string, config: ThaiZipConfig, cwd: string): string {
   let result = content

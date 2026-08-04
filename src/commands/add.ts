@@ -149,7 +149,7 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
     if (item.type === 'component' && primaryFileCopied) {
       const primaryFile = item.files[0]
       const destination = path.join(cwd, config[primaryFile.target.dir], primaryFile.target.file)
-      const importSymbol = path.basename(primaryFile.target.file, path.extname(primaryFile.target.file))
+      const importSymbol = item.exportName ?? path.basename(primaryFile.target.file, path.extname(primaryFile.target.file))
       const importPath = `./${path.relative(cwd, destination).replace(/\\/g, '/').replace(/\.(tsx|jsx|ts|js)$/, '')}`
       console.log(`\n${item.name} added successfully.`)
       console.log(`Import it from:`)

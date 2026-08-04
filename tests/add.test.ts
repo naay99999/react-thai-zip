@@ -117,6 +117,14 @@ describe('addComponents', () => {
     expect(content).toContain('✕')
   })
 
+  it('prints a valid import hint for autocomplete despite its kebab-case filename', async () => {
+    const cwd = await tempProjectWithConfigV2()
+    await addComponents({ cwd, targets: ['autocomplete'], yes: true })
+    const logged = (console.log as ReturnType<typeof vi.fn>).mock.calls.map((call) => call.join(' ')).join('\n')
+    expect(logged).toContain('import { ThaiAddressAutocomplete }')
+    expect(logged).not.toContain('import { thai-address-autocomplete }')
+  })
+
   it('CascadeSelect uses English default labels and supports texts prop', async () => {
     const cwd = await tempProjectWithConfigV2()
     await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
