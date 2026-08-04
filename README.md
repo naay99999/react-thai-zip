@@ -7,14 +7,34 @@ npx react-thaizip init
 npx react-thaizip add
 ```
 
-`init` detects your React or Next.js project structure, package manager, Tailwind CSS, JavaScript/TypeScript preference, and whether `thaizip` is installed. It writes `thaizip.config.json`, which `add` uses when generating components.
+## Prerequisite: Tailwind CSS
+
+Your project must already have Tailwind CSS (v3 or v4) installed — `init` detects it but does not install it for you. If no Tailwind setup is found, `init` prints a pointer to https://tailwindcss.com/docs/installation and exits; install Tailwind first, then re-run `init`.
+
+`init` detects your React or Next.js project structure, package manager, and Tailwind version, then:
+- writes `thaizip.config.json`, which `add` uses when generating components
+- appends the shadcn-style design tokens (CSS custom properties) to your global CSS file — or prints them for manual copy if no global CSS file is found
+- on Tailwind v3, also prints a `theme.extend` config snippet to add to `tailwind.config.{js,ts}` by hand (v3 has no `@theme inline`)
+
+## CLI flags
+
+```
+npx react-thaizip init [--yes]
+npx react-thaizip add [component...] [--yes] [--overwrite]
+npx react-thaizip --help
+npx react-thaizip --version
+```
+
+- `--yes`, `-y` — skip confirmation prompts (`init` and `add`)
+- `--overwrite` — overwrite existing component files without prompting (`add` only)
+- `--help`, `-h` — print usage and the list of available components
+- `--version`, `-v` — print the CLI's own version
 
 ## Components
 
 ```bash
 npx react-thaizip add
-npx react-thaizip add ThaiAddressPostalCodeForm
-npx react-thaizip add ThaiAddressDisplayFields
+npx react-thaizip add ThaiAddressAutocomplete
 npx react-thaizip add ThaiAddressCascadeSelect
 ```
 
@@ -22,18 +42,16 @@ Shorter aliases also resolve to the same components:
 
 ```bash
 npx react-thaizip add autocomplete
-npx react-thaizip add postal
-npx react-thaizip add cascade
-npx react-thaizip add fields
+npx react-thaizip add cascade-select
 ```
 
-Legacy aliases from older docs are also supported:
+Multiple targets can be passed at once:
 
 ```bash
-npx react-thaizip add ThaiAddressPostalForm
-npx react-thaizip add ThaiAddressSearch
-npx react-thaizip add ThaiAddressForm
+npx react-thaizip add autocomplete cascade-select
 ```
+
+Running `add` with no targets prompts an interactive multiselect. `add` also requires `thaizip` >= 0.7.0 (the version that added the cascade/enumeration API and bilingual labels the templates rely on) — if an older version is already installed, `add` reports the version it found and exits without writing files.
 
 ## Customizing labels (`texts` prop)
 
@@ -51,12 +69,6 @@ Every generated component ships with English default labels and accepts an optio
 ```
 
 `texts` is `Partial<Texts>`, so you only need to supply the keys you want to change — anything you omit falls back to the English default. Each component exports its own `Texts` type covering its labels, placeholders, and status messages (e.g. `loadingText`, `errorText`).
-
-Prefer scaffolding straight to Thai labels instead of overriding `texts` yourself? Pass `--lang th` to `add` and the generated component's `defaultTexts` will be pre-filled in Thai:
-
-```bash
-npx react-thaizip add ThaiAddressCascadeSelect --lang th
-```
 
 ## `ThaiAddressCascadeSelect`: `onClear`
 
