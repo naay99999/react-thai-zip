@@ -64,18 +64,13 @@ const DEFAULT_TEXTS: Record<AddressLocale, ThaiAddressAutocompleteTexts> = {
   },
 }
 
-/** A `TrigramIndex` shaped placeholder used only while the real index is loading. */
-const EMPTY_INDEX: TrigramIndex = {
-  map: new Map(),
-  records: [],
-  zipIndex: new Map(),
-  normTambon: [],
-  normTambonEn: [],
-  byProvince: new Map(),
-  byAmphure: new Map(),
-}
-
-/** Mirrors thaizip's own `${tambon} > ${amphure} > ${province} ${zipCode}` label shape. */
+/**
+ * Mirrors thaizip's own `${tambon} > ${amphure} > ${province} ${zipCode}` label shape, for
+ * the two spots that only have a `ResolvedThaiAddress` (no originating suggestion item) to
+ * work from: the initial text seed and the controlled-`value` re-sync below. Everywhere
+ * else — in particular the on-select echo — reads a suggestion's own `.label` field
+ * instead of re-deriving text by hand, so this formula exists in exactly one place.
+ */
 function addressLabel(address: ResolvedThaiAddress, locale: AddressLocale): string {
   return locale === 'en'
     ? `${address.subdistrictEn} > ${address.districtEn} > ${address.provinceEn} ${address.zipCode}`
@@ -83,25 +78,14 @@ function addressLabel(address: ResolvedThaiAddress, locale: AddressLocale): stri
 }
 
 export function ThaiAddressAutocomplete({
-  value,
-  defaultValue,
-  onValueChange,
-  name,
   locale = 'th',
   texts,
-  limit,
-  debounce,
-  threshold,
   disabled = false,
-  required = false,
-  onBlur,
-  onError,
-  'aria-invalid': ariaInvalid,
   className,
   inputClassName,
-  popupClassName,
-  itemClassName,
+  onError,
   ref,
+  ...rest
 }: ThaiAddressAutocompleteProps) {
   const resolvedTexts = React.useMemo<ThaiAddressAutocompleteTexts>(
     () => ({ ...DEFAULT_TEXTS[locale], ...texts }),
@@ -113,61 +97,6 @@ export function ThaiAddressAutocomplete({
   React.useEffect(() => {
     if (error) onError?.(error)
   }, [error, onError])
-
-  const isControlled = value !== undefined
-
-  const [internalSelected, setInternalSelected] = React.useState<ResolvedThaiAddress | null>(defaultValue ?? null)
-  const selected = isControlled ? (value ?? null) : internalSelected
-
-  // Seed the input text once from whichever value is present on first render.
-  const [initialQuery] = React.useState(() => {
-    const seed = isControlled ? (value ?? null) : (defaultValue ?? null)
-    return seed ? addressLabel(seed, locale) : ''
-  })
-
-  const { query, setQuery, setQuerySilent, suggestions, selectSuggestion, clear } = useThaiAddressAutocomplete({
-    index: index ?? EMPTY_INDEX,
-    limit,
-    debounce,
-    threshold,
-    locale,
-    initialQuery,
-  })
-
-  // Controlled mode: re-sync the visible text whenever the caller changes `value`.
-  React.useEffect(() => {
-    if (!isControlled) return
-    setQuerySilent(value ? addressLabel(value, locale) : '')
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isControlled, value, locale])
-
-  function commitSelection(item: ThaiAddressSuggestion) {
-    const result = selectSuggestion(item)
-    if (!result) return
-    setQuerySilent(addressLabel(result, locale))
-    if (!isControlled) setInternalSelected(result)
-    onValueChange?.(result)
-  }
-
-  function handleInputValueChange(nextValue: string) {
-    setQuery(nextValue)
-    if (nextValue === '' && selected !== null) {
-      if (!isControlled) setInternalSelected(null)
-      onValueChange?.(null)
-    }
-  }
-
-  function handleComboboxValueChange(item: ThaiAddressSuggestion | null) {
-    // Base UI can report a `null` value on escape/outside-press/blur — a mere close
-    // must NOT clear the resolved selection, so only non-null presses are handled.
-    if (item) commitSelection(item)
-  }
-
-  function handleClear() {
-    clear()
-    if (!isControlled) setInternalSelected(null)
-    onValueChange?.(null)
-  }
 
   if (error) {
     return (
@@ -190,7 +119,144 @@ export function ThaiAddressAutocomplete({
     )
   }
 
-  const isDisabled = disabled || isLoading
+  // Deliberately NOT rendered by feeding `useThaiAddressAutocomplete` a placeholder index
+  // while loading: thaizip's hook treats any `index` reference change (even swapping a
+  // placeholder for the real thing) as "re-search the pending query", which would fire a
+  // spurious search the moment loading finishes. Mounting the search-hook-consuming
+  // subtree only once `index` is final and stable avoids that entirely.
+  if (!index) {
+    return (
+      <div className={cn('relative w-full', className)}>
+        <input
+          ref={ref}
+          disabled
+          readOnly
+          aria-busy="true"
+          placeholder={resolvedTexts.loadingText}
+          value=""
+          className={cn(
+            'flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm outline-none transition-colors placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
+            inputClassName,
+          )}
+        />
+      </div>
+    )
+  }
+
+  return (
+    <ThaiAddressAutocompleteReady
+      {...rest}
+      index={index}
+      locale={locale}
+      texts={resolvedTexts}
+      disabled={disabled}
+      className={className}
+      inputClassName={inputClassName}
+      ref={ref}
+    />
+  )
+}
+
+type ReadyProps = Omit<ThaiAddressAutocompleteProps, 'texts' | 'onError'> & {
+  index: TrigramIndex
+  locale: AddressLocale
+  texts: ThaiAddressAutocompleteTexts
+}
+
+function ThaiAddressAutocompleteReady({
+  index,
+  value,
+  defaultValue,
+  onValueChange,
+  name,
+  locale,
+  texts,
+  limit,
+  debounce,
+  threshold,
+  disabled = false,
+  required = false,
+  onBlur,
+  'aria-invalid': ariaInvalid,
+  className,
+  inputClassName,
+  popupClassName,
+  itemClassName,
+  ref,
+}: ReadyProps) {
+  const isControlled = value !== undefined
+
+  // Uncontrolled bookkeeping only — stays `null` (unused) in controlled mode, where
+  // `resolvedAddress` below is derived straight from `value` instead.
+  const [internalResolved, setInternalResolved] = React.useState<ResolvedThaiAddress | null>(() =>
+    isControlled ? null : (defaultValue ?? null),
+  )
+  const resolvedAddress = isControlled ? (value ?? null) : internalResolved
+
+  // Seed the input text once from whichever value is present on first render.
+  const [initialQuery] = React.useState(() => {
+    const seed = isControlled ? (value ?? null) : (defaultValue ?? null)
+    return seed ? addressLabel(seed, locale) : ''
+  })
+
+  const { query, setQuery, setQuerySilent, suggestions, selectSuggestion, clear } = useThaiAddressAutocomplete({
+    index,
+    limit,
+    debounce,
+    threshold,
+    locale,
+    initialQuery,
+  })
+
+  // Controlled mode: re-sync the visible text whenever the caller changes `value`
+  // (including -> null).
+  React.useEffect(() => {
+    if (!isControlled) return
+    setQuerySilent(value ? addressLabel(value, locale) : '')
+  }, [isControlled, value, locale, setQuerySilent])
+
+  function commitSelection(item: ThaiAddressSuggestion) {
+    const result = selectSuggestion(item)
+    if (!result) return
+    setQuerySilent(item.label)
+    if (!isControlled) setInternalResolved(result)
+    onValueChange?.(result)
+  }
+
+  // `inputValue`/`onInputValueChange` below make Root's input text fully controlled by
+  // `query`, but Root ALSO fires this same callback for its own internal bookkeeping —
+  // most importantly, `AriaCombobox`'s `handleUnmount` force-resyncs the input to
+  // Root's own (uncontrolled, easily stale — it never learns about a clear performed
+  // through our own clear button, or a `defaultValue` seed it never selected) internal
+  // "selected value" on every popup close, and a "did the current items list still
+  // contain my selection" layout effect can do the same the moment `suggestions` is
+  // cleared after a pick. Both — along with the item-press echo below — are Base UI's own
+  // synthetic writes, never a real user edit, and are reliably distinguishable: genuine
+  // typing is the ONLY path that reports `reason === 'input-change'` (see
+  // ComboboxInput.js). Every other reason is ignored outright: since `query` (and
+  // therefore the rendered `inputValue`) is left untouched, the next render simply
+  // re-asserts our own text and the synthetic write never becomes visible.
+  function handleInputValueChange(nextValue: string, reason: string) {
+    if (reason !== 'input-change') return
+
+    setQuery(nextValue)
+    if (nextValue === '' && resolvedAddress !== null) {
+      if (!isControlled) setInternalResolved(null)
+      onValueChange?.(null)
+    }
+  }
+
+  function handleComboboxValueChange(item: ThaiAddressSuggestion | null) {
+    // Root's own value-change can in principle report `null` on some close paths — a
+    // mere close must NOT clear the resolved selection, so only a real press is handled.
+    if (item) commitSelection(item)
+  }
+
+  function handleClear() {
+    clear()
+    if (!isControlled) setInternalResolved(null)
+    onValueChange?.(null)
+  }
 
   return (
     <div className={cn('relative w-full', className)}>
@@ -198,36 +264,35 @@ export function ThaiAddressAutocomplete({
         items={suggestions}
         filter={null}
         inputValue={query}
-        onInputValueChange={handleInputValueChange}
+        onInputValueChange={(nextValue, eventDetails) => handleInputValueChange(nextValue, eventDetails.reason)}
         onValueChange={handleComboboxValueChange}
-        disabled={isDisabled}
+        disabled={disabled}
       >
         <div className="relative">
           <Combobox.Input
             ref={ref}
             required={required}
-            disabled={isDisabled}
-            aria-busy={isLoading || undefined}
+            disabled={disabled}
             aria-invalid={ariaInvalid}
             onBlur={onBlur}
-            placeholder={isLoading ? resolvedTexts.loadingText : resolvedTexts.placeholder}
+            placeholder={texts.placeholder}
             className={cn(
               'flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 pr-8 text-sm shadow-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
               inputClassName,
             )}
           />
 
-          {query.length > 0 && !isDisabled && (
+          {query.length > 0 && !disabled && (
             // A plain button, not `Combobox.Clear`: that part's built-in visibility tracks
-            // Base UI's own internal selected-value state (which Base UI itself clears on
-            // escape/outside-press), not "input has text" — the wrong semantics here since
-            // a mere close must not hide the clear affordance while text remains.
+            // Base UI's own internal selected-value state, not "input has text" — the
+            // wrong semantics here since the clear affordance must stay visible while any
+            // text remains, confirmed or not.
             <button
               type="button"
               tabIndex={-1}
               onMouseDown={(event) => event.preventDefault()}
               onClick={handleClear}
-              aria-label={resolvedTexts.clearAriaLabel}
+              aria-label={texts.clearAriaLabel}
               className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-sm p-0.5 text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring"
             >
               ✕
@@ -244,7 +309,7 @@ export function ThaiAddressAutocomplete({
               )}
             >
               <Combobox.Empty className="px-2 py-4 text-center text-sm text-muted-foreground">
-                {resolvedTexts.emptyText}
+                {texts.emptyText}
               </Combobox.Empty>
               <Combobox.List>
                 {(item: ThaiAddressSuggestion) => (
@@ -268,10 +333,10 @@ export function ThaiAddressAutocomplete({
 
       {name && (
         <>
-          <input type="hidden" name={`${name}-subdistrict`} value={selected?.subdistrict ?? ''} />
-          <input type="hidden" name={`${name}-district`} value={selected?.district ?? ''} />
-          <input type="hidden" name={`${name}-province`} value={selected?.province ?? ''} />
-          <input type="hidden" name={`${name}-zipcode`} value={selected?.zipCode ?? ''} />
+          <input type="hidden" name={`${name}-subdistrict`} value={resolvedAddress?.subdistrict ?? ''} />
+          <input type="hidden" name={`${name}-district`} value={resolvedAddress?.district ?? ''} />
+          <input type="hidden" name={`${name}-province`} value={resolvedAddress?.province ?? ''} />
+          <input type="hidden" name={`${name}-zipcode`} value={resolvedAddress?.zipCode ?? ''} />
         </>
       )}
     </div>

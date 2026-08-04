@@ -13,5 +13,9 @@
       "@/hooks/use-thai-address-index": ["./templates/react/ts/hooks/use-thai-address-index.ts"]
     }
   },
-  "include": ["templates/react/ts/**/*.ts", "templates/react/ts/**/*.tsx"]
+  "include": [
+    "templates/react/ts/**/*.ts",
+    "templates/react/ts/**/*.tsx",
+    "tests/thai-address-autocomplete.test.tsx"
+  ]
 }
