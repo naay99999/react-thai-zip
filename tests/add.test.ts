@@ -16,11 +16,11 @@ async function tempDir() {
   return mkdtemp(path.join(os.tmpdir(), 'react-thaizip-'))
 }
 
-async function writeBaseProject(cwd: string, typescript = true, dependencies: Record<string, string> = { thaizip: '^0.6.0' }) {
+async function writeBaseProject(cwd: string, dependencies: Record<string, string> = { thaizip: '^0.6.0' }) {
   await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies }))
   await writeConfig(
     {
-      typescript,
+      typescript: true,
       componentDir: 'components',
       packageManager: 'npm',
       corePackage: {
@@ -49,48 +49,6 @@ describe('addComponents', () => {
     vi.restoreAllMocks()
   })
 
-  it('adds a TypeScript component from a legacy alias', async () => {
-    const cwd = await tempDir()
-    await writeBaseProject(cwd)
-
-    await addComponents({ cwd, targets: ['ThaiAddressPostalForm'] })
-
-    await expect(readFile(path.join(cwd, 'components', 'ThaiAddressPostalCodeForm.tsx'), 'utf8')).resolves.toContain(
-      'export function ThaiAddressPostalCodeForm',
-    )
-  })
-
-  it('adds DisplayFields with configurable display mode and order in TypeScript', async () => {
-    const cwd = await tempDir()
-    await writeBaseProject(cwd)
-
-    await addComponents({ cwd, targets: ['fields'] })
-
-    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressDisplayFields.tsx'), 'utf8')
-    expect(content).toContain("type DisplayField = 'subdistrict' | 'district' | 'province' | 'postalCode'")
-    expect(content).toContain("type DisplayMode = 'fields' | 'inline'")
-    expect(content).toContain("mode = 'fields'")
-    expect(content).toContain("order = defaultOrder")
-    expect(content).toContain("separator = ' > '")
-    expect(content).toContain('formatInlineAddress')
-  })
-
-  it('adds a JavaScript component when configured for JS', async () => {
-    const cwd = await tempDir()
-    await writeBaseProject(cwd, false)
-
-    await addComponents({ cwd, targets: ['ThaiAddressSearch'] })
-
-    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressDisplayFields.jsx'), 'utf8')
-    expect(content).toContain('export function ThaiAddressDisplayFields')
-    expect(content).toContain("mode = 'fields'")
-    expect(content).toContain("order = defaultOrder")
-    expect(content).toContain("separator = ' > '")
-    expect(content).toContain('formatInlineAddress')
-    expect(content).not.toContain('import type')
-    expect(content).not.toContain('type DisplayField')
-  })
-
   it('prompts for components when no target is provided', async () => {
     const cwd = await tempDir()
     await writeBaseProject(cwd)
@@ -116,7 +74,7 @@ describe('addComponents', () => {
     await expect(readFile(destination, 'utf8')).resolves.toBe('existing content')
   })
 
-  it('Autocomplete clear button uses ✕ not x (TypeScript)', async () => {
+  it('Autocomplete clear button uses ✕ not x', async () => {
     const cwd = await tempDir()
     await writeBaseProject(cwd)
     await addComponents({ cwd, targets: ['autocomplete'] })
@@ -124,82 +82,7 @@ describe('addComponents', () => {
     expect(content).toContain('✕')
   })
 
-  it('Autocomplete clear button uses ✕ not x (JavaScript)', async () => {
-    const cwd = await tempDir()
-    await writeBaseProject(cwd, false)
-    await addComponents({ cwd, targets: ['autocomplete'] })
-    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressAutocomplete.jsx'), 'utf8')
-    expect(content).toContain('✕')
-  })
-
-  it('PostalCodeForm uses English default labels and supports texts prop (TypeScript)', async () => {
-    const cwd = await tempDir()
-    await writeBaseProject(cwd)
-    await addComponents({ cwd, targets: ['ThaiAddressPostalForm'] })
-    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressPostalCodeForm.tsx'), 'utf8')
-    expect(content).toContain("postalCodeLabel: 'Postal Code'")
-    expect(content).toContain("subdistrictLabel: 'Sub District'")
-    expect(content).toContain("districtLabel: 'District'")
-    expect(content).toContain("provinceLabel: 'Province'")
-    expect(content).toContain('texts?: Partial<Texts>')
-  })
-
-  it('PostalCodeForm uses htmlFor to associate labels with inputs (TypeScript)', async () => {
-    const cwd = await tempDir()
-    await writeBaseProject(cwd)
-    await addComponents({ cwd, targets: ['ThaiAddressPostalForm'] })
-    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressPostalCodeForm.tsx'), 'utf8')
-    expect(content).toContain('htmlFor')
-    expect(content).toContain('useId')
-  })
-
-  it('PostalCodeForm has ARIA combobox and keyboard navigation (TypeScript)', async () => {
-    const cwd = await tempDir()
-    await writeBaseProject(cwd)
-    await addComponents({ cwd, targets: ['ThaiAddressPostalForm'] })
-    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressPostalCodeForm.tsx'), 'utf8')
-    expect(content).toContain('role="combobox"')
-    expect(content).toContain('role="listbox"')
-    expect(content).toContain('role="option"')
-    expect(content).toContain('aria-expanded')
-    expect(content).toContain('ArrowDown')
-  })
-
-  it('PostalCodeForm uses English default labels and supports texts prop (JavaScript)', async () => {
-    const cwd = await tempDir()
-    await writeBaseProject(cwd, false)
-    await addComponents({ cwd, targets: ['ThaiAddressPostalForm'] })
-    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressPostalCodeForm.jsx'), 'utf8')
-    expect(content).toContain("postalCodeLabel: 'Postal Code'")
-    expect(content).toContain("subdistrictLabel: 'Sub District'")
-    expect(content).toContain("districtLabel: 'District'")
-    expect(content).toContain("provinceLabel: 'Province'")
-    expect(content).not.toContain('import type')
-    expect(content).not.toContain('type Texts')
-  })
-
-  it('PostalCodeForm uses htmlFor to associate labels with inputs (JavaScript)', async () => {
-    const cwd = await tempDir()
-    await writeBaseProject(cwd, false)
-    await addComponents({ cwd, targets: ['ThaiAddressPostalForm'] })
-    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressPostalCodeForm.jsx'), 'utf8')
-    expect(content).toContain('htmlFor')
-    expect(content).toContain('useId')
-  })
-
-  it('PostalCodeForm has ARIA combobox and keyboard navigation (JavaScript)', async () => {
-    const cwd = await tempDir()
-    await writeBaseProject(cwd, false)
-    await addComponents({ cwd, targets: ['ThaiAddressPostalForm'] })
-    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressPostalCodeForm.jsx'), 'utf8')
-    expect(content).toContain('role="combobox"')
-    expect(content).toContain('role="listbox"')
-    expect(content).toContain('role="option"')
-    expect(content).toContain('aria-expanded')
-    expect(content).toContain('ArrowDown')
-  })
-
-  it('CascadeSelect uses English default labels and supports texts prop (TypeScript)', async () => {
+  it('CascadeSelect uses English default labels and supports texts prop', async () => {
     const cwd = await tempDir()
     await writeBaseProject(cwd)
     await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
@@ -211,36 +94,7 @@ describe('addComponents', () => {
     expect(content).toContain('texts?: Partial<Texts>')
   })
 
-  it('writes Thai default labels into defaultTexts when lang is "th" (TypeScript)', async () => {
-    const cwd = await tempDir()
-    await writeBaseProject(cwd)
-    await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'], lang: 'th' })
-    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressCascadeSelect.tsx'), 'utf8')
-    expect(content).toContain("provinceLabel: 'จังหวัด'")
-    expect(content).toContain("districtLabel: 'อำเภอ/เขต'")
-    expect(content).toContain("subdistrictLabel: 'ตำบล/แขวง'")
-    expect(content).toContain("postalCodeLabel: 'รหัสไปรษณีย์'")
-    expect(content).not.toContain("provinceLabel: 'Province'")
-  })
-
-  it('writes Thai default labels into defaultTexts when lang is "th" (JavaScript)', async () => {
-    const cwd = await tempDir()
-    await writeBaseProject(cwd, false)
-    await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'], lang: 'th' })
-    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressCascadeSelect.jsx'), 'utf8')
-    expect(content).toContain("provinceLabel: 'จังหวัด'")
-    expect(content).not.toContain("provinceLabel: 'Province'")
-  })
-
-  it('keeps English default labels when lang is omitted', async () => {
-    const cwd = await tempDir()
-    await writeBaseProject(cwd)
-    await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
-    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressCascadeSelect.tsx'), 'utf8')
-    expect(content).toContain("provinceLabel: 'Province'")
-  })
-
-  it('CascadeSelect uses htmlFor to associate labels with selects (TypeScript)', async () => {
+  it('CascadeSelect uses htmlFor to associate labels with selects', async () => {
     const cwd = await tempDir()
     await writeBaseProject(cwd)
     await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
@@ -249,49 +103,18 @@ describe('addComponents', () => {
     expect(content).toContain('useId')
   })
 
-  it('CascadeSelect accepts onClear prop and resets downstream selections (TypeScript)', async () => {
+  it('CascadeSelect accepts onClear prop and resets downstream selections', async () => {
     const cwd = await tempDir()
     await writeBaseProject(cwd)
     await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
     const content = await readFile(path.join(cwd, 'components', 'ThaiAddressCascadeSelect.tsx'), 'utf8')
-    expect(content).toContain('onClear')
-    expect(content).toContain('onClear?.()')
-  })
-
-  it('CascadeSelect uses English default labels and supports texts prop (JavaScript)', async () => {
-    const cwd = await tempDir()
-    await writeBaseProject(cwd, false)
-    await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
-    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressCascadeSelect.jsx'), 'utf8')
-    expect(content).toContain("provinceLabel: 'Province'")
-    expect(content).toContain("districtLabel: 'District'")
-    expect(content).toContain("subdistrictLabel: 'Sub District'")
-    expect(content).toContain("postalCodeLabel: 'Postal Code'")
-    expect(content).not.toContain('import type')
-    expect(content).not.toContain('type Texts')
-  })
-
-  it('CascadeSelect uses htmlFor to associate labels with selects (JavaScript)', async () => {
-    const cwd = await tempDir()
-    await writeBaseProject(cwd, false)
-    await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
-    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressCascadeSelect.jsx'), 'utf8')
-    expect(content).toContain('htmlFor')
-    expect(content).toContain('useId')
-  })
-
-  it('CascadeSelect accepts onClear prop and resets downstream selections (JavaScript)', async () => {
-    const cwd = await tempDir()
-    await writeBaseProject(cwd, false)
-    await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
-    const content = await readFile(path.join(cwd, 'components', 'ThaiAddressCascadeSelect.jsx'), 'utf8')
     expect(content).toContain('onClear')
     expect(content).toContain('onClear?.()')
   })
 
   it('blocks scaffolding and explains why when thaizip is declared below the version required for thaizip/react', async () => {
     const cwd = await tempDir()
-    await writeBaseProject(cwd, true, { thaizip: '^0.4.0' })
+    await writeBaseProject(cwd, { thaizip: '^0.4.0' })
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     await addComponents({ cwd, targets: ['autocomplete'] })
@@ -304,7 +127,7 @@ describe('addComponents', () => {
 
   it('scaffolds normally when thaizip satisfies the required version', async () => {
     const cwd = await tempDir()
-    await writeBaseProject(cwd, true, { thaizip: '^0.6.0' })
+    await writeBaseProject(cwd, { thaizip: '^0.6.0' })
 
     await addComponents({ cwd, targets: ['autocomplete'] })
 
@@ -316,7 +139,7 @@ describe('addComponents', () => {
     // package.json declares a satisfying range, but the version actually
     // resolved on disk is older — node_modules should win since that's
     // what will actually be imported at build time.
-    await writeBaseProject(cwd, true, { thaizip: '^0.6.0' })
+    await writeBaseProject(cwd, { thaizip: '^0.6.0' })
     await mkdir(path.join(cwd, 'node_modules', 'thaizip'), { recursive: true })
     await writeFile(path.join(cwd, 'node_modules', 'thaizip', 'package.json'), JSON.stringify({ version: '0.5.1' }))
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})

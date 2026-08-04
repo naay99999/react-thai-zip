@@ -1,5 +1,4 @@
 import path from 'node:path'
-import { readFile, writeFile } from 'node:fs/promises'
 import prompts from 'prompts'
 import { installPackage } from '../utils/install.js'
 import { copyTemplate, getTemplatePath } from '../utils/copyTemplate.js'
@@ -8,13 +7,11 @@ import { CORE_PACKAGE_NAME, MINIMUM_THAIZIP_VERSION, configExists, readConfig } 
 import { getInstalledPackageVersion, getPackageDependencyRange, hasPackageDependency } from '../utils/packageJson.js'
 import { extractVersionAnchor, isVersionAtLeast } from '../utils/semver.js'
 import { getComponentTemplateFile, registryComponents, resolveRegistryComponent } from '../registry.js'
-import { localizeDefaultTexts } from '../locales.js'
 import { initProject } from './init.js'
 
 type AddComponentsOptions = {
   cwd?: string
   targets?: string[]
-  lang?: string
 }
 
 export async function addComponents(options: AddComponentsOptions = {}): Promise<void> {
@@ -92,10 +89,8 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
     }
   }
 
-  const language = config.typescript ? 'ts' : 'js'
-
   for (const component of selectedTargets) {
-    const fileName = getComponentTemplateFile(component, language)
+    const fileName = getComponentTemplateFile(component)
     const destination = path.join(cwd, config.componentDir, fileName)
 
     let overwrite = false
@@ -112,17 +107,12 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
     const copied = await copyTemplate({
       destination,
       overwrite,
-      templatePath: getTemplatePath(fileName, language),
+      templatePath: getTemplatePath(fileName),
     })
 
     if (copied === 'skipped') {
       console.log(`\nSkipped ${component.name}.`)
       continue
-    }
-
-    if (options.lang) {
-      const content = await readFile(destination, 'utf8')
-      await writeFile(destination, localizeDefaultTexts(content, options.lang, component.name), 'utf8')
     }
 
     const importPath = `./${path.relative(cwd, destination).replace(/\\/g, '/').replace(/\.(tsx|jsx)$/, '')}`

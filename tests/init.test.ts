@@ -52,16 +52,14 @@ describe('initProject', () => {
     })
   })
 
-  it('asks for TypeScript preference when language is unknown', async () => {
+  it('warns when Tailwind is not detected', async () => {
     const cwd = await tempDir()
-    await writeFile(path.join(cwd, 'tailwind.config.ts'), '')
     await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.6.0' } }))
-    mockedPrompts.mockResolvedValueOnce({ typescript: false }).mockResolvedValueOnce({})
+    mockedPrompts.mockResolvedValueOnce({})
+    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     await initProject({ cwd })
 
-    const config = JSON.parse(await readFile(path.join(cwd, 'thaizip.config.json'), 'utf8'))
-    expect(config.typescript).toBe(false)
-    expect(mockedPrompts).toHaveBeenCalledWith(expect.objectContaining({ name: 'typescript' }))
+    expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining('Tailwind CSS was not detected'))
   })
 })

@@ -1,25 +1,25 @@
-import { getComponentTemplateFile, resolveRegistryComponent } from '../src/registry.js'
+import { getComponentTemplateFile, registryComponents, resolveRegistryComponent } from '../src/registry.js'
 
 describe('registry', () => {
   it.each([
     ['autocomplete', 'ThaiAddressAutocomplete'],
     ['ThaiAddressAutocomplete', 'ThaiAddressAutocomplete'],
-    ['postal', 'ThaiAddressPostalCodeForm'],
-    ['postal-form', 'ThaiAddressPostalCodeForm'],
-    ['ThaiAddressPostalForm', 'ThaiAddressPostalCodeForm'],
-    ['ThaiAddressForm', 'ThaiAddressPostalCodeForm'],
-    ['fields', 'ThaiAddressDisplayFields'],
-    ['ThaiAddressSearch', 'ThaiAddressDisplayFields'],
     ['cascade', 'ThaiAddressCascadeSelect'],
     ['cascade-select', 'ThaiAddressCascadeSelect'],
   ])('resolves %s to %s', (alias, expected) => {
     expect(resolveRegistryComponent(alias)?.name).toBe(expected)
   })
 
-  it('returns the correct template filename for each language', () => {
-    const component = resolveRegistryComponent('ThaiAddressPostalForm')
+  it('exposes only the two supported components', () => {
+    expect(registryComponents.map((component) => component.name)).toEqual([
+      'ThaiAddressAutocomplete',
+      'ThaiAddressCascadeSelect',
+    ])
+  })
+
+  it('returns the .tsx template filename for a component', () => {
+    const component = resolveRegistryComponent('autocomplete')
     expect(component).toBeDefined()
-    expect(getComponentTemplateFile(component!, 'ts')).toBe('ThaiAddressPostalCodeForm.tsx')
-    expect(getComponentTemplateFile(component!, 'js')).toBe('ThaiAddressPostalCodeForm.jsx')
+    expect(getComponentTemplateFile(component!)).toBe('ThaiAddressAutocomplete.tsx')
   })
 })
