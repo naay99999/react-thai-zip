@@ -6,7 +6,7 @@ import { pathExists } from '../utils/fs.js'
 import { CORE_PACKAGE_NAME, MINIMUM_THAIZIP_VERSION, configExists, readConfig } from '../utils/config.js'
 import { getInstalledPackageVersion, getPackageDependencyRange, hasPackageDependency } from '../utils/packageJson.js'
 import { extractVersionAnchor, isVersionAtLeast } from '../utils/semver.js'
-import { getComponentTemplateFile, registryComponents, resolveRegistryComponent } from '../registry.js'
+import { registryItems, resolveRegistryItem, type RegistryItem } from '../registry.js'
 import { initProject } from './init.js'
 
 type AddComponentsOptions = {
@@ -90,7 +90,7 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
   }
 
   for (const component of selectedTargets) {
-    const fileName = getComponentTemplateFile(component)
+    const fileName = component.files[0].target.file
     const destination = path.join(cwd, config.componentDir, fileName)
 
     let overwrite = false
@@ -160,10 +160,10 @@ async function getMissingDependencies(cwd: string, dependencies: string[]): Prom
   return missingDependencies
 }
 
-async function selectComponents(targets: string[]) {
+async function selectComponents(targets: string[]): Promise<RegistryItem[]> {
   if (targets.length > 0) {
     return targets.map((target) => {
-      const component = resolveRegistryComponent(target)
+      const component = resolveRegistryItem(target)
       if (!component) {
         throw new Error(`Unknown component: ${target}`)
       }
@@ -175,7 +175,7 @@ async function selectComponents(targets: string[]) {
     type: 'multiselect',
     name: 'components',
     message: 'Which components would you like to add?',
-    choices: registryComponents.map((component) => ({
+    choices: registryItems.map((component) => ({
       title: component.name,
       description: component.description,
       value: component.name,
@@ -184,7 +184,7 @@ async function selectComponents(targets: string[]) {
 
   const selected = Array.isArray(response.components) ? response.components : []
   return selected.map((name) => {
-    const component = resolveRegistryComponent(String(name))
+    const component = resolveRegistryItem(String(name))
     if (!component) {
       throw new Error(`Unknown component: ${name}`)
     }

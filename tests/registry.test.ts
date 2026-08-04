@@ -1,25 +1,57 @@
-import { getComponentTemplateFile, registryComponents, resolveRegistryComponent } from '../src/registry.js'
+import { describe, expect, it } from 'vitest'
+import { registryItems, resolveRegistryItem, resolveWithDependencies, type RegistryItem } from '../src/registry.js'
 
 describe('registry', () => {
   it.each([
-    ['autocomplete', 'ThaiAddressAutocomplete'],
-    ['ThaiAddressAutocomplete', 'ThaiAddressAutocomplete'],
-    ['cascade', 'ThaiAddressCascadeSelect'],
-    ['cascade-select', 'ThaiAddressCascadeSelect'],
+    ['autocomplete', 'autocomplete'],
+    ['ThaiAddressAutocomplete', 'autocomplete'],
+    ['cascade', 'cascade-select'],
+    ['cascade-select', 'cascade-select'],
   ])('resolves %s to %s', (alias, expected) => {
-    expect(resolveRegistryComponent(alias)?.name).toBe(expected)
+    expect(resolveRegistryItem(alias)?.name).toBe(expected)
   })
 
   it('exposes only the two supported components', () => {
-    expect(registryComponents.map((component) => component.name)).toEqual([
-      'ThaiAddressAutocomplete',
-      'ThaiAddressCascadeSelect',
-    ])
+    expect(registryItems.map((item) => item.name)).toEqual(['autocomplete', 'cascade-select'])
   })
 
   it('returns the .tsx template filename for a component', () => {
-    const component = resolveRegistryComponent('autocomplete')
-    expect(component).toBeDefined()
-    expect(getComponentTemplateFile(component!)).toBe('ThaiAddressAutocomplete.tsx')
+    const item = resolveRegistryItem('autocomplete')
+    expect(item).toBeDefined()
+    expect(item!.files[0].target.file).toBe('ThaiAddressAutocomplete.tsx')
+  })
+})
+
+const fake = (name: string, registryDependencies: string[] = []): RegistryItem => ({
+  name, description: name, aliases: [name], type: 'component',
+  files: [{ source: `react/ts/${name}.tsx`, target: { dir: 'componentDir', file: `${name}.tsx` } }],
+  dependencies: [], registryDependencies,
+})
+
+describe('resolveWithDependencies', () => {
+  it('returns dependencies before dependents, deduplicated', () => {
+    const registry = [fake('utils'), fake('hook', ['utils']), fake('a', ['hook', 'utils']), fake('b', ['hook'])]
+    const result = resolveWithDependencies([registry[2], registry[3]], registry)
+    expect(result.map((i) => i.name)).toEqual(['utils', 'hook', 'a', 'b'])
+  })
+
+  it('throws on unknown registry dependency', () => {
+    const registry = [fake('a', ['missing'])]
+    expect(() => resolveWithDependencies([registry[0]], registry)).toThrow('Unknown registry item: missing')
+  })
+
+  it('throws on cycles', () => {
+    const registry = [fake('a', ['b']), fake('b', ['a'])]
+    expect(() => resolveWithDependencies([registry[0]], registry)).toThrow(/cycle/i)
+  })
+})
+
+describe('registryItems data', () => {
+  it('contains autocomplete and cascade-select with template files', () => {
+    expect(resolveRegistryItem('autocomplete')?.files[0].source).toBe('react/ts/ThaiAddressAutocomplete.tsx')
+    expect(resolveRegistryItem('cascade-select')?.files[0].target).toEqual({ dir: 'componentDir', file: 'ThaiAddressCascadeSelect.tsx' })
+    for (const item of registryItems) {
+      expect(() => resolveWithDependencies([item])).not.toThrow()
+    }
   })
 })
