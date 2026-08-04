@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useState } from 'react'
 import { loadDefaultIndex } from 'thaizip/data'
-import { useThaiAddressAutocomplete } from 'thaizip'
+import { useThaiAddressAutocomplete } from 'thaizip/react'
 import type { ResolvedThaiAddress, ThaiAddressSuggestion, TrigramIndex } from 'thaizip'
 
 type Texts = {

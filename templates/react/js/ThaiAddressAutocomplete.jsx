@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useState } from 'react'
 import { loadDefaultIndex } from 'thaizip/data'
-import { useThaiAddressAutocomplete } from 'thaizip'
+import { useThaiAddressAutocomplete } from 'thaizip/react'
 
 const defaultTexts = {
   placeholder: 'Type sub-district, district, province or postal code',

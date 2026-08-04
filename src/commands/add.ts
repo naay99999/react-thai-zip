@@ -4,8 +4,9 @@ import prompts from 'prompts'
 import { installPackage } from '../utils/install.js'
 import { copyTemplate, getTemplatePath } from '../utils/copyTemplate.js'
 import { pathExists } from '../utils/fs.js'
-import { configExists, readConfig } from '../utils/config.js'
-import { hasPackageDependency } from '../utils/packageJson.js'
+import { CORE_PACKAGE_NAME, MINIMUM_THAIZIP_VERSION, configExists, readConfig } from '../utils/config.js'
+import { getInstalledPackageVersion, getPackageDependencyRange, hasPackageDependency } from '../utils/packageJson.js'
+import { extractVersionAnchor, isVersionAtLeast } from '../utils/semver.js'
 import { getComponentTemplateFile, registryComponents, resolveRegistryComponent } from '../registry.js'
 import { localizeDefaultTexts } from '../locales.js'
 import { initProject } from './init.js'
@@ -45,6 +46,25 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
   }
 
   const missingDependencies = await getMissingDependencies(cwd, selectedTargets.flatMap((component) => component.dependencies))
+
+  // thaizip already being present doesn't mean it's new enough — the
+  // templates import from the `thaizip/react` subpath (added in 0.6.0), so a
+  // project that installed an older thaizip before this CLI was updated
+  // would otherwise pass the name-only dependency check above and then
+  // receive a component that fails to resolve at build time.
+  const needsCorePackage = selectedTargets.some((component) => component.dependencies.includes(CORE_PACKAGE_NAME))
+  if (needsCorePackage && !missingDependencies.includes(CORE_PACKAGE_NAME)) {
+    const versionCheck = await checkCorePackageVersion(cwd)
+    if (!versionCheck.ok) {
+      console.error(
+        `\n${CORE_PACKAGE_NAME} >=${MINIMUM_THAIZIP_VERSION} is required for the \`${CORE_PACKAGE_NAME}/react\` subpath used by these components; found ${versionCheck.found}.`,
+      )
+      console.error(`Run \`npm i ${CORE_PACKAGE_NAME}@latest\` (or your package manager's equivalent), then run this command again.`)
+      process.exitCode = 1
+      return
+    }
+  }
+
   if (missingDependencies.length > 0) {
     const response = await prompts({
       type: 'confirm',
@@ -110,6 +130,31 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
     console.log(`Import it from:`)
     console.log(`  import { ${component.name} } from '${importPath}'`)
   }
+}
+
+type CorePackageVersionCheck = { ok: true } | { ok: false; found: string }
+
+/**
+ * Checks the installed/declared thaizip version against MINIMUM_THAIZIP_VERSION.
+ * Prefers the version actually resolved under node_modules (ground truth for
+ * what will run); falls back to the version range declared in package.json
+ * when node_modules hasn't been populated yet (e.g. dependencies were added
+ * by hand but `npm install` hasn't run). If neither can be parsed, the check
+ * is skipped rather than blocking on a false positive.
+ */
+async function checkCorePackageVersion(cwd: string): Promise<CorePackageVersionCheck> {
+  const installedVersion = await getInstalledPackageVersion(CORE_PACKAGE_NAME, cwd)
+  if (installedVersion) {
+    return isVersionAtLeast(installedVersion, MINIMUM_THAIZIP_VERSION) ? { ok: true } : { ok: false, found: installedVersion }
+  }
+
+  const declaredRange = await getPackageDependencyRange(CORE_PACKAGE_NAME, cwd)
+  if (!declaredRange) return { ok: true }
+
+  const anchor = extractVersionAnchor(declaredRange)
+  if (!anchor) return { ok: true }
+
+  return isVersionAtLeast(anchor, MINIMUM_THAIZIP_VERSION) ? { ok: true } : { ok: false, found: anchor }
 }
 
 async function getMissingDependencies(cwd: string, dependencies: string[]): Promise<string[]> {
