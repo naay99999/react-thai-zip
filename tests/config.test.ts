@@ -1,7 +1,17 @@
-import { mkdtemp, readFile } from 'node:fs/promises'
-import os from 'node:os'
+import { mkdtemp, readFile, writeFile } from 'node:fs/promises'
+import os, { tmpdir } from 'node:os'
 import path from 'node:path'
-import { CORE_PACKAGE_VERSION, MINIMUM_THAIZIP_VERSION, configExists, getConfigPath, readConfig, writeConfig } from '../src/utils/config.js'
+import { describe, expect, it } from 'vitest'
+import {
+  CORE_PACKAGE_VERSION,
+  MINIMUM_THAIZIP_VERSION,
+  configExists,
+  getConfigPath,
+  migrateLegacyConfig,
+  readConfig,
+  validateConfig,
+  writeConfig,
+} from '../src/utils/config.js'
 import { extractVersionAnchor, isVersionAtLeast } from '../src/utils/semver.js'
 
 async function tempDir() {
@@ -30,13 +40,12 @@ describe('config', () => {
   it('writes and reads thaizip.config.json', async () => {
     const cwd = await tempDir()
     const config = {
-      typescript: true,
+      typescript: true as const,
       componentDir: 'components',
+      libDir: 'lib',
+      hooksDir: 'hooks',
       packageManager: 'npm' as const,
-      corePackage: {
-        name: 'thaizip' as const,
-        version: '^0.3.0',
-      },
+      tailwind: { version: 4 as const, css: '' },
       registryVersion: '0.1.0',
     }
 
@@ -45,5 +54,70 @@ describe('config', () => {
     await expect(configExists(cwd)).resolves.toBe(true)
     await expect(readConfig(cwd)).resolves.toEqual(config)
     await expect(readFile(getConfigPath(cwd), 'utf8')).resolves.toContain('"componentDir": "components"')
+  })
+})
+
+const v2 = {
+  typescript: true,
+  componentDir: 'app/components',
+  libDir: 'lib',
+  hooksDir: 'hooks',
+  packageManager: 'npm',
+  tailwind: { version: 4, css: 'app/globals.css' },
+  registryVersion: '1.0.0',
+}
+
+describe('validateConfig', () => {
+  it('accepts a valid v2 config', () => {
+    expect(validateConfig(v2)).toEqual({ ok: true, config: v2 })
+  })
+  it('names each bad field', () => {
+    const result = validateConfig({ ...v2, componentDir: '', tailwind: { version: 2, css: 'x.css' } })
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.errors.join('\n')).toContain('componentDir')
+      expect(result.errors.join('\n')).toContain('tailwind.version')
+    }
+  })
+  it('rejects typescript: false with a migration hint', () => {
+    const result = validateConfig({ ...v2, typescript: false })
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.errors.join('\n')).toMatch(/no longer supported/)
+  })
+})
+
+describe('migrateLegacyConfig', () => {
+  it('fills v2 fields from a v1 config', () => {
+    const legacy = {
+      typescript: true, componentDir: 'src/components', packageManager: 'pnpm',
+      corePackage: { name: 'thaizip', version: '>=0.6.0' }, registryVersion: '0.2.1',
+    }
+    expect(migrateLegacyConfig(legacy, { version: 3, css: 'src/index.css' })).toEqual({
+      typescript: true, componentDir: 'src/components', libDir: 'lib', hooksDir: 'hooks',
+      packageManager: 'pnpm', tailwind: { version: 3, css: 'src/index.css' }, registryVersion: '0.2.1',
+    })
+  })
+  it('returns null for unrecognizable input', () => {
+    expect(migrateLegacyConfig({ foo: 1 }, { version: 4, css: '' })).toBeNull()
+  })
+})
+
+describe('readConfig migration', () => {
+  it('migrates a legacy config file in place', async () => {
+    const cwd = await mkdtemp(path.join(tmpdir(), 'thaizip-config-'))
+    await writeFile(path.join(cwd, 'thaizip.config.json'), JSON.stringify({
+      typescript: true, componentDir: 'components', packageManager: 'npm',
+      corePackage: { name: 'thaizip', version: '>=0.6.0' }, registryVersion: '0.2.1',
+    }))
+    const config = await readConfig(cwd, { tailwind: { version: 4, css: 'app/globals.css' } })
+    expect(config.libDir).toBe('lib')
+    const onDisk = JSON.parse(await readFile(path.join(cwd, 'thaizip.config.json'), 'utf8'))
+    expect(onDisk.hooksDir).toBe('hooks')
+    expect(onDisk.corePackage).toBeUndefined()
+  })
+  it('throws a helpful error for an invalid config', async () => {
+    const cwd = await mkdtemp(path.join(tmpdir(), 'thaizip-config-'))
+    await writeFile(path.join(cwd, 'thaizip.config.json'), JSON.stringify({ componentDir: 42 }))
+    await expect(readConfig(cwd)).rejects.toThrow(/react-thaizip init/)
   })
 })

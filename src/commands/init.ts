@@ -1,6 +1,6 @@
 import path from 'node:path'
 import prompts from 'prompts'
-import { CORE_PACKAGE_NAME, CORE_PACKAGE_VERSION, configExists, getRegistryVersion, writeConfig } from '../utils/config.js'
+import { CORE_PACKAGE_NAME, configExists, getRegistryVersion, writeConfig } from '../utils/config.js'
 import { detectPM } from '../utils/detectPM.js'
 import { detectProjectStructure } from '../utils/detectProjectStructure.js'
 import { detectTailwind } from '../utils/detectTailwind.js'
@@ -66,11 +66,12 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
     {
       typescript: useTypeScript,
       componentDir,
+      // Task 4/5 supply real lib/hooks directory and Tailwind detection;
+      // these are placeholder values until then.
+      libDir: 'lib',
+      hooksDir: 'hooks',
       packageManager: pm,
-      corePackage: {
-        name: CORE_PACKAGE_NAME,
-        version: CORE_PACKAGE_VERSION,
-      },
+      tailwind: { version: 4, css: '' },
       registryVersion,
     },
     cwd,

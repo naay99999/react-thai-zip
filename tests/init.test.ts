@@ -42,11 +42,10 @@ describe('initProject', () => {
     expect(config).toMatchObject({
       typescript: true,
       componentDir: 'app/components',
+      libDir: 'lib',
+      hooksDir: 'hooks',
       packageManager: 'npm',
-      corePackage: {
-        name: 'thaizip',
-        version: '>=0.6.0',
-      },
+      tailwind: { version: 4, css: '' },
       // Derived, not pinned: a hardcoded version here silently rots on every release.
       registryVersion: await getRegistryVersion(),
     })

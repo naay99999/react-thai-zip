@@ -16,17 +16,16 @@ async function tempDir() {
   return mkdtemp(path.join(os.tmpdir(), 'react-thaizip-'))
 }
 
-async function writeBaseProject(cwd: string, dependencies: Record<string, string> = { thaizip: '^0.6.0' }) {
+async function writeBaseProject(cwd: string, dependencies: Record<string, string> = { thaizip: '^0.7.0' }) {
   await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies }))
   await writeConfig(
     {
       typescript: true,
       componentDir: 'components',
+      libDir: 'lib',
+      hooksDir: 'hooks',
       packageManager: 'npm',
-      corePackage: {
-        name: 'thaizip',
-        version: '>=0.6.0',
-      },
+      tailwind: { version: 4, css: '' },
       registryVersion: '0.1.0',
     },
     cwd,
@@ -121,13 +120,13 @@ describe('addComponents', () => {
 
     expect(process.exitCode).toBe(1)
     await expect(pathExists(path.join(cwd, 'components', 'ThaiAddressAutocomplete.tsx'))).resolves.toBe(false)
-    expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('>=0.6.0'))
+    expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('>=0.7.0'))
     expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('found 0.4.0'))
   })
 
   it('scaffolds normally when thaizip satisfies the required version', async () => {
     const cwd = await tempDir()
-    await writeBaseProject(cwd, { thaizip: '^0.6.0' })
+    await writeBaseProject(cwd, { thaizip: '^0.7.0' })
 
     await addComponents({ cwd, targets: ['autocomplete'] })
 
@@ -139,7 +138,7 @@ describe('addComponents', () => {
     // package.json declares a satisfying range, but the version actually
     // resolved on disk is older — node_modules should win since that's
     // what will actually be imported at build time.
-    await writeBaseProject(cwd, { thaizip: '^0.6.0' })
+    await writeBaseProject(cwd, { thaizip: '^0.7.0' })
     await mkdir(path.join(cwd, 'node_modules', 'thaizip'), { recursive: true })
     await writeFile(path.join(cwd, 'node_modules', 'thaizip', 'package.json'), JSON.stringify({ version: '0.5.1' }))
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
