@@ -17,12 +17,12 @@ export type RegistryItem = {
 export const registryItems: RegistryItem[] = [
   {
     name: 'autocomplete',
-    description: 'Free-text Thai address autocomplete',
+    description: 'Free-text Thai address autocomplete (Base UI Combobox)',
     aliases: ['autocomplete', 'thai-address-autocomplete', 'ThaiAddressAutocomplete'],
     type: 'component',
-    files: [{ source: 'react/ts/ThaiAddressAutocomplete.tsx', target: { dir: 'componentDir', file: 'ThaiAddressAutocomplete.tsx' } }],
-    dependencies: ['thaizip'],
-    registryDependencies: [],
+    files: [{ source: 'react/ts/thai-address-autocomplete.tsx', target: { dir: 'componentDir', file: 'thai-address-autocomplete.tsx' } }],
+    dependencies: ['thaizip', '@base-ui-components/react'],
+    registryDependencies: ['utils', 'use-thai-address-index'],
   },
   {
     name: 'cascade-select',

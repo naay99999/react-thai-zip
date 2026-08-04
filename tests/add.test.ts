@@ -20,7 +20,21 @@ async function tempDir() {
 async function tempProjectWithConfigV2(options: { thaizipRange?: string } = {}) {
   const cwd = await tempDir()
   const thaizipRange = options.thaizipRange ?? '^0.7.0'
-  await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: thaizipRange } }))
+  // Pre-declare every npm dependency the registry items can pull in (thaizip,
+  // Base UI, and utils' clsx/tailwind-merge) so getMissingDependencies finds
+  // nothing to install — scaffolding tests would otherwise trigger a real
+  // `npm install` into the temp project, which is slow and network-dependent.
+  await writeFile(
+    path.join(cwd, 'package.json'),
+    JSON.stringify({
+      dependencies: {
+        thaizip: thaizipRange,
+        '@base-ui-components/react': '^1.0.0',
+        clsx: '^2.0.0',
+        'tailwind-merge': '^2.0.0',
+      },
+    }),
+  )
   await writeConfig(
     {
       typescript: true,
@@ -42,7 +56,7 @@ const syntheticRegistry: RegistryItem[] = [
     description: 'cn helper',
     aliases: ['utils'],
     type: 'lib',
-    files: [{ source: 'react/ts/ThaiAddressAutocomplete.tsx', target: { dir: 'libDir', file: 'utils.ts' } }],
+    files: [{ source: 'react/ts/ThaiAddressCascadeSelect.tsx', target: { dir: 'libDir', file: 'utils.ts' } }],
     dependencies: [],
     registryDependencies: [],
   },
@@ -51,7 +65,7 @@ const syntheticRegistry: RegistryItem[] = [
     description: 'test widget',
     aliases: ['widget'],
     type: 'component',
-    files: [{ source: 'react/ts/ThaiAddressAutocomplete.tsx', target: { dir: 'componentDir', file: 'Widget.tsx' } }],
+    files: [{ source: 'react/ts/ThaiAddressCascadeSelect.tsx', target: { dir: 'componentDir', file: 'Widget.tsx' } }],
     dependencies: ['thaizip'],
     registryDependencies: ['utils'],
   },
@@ -86,7 +100,7 @@ describe('addComponents', () => {
 
   it('skips existing files unless overwrite is confirmed', async () => {
     const cwd = await tempProjectWithConfigV2()
-    const destination = path.join(cwd, 'app/components', 'ThaiAddressAutocomplete.tsx')
+    const destination = path.join(cwd, 'app/components', 'thai-address-autocomplete.tsx')
     await mkdir(path.dirname(destination), { recursive: true })
     await writeFile(destination, 'existing content')
     mockedPrompts.mockResolvedValueOnce({ value: false })
@@ -99,7 +113,7 @@ describe('addComponents', () => {
   it('Autocomplete clear button uses ✕ not x', async () => {
     const cwd = await tempProjectWithConfigV2()
     await addComponents({ cwd, targets: ['autocomplete'] })
-    const content = await readFile(path.join(cwd, 'app/components', 'ThaiAddressAutocomplete.tsx'), 'utf8')
+    const content = await readFile(path.join(cwd, 'app/components', 'thai-address-autocomplete.tsx'), 'utf8')
     expect(content).toContain('✕')
   })
 
@@ -137,7 +151,7 @@ describe('addComponents', () => {
     await addComponents({ cwd, targets: ['autocomplete'] })
 
     expect(process.exitCode).toBe(1)
-    await expect(pathExists(path.join(cwd, 'app/components', 'ThaiAddressAutocomplete.tsx'))).resolves.toBe(false)
+    await expect(pathExists(path.join(cwd, 'app/components', 'thai-address-autocomplete.tsx'))).resolves.toBe(false)
     expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('>=0.7.0'))
     expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('found 0.4.0'))
   })
@@ -147,7 +161,7 @@ describe('addComponents', () => {
 
     await addComponents({ cwd, targets: ['autocomplete'] })
 
-    await expect(pathExists(path.join(cwd, 'app/components', 'ThaiAddressAutocomplete.tsx'))).resolves.toBe(true)
+    await expect(pathExists(path.join(cwd, 'app/components', 'thai-address-autocomplete.tsx'))).resolves.toBe(true)
   })
 
   it('prefers the version actually installed under node_modules over the declared range', async () => {
@@ -190,16 +204,26 @@ describe('addComponents', () => {
   it('--yes skips the overwrite prompt by skipping existing component files', async () => {
     const cwd = await tempProjectWithConfigV2()
     await addComponents({ cwd, targets: ['autocomplete'], yes: true })
-    const first = await readFile(path.join(cwd, 'app/components/ThaiAddressAutocomplete.tsx'), 'utf8')
-    await writeFile(path.join(cwd, 'app/components/ThaiAddressAutocomplete.tsx'), '// modified\n')
+    const first = await readFile(path.join(cwd, 'app/components/thai-address-autocomplete.tsx'), 'utf8')
+    await writeFile(path.join(cwd, 'app/components/thai-address-autocomplete.tsx'), '// modified\n')
     await addComponents({ cwd, targets: ['autocomplete'], yes: true })
-    expect(await readFile(path.join(cwd, 'app/components/ThaiAddressAutocomplete.tsx'), 'utf8')).toBe('// modified\n')
+    expect(await readFile(path.join(cwd, 'app/components/thai-address-autocomplete.tsx'), 'utf8')).toBe('// modified\n')
     void first
   })
 
   it('migrates a legacy v1 config on disk and scaffolds normally', async () => {
     const cwd = await tempDir()
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await writeFile(
+      path.join(cwd, 'package.json'),
+      JSON.stringify({
+        dependencies: {
+          thaizip: '^0.7.0',
+          '@base-ui-components/react': '^1.0.0',
+          clsx: '^2.0.0',
+          'tailwind-merge': '^2.0.0',
+        },
+      }),
+    )
     await mkdir(path.join(cwd, 'app'), { recursive: true })
     await writeFile(path.join(cwd, 'app', 'globals.css'), '@import "tailwindcss";\n')
     await writeFile(
@@ -214,7 +238,7 @@ describe('addComponents', () => {
     expect(migrated.libDir).toBe('lib')
     expect(migrated.hooksDir).toBe('hooks')
     expect(migrated.tailwind).toEqual({ version: 4, css: 'app/globals.css' })
-    await expect(pathExists(path.join(cwd, 'app/components', 'ThaiAddressAutocomplete.tsx'))).resolves.toBe(true)
+    await expect(pathExists(path.join(cwd, 'app/components', 'thai-address-autocomplete.tsx'))).resolves.toBe(true)
   })
 
   it('rejects a legacy config with typescript: false instead of silently migrating it to TypeScript', async () => {
@@ -228,7 +252,7 @@ describe('addComponents', () => {
     )
 
     await expect(addComponents({ cwd, targets: ['autocomplete'], yes: true })).rejects.toThrow(/no longer supported/)
-    await expect(pathExists(path.join(cwd, 'app/components', 'ThaiAddressAutocomplete.tsx'))).resolves.toBe(false)
+    await expect(pathExists(path.join(cwd, 'app/components', 'thai-address-autocomplete.tsx'))).resolves.toBe(false)
   })
 
   it('scaffolds the real utils and use-thai-address-index items into libDir/hooksDir', async () => {
@@ -239,6 +263,17 @@ describe('addComponents', () => {
     const hook = await readFile(path.join(cwd, 'hooks/use-thai-address-index.ts'), 'utf8')
     expect(hook).toContain('loadDefaultIndex')
     expect(hook).toContain("'use client'")
+  })
+
+  it('rewrites @/lib and @/hooks imports to relative paths on scaffold', async () => {
+    const cwd = await tempProjectWithConfigV2() // componentDir 'app/components', libDir 'lib', hooksDir 'hooks'
+    await addComponents({ cwd, targets: ['autocomplete'], yes: true })
+    const component = await readFile(path.join(cwd, 'app/components/thai-address-autocomplete.tsx'), 'utf8')
+    expect(component).toContain("from '../../lib/utils'")
+    expect(component).toContain("from '../../hooks/use-thai-address-index'")
+    expect(component).not.toContain("'@/")
+    expect(await pathExists(path.join(cwd, 'lib/utils.ts'))).toBe(true)
+    expect(await pathExists(path.join(cwd, 'hooks/use-thai-address-index.ts'))).toBe(true)
   })
 
   it('exits 1 without throwing when bootstrap init cannot write a config (Tailwind missing)', async () => {

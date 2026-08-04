@@ -6,7 +6,7 @@ import { copyFileEnsuringDir, pathExists } from './fs.js'
 const currentFile = fileURLToPath(import.meta.url)
 const currentDir = path.dirname(currentFile)
 
-export function getTemplatePath(source = 'react/ts/ThaiAddressAutocomplete.tsx'): string {
+export function getTemplatePath(source = 'react/ts/thai-address-autocomplete.tsx'): string {
   const candidates = [path.resolve(currentDir, '..', 'templates', source), path.resolve(currentDir, '..', '..', 'templates', source)]
 
   return candidates.find((candidate) => existsSync(candidate)) ?? candidates[0]
