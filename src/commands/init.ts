@@ -9,6 +9,7 @@ import { hasPackageDependency } from '../utils/packageJson.js'
 
 type InitProjectOptions = {
   cwd?: string
+  yes?: boolean // consumed in Task 7
 }
 
 export async function initProject(options: InitProjectOptions = {}): Promise<void> {

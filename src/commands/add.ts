@@ -12,6 +12,8 @@ import { initProject } from './init.js'
 type AddComponentsOptions = {
   cwd?: string
   targets?: string[]
+  yes?: boolean // consumed in Task 8
+  overwrite?: boolean // consumed in Task 8
 }
 
 export async function addComponents(options: AddComponentsOptions = {}): Promise<void> {
