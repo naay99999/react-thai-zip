@@ -30,8 +30,8 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
     componentDir = String(directoryResponse.componentDir)
   }
 
-  const hasTailwind = await detectTailwind(cwd)
-  if (!hasTailwind) {
+  const tailwind = await detectTailwind(cwd)
+  if (!tailwind) {
     console.warn('\nTailwind CSS was not detected. Components require Tailwind; install it before adding components.')
   }
 
