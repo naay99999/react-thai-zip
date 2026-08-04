@@ -1,63 +1,79 @@
 import path from 'node:path'
-import { readFile, writeFile } from 'node:fs/promises'
 import prompts from 'prompts'
 import { installPackage } from '../utils/install.js'
 import { copyTemplate, getTemplatePath } from '../utils/copyTemplate.js'
 import { pathExists } from '../utils/fs.js'
 import { CORE_PACKAGE_NAME, MINIMUM_THAIZIP_VERSION, configExists, readConfig } from '../utils/config.js'
+import { detectTailwind } from '../utils/detectTailwind.js'
 import { getInstalledPackageVersion, getPackageDependencyRange, hasPackageDependency } from '../utils/packageJson.js'
+import { confirm } from '../utils/prompt.js'
 import { extractVersionAnchor, isVersionAtLeast } from '../utils/semver.js'
-import { getComponentTemplateFile, registryComponents, resolveRegistryComponent } from '../registry.js'
-import { localizeDefaultTexts } from '../locales.js'
+import { registryItems, resolveRegistryItem, resolveWithDependencies, type RegistryItem } from '../registry.js'
 import { initProject } from './init.js'
 
 type AddComponentsOptions = {
   cwd?: string
   targets?: string[]
-  lang?: string
+  yes?: boolean
+  overwrite?: boolean
+  registry?: RegistryItem[]
 }
 
 export async function addComponents(options: AddComponentsOptions = {}): Promise<void> {
   const cwd = options.cwd ?? process.cwd()
   const targets = options.targets ?? []
+  const yes = options.yes
+  const overwrite = options.overwrite
+  const registry = options.registry ?? registryItems
 
   if (!(await configExists(cwd))) {
-    const response = await prompts({
-      type: 'confirm',
-      name: 'init',
-      message: 'No thaizip.config.json found. Run init now?',
-      initial: true,
-    })
+    const shouldInit = await confirm('No thaizip.config.json found. Run init now?', true, yes)
 
-    if (!response.init) {
+    if (!shouldInit) {
       console.log('\nRun `npx react-thaizip init` before adding components.')
       process.exitCode = 1
       return
     }
 
-    await initProject({ cwd })
+    await initProject({ cwd, yes })
+
+    if (!(await configExists(cwd))) {
+      // init already printed why it bailed (e.g. Tailwind missing) — don't
+      // pile a config-not-found stack trace on top of that message.
+      process.exitCode = 1
+      return
+    }
   }
 
-  const config = await readConfig(cwd)
-  const selectedTargets = await selectComponents(targets)
-  if (selectedTargets.length === 0) {
+  const detected = await detectTailwind(cwd)
+  const config = await readConfig(
+    cwd,
+    detected ? { tailwind: { version: detected.version, css: detected.cssPath ?? '' } } : undefined,
+  )
+
+  const selected = await selectComponents(targets, registry)
+  if (selected.length === 0) {
     console.log('\nNo components selected.')
     return
   }
 
-  const missingDependencies = await getMissingDependencies(cwd, selectedTargets.flatMap((component) => component.dependencies))
+  const resolved = resolveWithDependencies(selected, registry)
+
+  const dependencies = resolved.flatMap((item) => item.dependencies)
+  const missingDependencies = await getMissingDependencies(cwd, dependencies)
 
   // thaizip already being present doesn't mean it's new enough — the
-  // templates import from the `thaizip/react` subpath (added in 0.6.0), so a
-  // project that installed an older thaizip before this CLI was updated
-  // would otherwise pass the name-only dependency check above and then
-  // receive a component that fails to resolve at build time.
-  const needsCorePackage = selectedTargets.some((component) => component.dependencies.includes(CORE_PACKAGE_NAME))
+  // templates rely on the cascade/enumeration API and bilingual (en/th)
+  // labels added in 0.7.0, so a project that installed an older thaizip
+  // before this CLI was updated would otherwise pass the name-only
+  // dependency check above and then receive a component that fails to
+  // resolve at build time.
+  const needsCorePackage = resolved.some((item) => item.dependencies.includes(CORE_PACKAGE_NAME))
   if (needsCorePackage && !missingDependencies.includes(CORE_PACKAGE_NAME)) {
     const versionCheck = await checkCorePackageVersion(cwd)
     if (!versionCheck.ok) {
       console.error(
-        `\n${CORE_PACKAGE_NAME} >=${MINIMUM_THAIZIP_VERSION} is required for the \`${CORE_PACKAGE_NAME}/react\` subpath used by these components; found ${versionCheck.found}.`,
+        `\n${CORE_PACKAGE_NAME} >=${MINIMUM_THAIZIP_VERSION} is required (cascade/enumeration API and bilingual labels added in ${MINIMUM_THAIZIP_VERSION}); found ${versionCheck.found}.`,
       )
       console.error(`Run \`npm i ${CORE_PACKAGE_NAME}@latest\` (or your package manager's equivalent), then run this command again.`)
       process.exitCode = 1
@@ -66,14 +82,9 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
   }
 
   if (missingDependencies.length > 0) {
-    const response = await prompts({
-      type: 'confirm',
-      name: 'install',
-      message: `Install missing dependencies (${missingDependencies.join(', ')})?`,
-      initial: true,
-    })
+    const shouldInstall = await confirm(`Install missing dependencies (${missingDependencies.join(', ')})?`, true, yes)
 
-    if (!response.install) {
+    if (!shouldInstall) {
       console.log('\nSkipped writing components. Install the missing dependencies, then run this command again.')
       process.exitCode = 1
       return
@@ -92,43 +103,46 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
     }
   }
 
-  const language = config.typescript ? 'ts' : 'js'
+  for (const item of resolved) {
+    let primaryFileCopied = false
 
-  for (const component of selectedTargets) {
-    const fileName = getComponentTemplateFile(component, language)
-    const destination = path.join(cwd, config.componentDir, fileName)
+    for (const [index, file] of item.files.entries()) {
+      const destination = path.join(cwd, config[file.target.dir], file.target.file)
+      const exists = await pathExists(destination)
 
-    let overwrite = false
-    if (await pathExists(destination)) {
-      const response = await prompts({
-        type: 'confirm',
-        name: 'overwrite',
-        message: `${path.relative(cwd, destination)} already exists. Overwrite?`,
-        initial: false,
+      let allowOverwrite = false
+      if (exists) {
+        if (item.type === 'lib' || item.type === 'hook') {
+          allowOverwrite = false
+        } else if (overwrite) {
+          allowOverwrite = true
+        } else {
+          allowOverwrite = await confirm(`${path.relative(cwd, destination)} already exists. Overwrite?`, false, yes)
+        }
+      }
+
+      const copied = await copyTemplate({
+        destination,
+        overwrite: allowOverwrite,
+        templatePath: getTemplatePath(file.source),
       })
-      overwrite = Boolean(response.overwrite)
+
+      if (copied === 'skipped') {
+        console.log(`\nSkipped ${file.target.file} (already exists).`)
+      } else if (index === 0) {
+        primaryFileCopied = true
+      }
     }
 
-    const copied = await copyTemplate({
-      destination,
-      overwrite,
-      templatePath: getTemplatePath(fileName, language),
-    })
-
-    if (copied === 'skipped') {
-      console.log(`\nSkipped ${component.name}.`)
-      continue
+    if (item.type === 'component' && primaryFileCopied) {
+      const primaryFile = item.files[0]
+      const destination = path.join(cwd, config[primaryFile.target.dir], primaryFile.target.file)
+      const importSymbol = path.basename(primaryFile.target.file, path.extname(primaryFile.target.file))
+      const importPath = `./${path.relative(cwd, destination).replace(/\\/g, '/').replace(/\.(tsx|jsx|ts|js)$/, '')}`
+      console.log(`\n${item.name} added successfully.`)
+      console.log(`Import it from:`)
+      console.log(`  import { ${importSymbol} } from '${importPath}'`)
     }
-
-    if (options.lang) {
-      const content = await readFile(destination, 'utf8')
-      await writeFile(destination, localizeDefaultTexts(content, options.lang, component.name), 'utf8')
-    }
-
-    const importPath = `./${path.relative(cwd, destination).replace(/\\/g, '/').replace(/\.(tsx|jsx)$/, '')}`
-    console.log(`\n${component.name} added successfully.`)
-    console.log(`Import it from:`)
-    console.log(`  import { ${component.name} } from '${importPath}'`)
   }
 }
 
@@ -170,12 +184,12 @@ async function getMissingDependencies(cwd: string, dependencies: string[]): Prom
   return missingDependencies
 }
 
-async function selectComponents(targets: string[]) {
+async function selectComponents(targets: string[], registry: RegistryItem[]): Promise<RegistryItem[]> {
   if (targets.length > 0) {
     return targets.map((target) => {
-      const component = resolveRegistryComponent(target)
+      const component = resolveRegistryItem(target, registry)
       if (!component) {
-        throw new Error(`Unknown component: ${target}`)
+        throw new Error(`Unknown component: ${target}. Valid components: ${registry.map((item) => item.name).join(', ')}`)
       }
       return component
     })
@@ -185,18 +199,20 @@ async function selectComponents(targets: string[]) {
     type: 'multiselect',
     name: 'components',
     message: 'Which components would you like to add?',
-    choices: registryComponents.map((component) => ({
-      title: component.name,
-      description: component.description,
-      value: component.name,
-    })),
+    choices: registry
+      .filter((item) => item.type === 'component')
+      .map((item) => ({
+        title: item.name,
+        description: item.description,
+        value: item.name,
+      })),
   })
 
   const selected = Array.isArray(response.components) ? response.components : []
   return selected.map((name) => {
-    const component = resolveRegistryComponent(String(name))
+    const component = resolveRegistryItem(String(name), registry)
     if (!component) {
-      throw new Error(`Unknown component: ${name}`)
+      throw new Error(`Unknown component: ${name}. Valid components: ${registry.map((item) => item.name).join(', ')}`)
     }
     return component
   })

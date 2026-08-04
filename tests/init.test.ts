@@ -4,6 +4,7 @@ import path from 'node:path'
 import prompts from 'prompts'
 import { initProject } from '../src/commands/init.js'
 import { getRegistryVersion } from '../src/utils/config.js'
+import { pathExists } from '../src/utils/fs.js'
 
 vi.mock('prompts', () => ({
   default: vi.fn(),
@@ -11,7 +12,7 @@ vi.mock('prompts', () => ({
 
 const mockedPrompts = vi.mocked(prompts)
 
-async function tempDir() {
+async function tempProject() {
   return mkdtemp(path.join(os.tmpdir(), 'react-thaizip-'))
 }
 
@@ -25,15 +26,16 @@ describe('initProject', () => {
 
   afterEach(() => {
     console.log = originalLog
+    process.exitCode = 0
     vi.restoreAllMocks()
   })
 
   it('creates config from detected project settings', async () => {
-    const cwd = await tempDir()
+    const cwd = await tempProject()
     await mkdir(path.join(cwd, 'app'))
     await writeFile(path.join(cwd, 'tsconfig.json'), '{}')
     await writeFile(path.join(cwd, 'tailwind.config.ts'), '')
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.6.0' } }))
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
     mockedPrompts.mockResolvedValueOnce({})
 
     await initProject({ cwd })
@@ -42,26 +44,39 @@ describe('initProject', () => {
     expect(config).toMatchObject({
       typescript: true,
       componentDir: 'app/components',
+      libDir: 'lib',
+      hooksDir: 'hooks',
       packageManager: 'npm',
-      corePackage: {
-        name: 'thaizip',
-        version: '>=0.6.0',
-      },
+      // No global CSS file matched the candidates, so cssPath stays null and
+      // the config records an empty css path — only the config.ts (v3
+      // marker) file drove detection here.
+      tailwind: { version: 3, css: '' },
       // Derived, not pinned: a hardcoded version here silently rots on every release.
       registryVersion: await getRegistryVersion(),
     })
   })
 
-  it('asks for TypeScript preference when language is unknown', async () => {
-    const cwd = await tempDir()
-    await writeFile(path.join(cwd, 'tailwind.config.ts'), '')
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.6.0' } }))
-    mockedPrompts.mockResolvedValueOnce({ typescript: false }).mockResolvedValueOnce({})
+  it('exits without writing config when Tailwind is absent', async () => {
+    const cwd = await tempProject() // no tailwind markers
 
-    await initProject({ cwd })
+    await initProject({ cwd, yes: true })
+
+    expect(process.exitCode).toBe(1)
+    process.exitCode = 0
+    expect(await pathExists(path.join(cwd, 'thaizip.config.json'))).toBe(false)
+  })
+
+  it('writes a v2 config and appends tokens on a v4 project with --yes', async () => {
+    const cwd = await tempProject()
+    await mkdir(path.join(cwd, 'app'), { recursive: true })
+    await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+
+    await initProject({ cwd, yes: true })
 
     const config = JSON.parse(await readFile(path.join(cwd, 'thaizip.config.json'), 'utf8'))
-    expect(config.typescript).toBe(false)
-    expect(mockedPrompts).toHaveBeenCalledWith(expect.objectContaining({ name: 'typescript' }))
+    expect(config.tailwind).toEqual({ version: 4, css: 'app/globals.css' })
+    expect(config.libDir).toBe('lib')
+    expect(await readFile(path.join(cwd, 'app/globals.css'), 'utf8')).toContain('react-thaizip design tokens')
   })
 })

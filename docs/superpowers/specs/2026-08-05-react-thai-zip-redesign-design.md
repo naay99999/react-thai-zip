@@ -3,6 +3,13 @@
 Date: 2026-08-05
 Status: approved pending user review
 
+**Amendment (Phase 1 final review, 2026-08-05):** the Tailwind v4 token block
+(`buildTokenBlock(4)` in `src/utils/tokens.ts`) must include
+`@custom-variant dark (&:is(.dark *));` above `:root`. Without it, Tailwind v4's
+`dark:` utility defaults to a `prefers-color-scheme` media query and the emitted
+`.dark { ... }` class-based block never applies. Fixed in Phase 1; Phase 2/3
+components that rely on dark-mode tokens depend on this.
+
 ## Goal
 
 Rebuild `react-thaizip` into a shadcn-style scaffold tool: components composed from

@@ -1,59 +1,64 @@
-export type TemplateLanguage = 'ts' | 'js'
-
-export type RegistryComponent = {
+export type RegistryItemType = 'component' | 'lib' | 'hook'
+export type TargetDirKey = 'componentDir' | 'libDir' | 'hooksDir'
+export type TemplateFile = {
+  source: string // path under templates/, e.g. 'react/ts/ThaiAddressAutocomplete.tsx'
+  target: { dir: TargetDirKey; file: string } // resolved as path.join(cwd, config[dir], file)
+}
+export type RegistryItem = {
   name: string
   description: string
   aliases: string[]
-  requiresTailwind: boolean
-  dependencies: string[]
+  type: RegistryItemType
+  files: TemplateFile[]
+  dependencies: string[] // npm packages
+  registryDependencies: string[] // names of other RegistryItems
 }
 
-export const registryComponents = [
+export const registryItems: RegistryItem[] = [
   {
-    name: 'ThaiAddressAutocomplete',
+    name: 'autocomplete',
     description: 'Free-text Thai address autocomplete',
-    aliases: ['autocomplete', 'ThaiAddressAutocomplete'],
-    requiresTailwind: true,
+    aliases: ['autocomplete', 'thai-address-autocomplete', 'ThaiAddressAutocomplete'],
+    type: 'component',
+    files: [{ source: 'react/ts/ThaiAddressAutocomplete.tsx', target: { dir: 'componentDir', file: 'ThaiAddressAutocomplete.tsx' } }],
     dependencies: ['thaizip'],
+    registryDependencies: [],
   },
   {
-    name: 'ThaiAddressPostalCodeForm',
-    description: 'Postal-code-first Thai address form',
-    aliases: ['postal', 'postal-code-form', 'postal-form', 'ThaiAddressForm', 'ThaiAddressPostalForm', 'ThaiAddressPostalCodeForm'],
-    requiresTailwind: true,
+    name: 'cascade-select',
+    description: 'Province > district > sub-district select flow',
+    aliases: ['cascade', 'cascade-select', 'thai-address-cascade-select', 'ThaiAddressCascadeSelect'],
+    type: 'component',
+    files: [{ source: 'react/ts/ThaiAddressCascadeSelect.tsx', target: { dir: 'componentDir', file: 'ThaiAddressCascadeSelect.tsx' } }],
     dependencies: ['thaizip'],
+    registryDependencies: [],
   },
-  {
-    name: 'ThaiAddressDisplayFields',
-    description: 'Read-only address display fields',
-    aliases: ['display-fields', 'fields', 'ThaiAddressSearch', 'ThaiAddressDisplayFields'],
-    requiresTailwind: true,
-    dependencies: ['thaizip'],
-  },
-  {
-    name: 'ThaiAddressCascadeSelect',
-    description: 'Province to district to sub-district select flow',
-    aliases: ['cascade', 'cascade-select', 'ThaiAddressCascadeSelect'],
-    requiresTailwind: true,
-    dependencies: ['thaizip'],
-  },
-] satisfies RegistryComponent[]
+]
 
-export function resolveRegistryComponent(target: string): RegistryComponent | undefined {
+export function resolveRegistryItem(target: string, registry: RegistryItem[] = registryItems): RegistryItem | undefined {
   const normalized = target.toLowerCase()
-  return registryComponents.find((component) =>
-    component.aliases.some((alias) => alias.toLowerCase() === normalized),
-  )
+  return registry.find((item) => item.aliases.some((alias) => alias.toLowerCase() === normalized))
 }
 
-export function getRegistryComponent(name: string): RegistryComponent {
-  const component = resolveRegistryComponent(name)
-  if (!component) {
-    throw new Error(`Unknown component: ${name}`)
+export function resolveWithDependencies(selected: RegistryItem[], registry: RegistryItem[] = registryItems): RegistryItem[] {
+  const ordered: RegistryItem[] = []
+  const visiting = new Set<string>()
+  const visited = new Set<string>()
+
+  function visit(item: RegistryItem): void {
+    if (visited.has(item.name)) return
+    if (visiting.has(item.name)) throw new Error(`Registry dependency cycle involving: ${item.name}`)
+    visiting.add(item.name)
+    for (const depName of item.registryDependencies) {
+      const dep = registry.find((candidate) => candidate.name === depName)
+      if (!dep) throw new Error(`Unknown registry item: ${depName}`)
+      visit(dep)
+    }
+    visiting.delete(item.name)
+    visited.add(item.name)
+    ordered.push(item)
   }
-  return component
-}
 
-export function getComponentTemplateFile(component: RegistryComponent, language: TemplateLanguage): string {
-  return `${component.name}.${language === 'ts' ? 'tsx' : 'jsx'}`
+  for (const item of selected) visit(item)
+  return ordered
 }

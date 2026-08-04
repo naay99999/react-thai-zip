@@ -1,4 +1,4 @@
-import { main } from '../src/cli.js'
+import { main, parseCliArgs } from '../src/cli.js'
 
 vi.mock('../src/commands/add.js', () => ({
   addComponents: vi.fn().mockResolvedValue(undefined),
@@ -33,17 +33,45 @@ describe('main', () => {
 
     await main(['add', 'autocomplete', 'cascade-select'])
 
-    expect(vi.mocked(addComponents)).toHaveBeenCalledWith({ targets: ['autocomplete', 'cascade-select'] })
-  })
-
-  it('extracts --lang and passes it separately from targets', async () => {
-    const { addComponents } = await import('../src/commands/add.js')
-
-    await main(['add', 'autocomplete', '--lang', 'th', 'cascade-select'])
-
     expect(vi.mocked(addComponents)).toHaveBeenCalledWith({
       targets: ['autocomplete', 'cascade-select'],
-      lang: 'th',
+      yes: false,
+      overwrite: false,
     })
+  })
+})
+
+describe('parseCliArgs', () => {
+  it('extracts flags from anywhere in argv', () => {
+    expect(parseCliArgs(['add', 'autocomplete', '--yes', 'cascade-select', '--overwrite'])).toEqual({
+      command: 'add',
+      targets: ['autocomplete', 'cascade-select'],
+      flags: { yes: true, overwrite: true, help: false, version: false },
+    })
+  })
+})
+
+describe('main flag handling', () => {
+  it('--help prints usage and exits 0', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+    await main(['--help'])
+    expect(log.mock.calls.flat().join('\n')).toContain('react-thaizip add')
+    expect(process.exitCode ?? 0).toBe(0)
+    log.mockRestore()
+  })
+
+  it('--version prints a semver', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+    await main(['--version'])
+    expect(log.mock.calls.flat().join('')).toMatch(/\d+\.\d+\.\d+/)
+    log.mockRestore()
+  })
+
+  it('rejects unknown flags', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+    await main(['add', '--frobnicate'])
+    expect(process.exitCode).toBe(1)
+    process.exitCode = 0
+    error.mockRestore()
   })
 })
