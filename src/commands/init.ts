@@ -1,63 +1,82 @@
 import path from 'node:path'
 import prompts from 'prompts'
-import { CORE_PACKAGE_NAME, configExists, getRegistryVersion, writeConfig } from '../utils/config.js'
+import { CORE_PACKAGE_NAME, CORE_PACKAGE_VERSION, configExists, getRegistryVersion, writeConfig } from '../utils/config.js'
 import { detectPM } from '../utils/detectPM.js'
 import { detectProjectStructure } from '../utils/detectProjectStructure.js'
 import { detectTailwind } from '../utils/detectTailwind.js'
 import { installPackage } from '../utils/install.js'
 import { hasPackageDependency } from '../utils/packageJson.js'
+import { confirm } from '../utils/prompt.js'
+import { buildTokenBlock, buildV3ConfigSnippet, ensureTokens } from '../utils/tokens.js'
 
-type InitProjectOptions = {
+export type InitProjectOptions = {
   cwd?: string
-  yes?: boolean // consumed in Task 7
+  yes?: boolean
 }
 
 export async function initProject(options: InitProjectOptions = {}): Promise<void> {
   const cwd = options.cwd ?? process.cwd()
+  const yes = options.yes ?? false
   const pm = await detectPM(cwd)
   const project = await detectProjectStructure(cwd)
   const registryVersion = await getRegistryVersion()
 
   const useTypeScript = true
+  const libDir = 'lib'
+  const hooksDir = 'hooks'
 
   let componentDir = path.relative(cwd, project.directory).replace(/\\/g, '/')
-  const directoryResponse = await prompts({
-    type: 'text',
-    name: 'componentDir',
-    message: 'Where should components be written?',
-    initial: componentDir,
-  })
-  if (directoryResponse.componentDir) {
-    componentDir = String(directoryResponse.componentDir)
+  if (!yes) {
+    const directoryResponse = await prompts({
+      type: 'text',
+      name: 'componentDir',
+      message: 'Where should components be written?',
+      initial: componentDir,
+    })
+    if (directoryResponse.componentDir) {
+      componentDir = String(directoryResponse.componentDir)
+    }
   }
 
   const tailwind = await detectTailwind(cwd)
   if (!tailwind) {
-    console.warn('\nTailwind CSS was not detected. Components require Tailwind; install it before adding components.')
+    console.error(
+      '\nTailwind CSS is required. Install it for your framework (https://tailwindcss.com/docs/installation), then re-run npx react-thaizip init.',
+    )
+    process.exitCode = 1
+    return
+  }
+
+  const { version, cssPath } = tailwind
+
+  if (cssPath) {
+    const result = await ensureTokens(path.join(cwd, cssPath), version)
+    console.log(
+      result === 'written'
+        ? `\nAdded design tokens to ${cssPath}.`
+        : `\nDesign tokens already present in ${cssPath}. Skipped writing.`,
+    )
+  } else {
+    console.log('\nNo global CSS file was found. Add the design tokens manually — see README.')
+    console.log(buildTokenBlock(version))
+  }
+
+  if (version === 3) {
+    console.log(buildV3ConfigSnippet())
   }
 
   if (!(await hasPackageDependency(CORE_PACKAGE_NAME, cwd))) {
-    const response = await prompts({
-      type: 'confirm',
-      name: 'install',
-      message: 'thaizip is not installed. Install it?',
-      initial: true,
-    })
+    const shouldInstall = await confirm('thaizip is not installed. Install it?', true, yes)
 
-    if (response.install) {
-      await installPackage([CORE_PACKAGE_NAME], { cwd, pm })
+    if (shouldInstall) {
+      await installPackage([`${CORE_PACKAGE_NAME}@${CORE_PACKAGE_VERSION}`], { cwd, pm })
     }
   }
 
   if (await configExists(cwd)) {
-    const response = await prompts({
-      type: 'confirm',
-      name: 'overwrite',
-      message: 'thaizip.config.json already exists. Overwrite it?',
-      initial: false,
-    })
+    const shouldOverwrite = await confirm('thaizip.config.json already exists. Overwrite it?', false, yes)
 
-    if (!response.overwrite) {
+    if (!shouldOverwrite) {
       console.log('\nSkipped writing thaizip.config.json.')
       return
     }
@@ -67,12 +86,10 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
     {
       typescript: useTypeScript,
       componentDir,
-      // Task 4/5 supply real lib/hooks directory and Tailwind detection;
-      // these are placeholder values until then.
-      libDir: 'lib',
-      hooksDir: 'hooks',
+      libDir,
+      hooksDir,
       packageManager: pm,
-      tailwind: { version: 4, css: '' },
+      tailwind: { version, css: cssPath ?? '' },
       registryVersion,
     },
     cwd,
