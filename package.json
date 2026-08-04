@@ -14,7 +14,8 @@
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "typecheck:templates": "tsc -p tsconfig.templates.json"
   },
   "keywords": [
     "thai",
@@ -38,8 +39,16 @@
     "prompts": "^2.4.2"
   },
   "devDependencies": {
+    "@base-ui-components/react": "^1.0.0-rc.0",
     "@types/node": "^22.10.5",
     "@types/prompts": "^2.4.9",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "clsx": "^2.1.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tailwind-merge": "^3.6.0",
+    "thaizip": "^0.7.2",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
