@@ -251,7 +251,13 @@ function ThaiAddressCascadeSelectReady({
   // emit a value) are not wiped between renders.
   React.useEffect(() => {
     if (!isControlled) return
-    setSelection(selectionFromAddress(index, value ?? null))
+    setSelection((current) => {
+      if (value) return selectionFromAddress(index, value)
+      // value === null: an external clear wipes a *full* local selection; a null
+      // echoed back right after our own parent-change invalidation must not
+      // reset the in-progress partial pick.
+      return current.tambonId === null ? current : EMPTY_SELECTION
+    })
   }, [isControlled, index, value])
 
   const provinces = React.useMemo(() => {

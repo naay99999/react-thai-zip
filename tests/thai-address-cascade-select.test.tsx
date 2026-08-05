@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import * as React from 'react'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -144,6 +145,7 @@ describe('ThaiAddressCascadeSelect — cascade flow', () => {
     await pickOption(user, provinceTrigger, otherProvince.nameTh)
 
     await waitFor(() => expect(onValueChange).toHaveBeenCalledWith(null))
+    expect(provinceTrigger.textContent).toContain(otherProvince.nameTh)
     expect(isDisabled(subdistrictTrigger)).toBe(true)
     expect(screen.queryByDisplayValue(tambon.zipCode)).toBeNull()
   })
@@ -172,5 +174,67 @@ describe('ThaiAddressCascadeSelect — cascade flow', () => {
     await user.click(provinceTrigger)
     const listbox = await screen.findByRole('listbox')
     expect(within(listbox).getByRole('option', { name: province.nameEn })).toBeTruthy()
+  })
+
+  it('controlled mode: keeps the newly-picked province instead of wiping it when onValueChange(null) echoes back as `value`', async () => {
+    function Controlled() {
+      const [value, setValue] = React.useState<ResolvedThaiAddress | null>(null)
+      return <ThaiAddressCascadeSelect value={value} onValueChange={setValue} />
+    }
+
+    const user = userEvent.setup()
+    render(<Controlled />)
+
+    const { provinceTrigger, districtTrigger, subdistrictTrigger } = await getTriggers()
+    await pickOption(user, provinceTrigger, province.nameTh)
+    await waitFor(() => expect(isDisabled(districtTrigger)).toBe(false))
+    await pickOption(user, districtTrigger, amphure.nameTh)
+    await waitFor(() => expect(isDisabled(subdistrictTrigger)).toBe(false))
+    await pickOption(user, subdistrictTrigger, tambon.nameTh)
+    await waitFor(() => expect(visibleDisplayValue(tambon.zipCode)).toBeTruthy())
+
+    // Picking a different province fires onValueChange(null); the consumer echoes that
+    // null straight back in as `value`. The province the user just picked must NOT be
+    // wiped back to a placeholder by that echo — only district/subdistrict/zip reset.
+    const index = await loadDefaultIndex()
+    const otherProvince = listProvinces(index)[1]
+    await pickOption(user, provinceTrigger, otherProvince.nameTh)
+
+    await waitFor(() => expect(provinceTrigger.textContent).toContain(otherProvince.nameTh))
+    expect(isDisabled(subdistrictTrigger)).toBe(true)
+    expect(districtTrigger.textContent).not.toContain(amphure.nameTh)
+    expect(screen.queryByDisplayValue(tambon.zipCode)).toBeNull()
+  })
+
+  it('controlled mode: an explicit external clear (value -> null with no in-progress pick) resets the full chain', async () => {
+    function Controlled() {
+      const [value, setValue] = React.useState<ResolvedThaiAddress | null>(null)
+      return (
+        <div>
+          <ThaiAddressCascadeSelect value={value} onValueChange={setValue} />
+          <button type="button" onClick={() => setValue(null)}>
+            clear
+          </button>
+        </div>
+      )
+    }
+
+    const user = userEvent.setup()
+    render(<Controlled />)
+
+    const { provinceTrigger, districtTrigger, subdistrictTrigger } = await getTriggers()
+    await pickOption(user, provinceTrigger, province.nameTh)
+    await waitFor(() => expect(isDisabled(districtTrigger)).toBe(false))
+    await pickOption(user, districtTrigger, amphure.nameTh)
+    await waitFor(() => expect(isDisabled(subdistrictTrigger)).toBe(false))
+    await pickOption(user, subdistrictTrigger, tambon.nameTh)
+    await waitFor(() => expect(visibleDisplayValue(tambon.zipCode)).toBeTruthy())
+
+    await user.click(screen.getByRole('button', { name: 'clear' }))
+
+    await waitFor(() => expect(provinceTrigger.textContent).toContain('เลือกจังหวัด'))
+    expect(districtTrigger.textContent).toContain('เลือกอำเภอ/เขต')
+    expect(subdistrictTrigger.textContent).toContain('เลือกตำบล/แขวง')
+    expect(screen.queryByDisplayValue(tambon.zipCode)).toBeNull()
   })
 })
