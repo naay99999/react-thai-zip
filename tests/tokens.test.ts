@@ -31,5 +31,6 @@ describe('tokens', () => {
     expect(await ensureTokens(css, 4)).toBe('skipped')
     const content = await readFile(css, 'utf8')
     expect(content.match(/react-thaizip design tokens/g)).toHaveLength(1)
+    expect(content.endsWith('\n')).toBe(true)
   })
 })

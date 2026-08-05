@@ -5,13 +5,19 @@ import prompts from 'prompts'
 import { addComponents } from '../src/commands/add.js'
 import { writeConfig } from '../src/utils/config.js'
 import { pathExists } from '../src/utils/fs.js'
+import { installPackage } from '../src/utils/install.js'
 import type { RegistryItem } from '../src/registry.js'
 
 vi.mock('prompts', () => ({
   default: vi.fn(),
 }))
 
+vi.mock('../src/utils/install.js', () => ({
+  installPackage: vi.fn().mockResolvedValue(undefined),
+}))
+
 const mockedPrompts = vi.mocked(prompts)
+const mockedInstallPackage = vi.mocked(installPackage)
 
 async function tempDir() {
   return mkdtemp(path.join(os.tmpdir(), 'react-thaizip-'))
@@ -79,6 +85,8 @@ describe('addComponents', () => {
     console.log = vi.fn()
     process.exitCode = originalExitCode
     mockedPrompts.mockReset()
+    mockedInstallPackage.mockReset()
+    mockedInstallPackage.mockResolvedValue(undefined)
   })
 
   afterEach(() => {
@@ -108,6 +116,45 @@ describe('addComponents', () => {
     await addComponents({ cwd, targets: ['autocomplete'] })
 
     await expect(readFile(destination, 'utf8')).resolves.toBe('existing content')
+  })
+
+  it('names the relative path (not just the bare filename) in the skip log', async () => {
+    const cwd = await tempProjectWithConfigV2()
+    const destination = path.join(cwd, 'app/components', 'thai-address-autocomplete.tsx')
+    await mkdir(path.dirname(destination), { recursive: true })
+    await writeFile(destination, 'existing content')
+    mockedPrompts.mockResolvedValueOnce({ value: false })
+
+    await addComponents({ cwd, targets: ['autocomplete'] })
+
+    const logged = (console.log as ReturnType<typeof vi.fn>).mock.calls.map((call) => call.join(' ')).join('\n')
+    expect(logged).toContain('Skipped app/components/thai-address-autocomplete.tsx')
+  })
+
+  it('installs the missing thaizip dependency with the pinned >=0.7.0 range while leaving other packages bare', async () => {
+    const cwd = await tempDir()
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: {} }))
+    await writeConfig(
+      {
+        typescript: true,
+        componentDir: 'app/components',
+        libDir: 'lib',
+        hooksDir: 'hooks',
+        packageManager: 'npm',
+        tailwind: { version: 4, css: 'app/globals.css' },
+        registryVersion: '0.1.0',
+      },
+      cwd,
+    )
+
+    await addComponents({ cwd, targets: ['autocomplete'], yes: true })
+
+    expect(mockedInstallPackage).toHaveBeenCalledTimes(1)
+    const [specs, options] = mockedInstallPackage.mock.calls[0]
+    expect(specs).toContain('thaizip@>=0.7.0')
+    expect(specs).not.toContain('thaizip')
+    expect(specs).toEqual(expect.arrayContaining(['clsx', 'tailwind-merge', '@base-ui/react']))
+    expect(options).toEqual({ cwd, pm: 'npm' })
   })
 
   it('Autocomplete clear button uses ✕ not x', async () => {

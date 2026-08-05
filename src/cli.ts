@@ -32,22 +32,66 @@ export function parseCliArgs(argv: string[]): { command: string | undefined; tar
   return { command, targets, flags }
 }
 
-function printHelp(): void {
-  const lines = [
-    'Usage:',
-    '  react-thaizip init [--yes]',
-    '  react-thaizip add [component...] [--yes] [--overwrite]',
-    '',
-    'Flags:',
-    '  --yes, -y        Skip confirmation prompts',
-    '  --overwrite      Overwrite existing files without prompting',
-    '  --help, -h       Print this help message',
-    '  --version, -v    Print the CLI version',
-    '',
-    'Components:',
-    ...registryItems.filter((item) => item.type === 'component').map((item) => `  ${item.name}  ${item.description}`),
-  ]
-  console.log(lines.join('\n'))
+const GLOBAL_FLAG_LINES = [
+  '  --yes, -y        Skip confirmation prompts',
+  '  --overwrite      Overwrite existing files without prompting',
+  '  --help, -h       Print this help message',
+  '  --version, -v    Print the CLI version',
+]
+
+function componentLines(): string[] {
+  const components = registryItems.filter((item) => item.type === 'component')
+  const width = Math.max(...components.map((item) => item.name.length))
+  return components.map((item) => `  ${item.name.padEnd(width + 2)}${item.description}`)
+}
+
+function printHelp(command?: string): void {
+  if (command === 'init') {
+    console.log(
+      [
+        'Usage:',
+        '  react-thaizip init [--yes]',
+        '',
+        'Detects your project layout and Tailwind setup, writes design tokens,',
+        'installs thaizip, and creates thaizip.config.json.',
+        '',
+        'Flags:',
+        '  --yes, -y        Skip confirmation prompts',
+      ].join('\n'),
+    )
+    return
+  }
+
+  if (command === 'add') {
+    console.log(
+      [
+        'Usage:',
+        '  react-thaizip add [component...] [--yes] [--overwrite]',
+        '',
+        'Flags:',
+        '  --yes, -y        Skip confirmation prompts',
+        '  --overwrite      Overwrite existing component files without prompting',
+        '',
+        'Components:',
+        ...componentLines(),
+      ].join('\n'),
+    )
+    return
+  }
+
+  console.log(
+    [
+      'Usage:',
+      '  react-thaizip init [--yes]',
+      '  react-thaizip add [component...] [--yes] [--overwrite]',
+      '',
+      'Flags:',
+      ...GLOBAL_FLAG_LINES,
+      '',
+      'Components:',
+      ...componentLines(),
+    ].join('\n'),
+  )
 }
 
 export async function main(argv = process.argv.slice(2)): Promise<void> {
@@ -62,13 +106,13 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 
   const { command, targets, flags } = parsed
 
-  if (flags.version) {
-    console.log(await getRegistryVersion())
+  if (flags.help) {
+    printHelp(command)
     return
   }
 
-  if (flags.help) {
-    printHelp()
+  if (flags.version) {
+    console.log(await getRegistryVersion())
     return
   }
 

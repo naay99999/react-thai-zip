@@ -74,4 +74,54 @@ describe('main flag handling', () => {
     process.exitCode = 0
     error.mockRestore()
   })
+
+  it('--help wins over --version', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+    await main(['--help', '--version'])
+    const output = log.mock.calls.flat().join('\n')
+    expect(output).toContain('Usage:')
+    expect(output).not.toMatch(/^\d+\.\d+\.\d+$/m)
+    log.mockRestore()
+  })
+
+  it('"add --help" prints add-scoped usage and does not invoke addComponents', async () => {
+    const { addComponents } = await import('../src/commands/add.js')
+    vi.mocked(addComponents).mockClear()
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    await main(['add', '--help'])
+
+    const output = log.mock.calls.flat().join('\n')
+    expect(output).toContain('react-thaizip add')
+    expect(output).toContain('autocomplete')
+    expect(output).toContain('cascade-select')
+    expect(vi.mocked(addComponents)).not.toHaveBeenCalled()
+    log.mockRestore()
+  })
+
+  it('"init --help" prints init-scoped usage without the component list', async () => {
+    const { initProject } = await import('../src/commands/init.js')
+    vi.mocked(initProject).mockClear()
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    await main(['init', '--help'])
+
+    const output = log.mock.calls.flat().join('\n')
+    expect(output).toContain('react-thaizip init')
+    expect(output).not.toContain('autocomplete')
+    expect(output).not.toContain('cascade-select')
+    expect(vi.mocked(initProject)).not.toHaveBeenCalled()
+    log.mockRestore()
+  })
+
+  it('aligns the component description columns in global help output', async () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+    await main(['--help'])
+    const output = log.mock.calls.flat().join('\n')
+    const lines = output.split('\n').filter((line) => /^  (autocomplete|cascade-select)\s+/.test(line))
+    expect(lines).toHaveLength(2)
+    const prefixLengths = lines.map((line) => /^  (\S+)\s+/.exec(line)?.[0].length)
+    expect(prefixLengths[0]).toBe(prefixLengths[1])
+    log.mockRestore()
+  })
 })

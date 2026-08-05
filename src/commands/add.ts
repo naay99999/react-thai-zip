@@ -4,7 +4,7 @@ import prompts from 'prompts'
 import { installPackage } from '../utils/install.js'
 import { copyTemplate, getTemplatePath } from '../utils/copyTemplate.js'
 import { pathExists } from '../utils/fs.js'
-import { CORE_PACKAGE_NAME, MINIMUM_THAIZIP_VERSION, configExists, readConfig } from '../utils/config.js'
+import { CORE_PACKAGE_NAME, CORE_PACKAGE_VERSION, MINIMUM_THAIZIP_VERSION, configExists, readConfig } from '../utils/config.js'
 import { detectTailwind } from '../utils/detectTailwind.js'
 import { getInstalledPackageVersion, getPackageDependencyRange, hasPackageDependency } from '../utils/packageJson.js'
 import { confirm } from '../utils/prompt.js'
@@ -93,7 +93,10 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
     }
 
     try {
-      await installPackage(missingDependencies, { cwd, pm: config.packageManager })
+      const installSpecs = missingDependencies.map((dependency) =>
+        dependency === CORE_PACKAGE_NAME ? `${CORE_PACKAGE_NAME}@${CORE_PACKAGE_VERSION}` : dependency,
+      )
+      await installPackage(installSpecs, { cwd, pm: config.packageManager })
     } catch (error) {
       console.error('\nFailed to install dependencies.')
       console.error(`Install them manually, then run this command again: ${missingDependencies.join(', ')}`)
@@ -130,7 +133,7 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
       })
 
       if (copied === 'skipped') {
-        console.log(`\nSkipped ${file.target.file} (already exists).`)
+        console.log(`\nSkipped ${path.relative(cwd, destination)} (already exists).`)
       } else {
         if (index === 0) {
           primaryFileCopied = true

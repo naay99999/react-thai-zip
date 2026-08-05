@@ -5,12 +5,18 @@ import prompts from 'prompts'
 import { initProject } from '../src/commands/init.js'
 import { getRegistryVersion } from '../src/utils/config.js'
 import { pathExists } from '../src/utils/fs.js'
+import { installPackage } from '../src/utils/install.js'
 
 vi.mock('prompts', () => ({
   default: vi.fn(),
 }))
 
+vi.mock('../src/utils/install.js', () => ({
+  installPackage: vi.fn().mockResolvedValue(undefined),
+}))
+
 const mockedPrompts = vi.mocked(prompts)
+const mockedInstallPackage = vi.mocked(installPackage)
 
 async function tempProject() {
   return mkdtemp(path.join(os.tmpdir(), 'react-thaizip-'))
@@ -22,6 +28,8 @@ describe('initProject', () => {
   beforeEach(() => {
     console.log = vi.fn()
     mockedPrompts.mockReset()
+    mockedInstallPackage.mockReset()
+    mockedInstallPackage.mockResolvedValue(undefined)
   })
 
   afterEach(() => {
@@ -78,5 +86,22 @@ describe('initProject', () => {
     expect(config.tailwind).toEqual({ version: 4, css: 'app/globals.css' })
     expect(config.libDir).toBe('lib')
     expect(await readFile(path.join(cwd, 'app/globals.css'), 'utf8')).toContain('react-thaizip design tokens')
+  })
+
+  it('exits 1 with a manual install hint when the thaizip install fails, without an unhandled rejection', async () => {
+    const cwd = await tempProject()
+    await mkdir(path.join(cwd, 'app'), { recursive: true })
+    await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: {} }))
+    mockedInstallPackage.mockRejectedValueOnce(new Error('registry down'))
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    await expect(initProject({ cwd, yes: true })).resolves.toBeUndefined()
+
+    expect(process.exitCode).toBe(1)
+    const logged = consoleError.mock.calls.map((call) => call.join(' ')).join('\n')
+    expect(logged).toContain('thaizip@>=0.7.0')
+    expect(await pathExists(path.join(cwd, 'thaizip.config.json'))).toBe(false)
+    consoleError.mockRestore()
   })
 })

@@ -128,6 +128,6 @@ export async function ensureTokens(cssAbsolutePath: string, version: 3 | 4): Pro
     return 'skipped'
   }
 
-  await writeFile(cssAbsolutePath, content + '\n' + buildTokenBlock(version))
+  await writeFile(cssAbsolutePath, content + '\n' + buildTokenBlock(version) + '\n')
   return 'written'
 }

@@ -57,5 +57,12 @@ export async function detectTailwind(cwd = process.cwd()): Promise<TailwindDetec
     }
   }
 
+  if (range) {
+    const anchor = extractVersionAnchor(range)
+    if (anchor && Number(anchor.split('.')[0]) === 3) {
+      return { version: 3, cssPath: null }
+    }
+  }
+
   return null
 }
