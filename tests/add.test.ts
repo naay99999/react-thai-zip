@@ -29,7 +29,7 @@ async function tempProjectWithConfigV2(options: { thaizipRange?: string } = {}) 
     JSON.stringify({
       dependencies: {
         thaizip: thaizipRange,
-        '@base-ui-components/react': '^1.0.0',
+        '@base-ui/react': '^1.0.0',
         clsx: '^2.0.0',
         'tailwind-merge': '^2.0.0',
       },
@@ -56,7 +56,7 @@ const syntheticRegistry: RegistryItem[] = [
     description: 'cn helper',
     aliases: ['utils'],
     type: 'lib',
-    files: [{ source: 'react/ts/ThaiAddressCascadeSelect.tsx', target: { dir: 'libDir', file: 'utils.ts' } }],
+    files: [{ source: 'react/ts/thai-address-cascade-select.tsx', target: { dir: 'libDir', file: 'utils.ts' } }],
     dependencies: [],
     registryDependencies: [],
   },
@@ -65,7 +65,7 @@ const syntheticRegistry: RegistryItem[] = [
     description: 'test widget',
     aliases: ['widget'],
     type: 'component',
-    files: [{ source: 'react/ts/ThaiAddressCascadeSelect.tsx', target: { dir: 'componentDir', file: 'Widget.tsx' } }],
+    files: [{ source: 'react/ts/thai-address-cascade-select.tsx', target: { dir: 'componentDir', file: 'Widget.tsx' } }],
     dependencies: ['thaizip'],
     registryDependencies: ['utils'],
   },
@@ -93,7 +93,7 @@ describe('addComponents', () => {
 
     await addComponents({ cwd, targets: [] })
 
-    await expect(readFile(path.join(cwd, 'app/components', 'ThaiAddressCascadeSelect.tsx'), 'utf8')).resolves.toContain(
+    await expect(readFile(path.join(cwd, 'app/components', 'thai-address-cascade-select.tsx'), 'utf8')).resolves.toContain(
       'export function ThaiAddressCascadeSelect',
     )
   })
@@ -128,28 +128,36 @@ describe('addComponents', () => {
   it('CascadeSelect uses English default labels and supports texts prop', async () => {
     const cwd = await tempProjectWithConfigV2()
     await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
-    const content = await readFile(path.join(cwd, 'app/components', 'ThaiAddressCascadeSelect.tsx'), 'utf8')
+    const content = await readFile(path.join(cwd, 'app/components', 'thai-address-cascade-select.tsx'), 'utf8')
     expect(content).toContain("provinceLabel: 'Province'")
     expect(content).toContain("districtLabel: 'District'")
-    expect(content).toContain("subdistrictLabel: 'Sub District'")
-    expect(content).toContain("postalCodeLabel: 'Postal Code'")
-    expect(content).toContain('texts?: Partial<Texts>')
+    expect(content).toContain("subdistrictLabel: 'Sub-district'")
+    expect(content).toContain("zipLabel: 'Postal code'")
+    expect(content).toContain('texts?: Partial<ThaiAddressCascadeSelectTexts>')
   })
 
   it('CascadeSelect uses htmlFor to associate labels with selects', async () => {
     const cwd = await tempProjectWithConfigV2()
     await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
-    const content = await readFile(path.join(cwd, 'app/components', 'ThaiAddressCascadeSelect.tsx'), 'utf8')
+    const content = await readFile(path.join(cwd, 'app/components', 'thai-address-cascade-select.tsx'), 'utf8')
     expect(content).toContain('htmlFor')
     expect(content).toContain('useId')
   })
 
-  it('CascadeSelect accepts onClear prop and resets downstream selections', async () => {
+  it('CascadeSelect resets downstream selections via onValueChange(null) rather than a legacy onClear prop', async () => {
     const cwd = await tempProjectWithConfigV2()
     await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
-    const content = await readFile(path.join(cwd, 'app/components', 'ThaiAddressCascadeSelect.tsx'), 'utf8')
-    expect(content).toContain('onClear')
-    expect(content).toContain('onClear?.()')
+    const content = await readFile(path.join(cwd, 'app/components', 'thai-address-cascade-select.tsx'), 'utf8')
+    expect(content).toContain('onValueChange?.(null)')
+    expect(content).not.toContain('onClear')
+  })
+
+  it('cascade-select scaffolds the shared lib/hook files alongside the component', async () => {
+    const cwd = await tempProjectWithConfigV2()
+    await addComponents({ cwd, targets: ['cascade-select'], yes: true })
+    expect(await pathExists(path.join(cwd, 'app/components/thai-address-cascade-select.tsx'))).toBe(true)
+    expect(await pathExists(path.join(cwd, 'lib/utils.ts'))).toBe(true)
+    expect(await pathExists(path.join(cwd, 'hooks/use-thai-address-index.ts'))).toBe(true)
   })
 
   it('blocks scaffolding and explains why when thaizip is declared below the version required for the cascade/enumeration API', async () => {
@@ -226,7 +234,7 @@ describe('addComponents', () => {
       JSON.stringify({
         dependencies: {
           thaizip: '^0.7.0',
-          '@base-ui-components/react': '^1.0.0',
+          '@base-ui/react': '^1.0.0',
           clsx: '^2.0.0',
           'tailwind-merge': '^2.0.0',
         },

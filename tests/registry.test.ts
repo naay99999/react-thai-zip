@@ -23,7 +23,7 @@ describe('registry', () => {
 
   it('autocomplete depends on thaizip + Base UI and pulls in utils + use-thai-address-index', () => {
     const item = resolveRegistryItem('autocomplete')
-    expect(item?.dependencies).toEqual(['thaizip', '@base-ui-components/react'])
+    expect(item?.dependencies).toEqual(['thaizip', '@base-ui/react'])
     expect(item?.registryDependencies).toEqual(['utils', 'use-thai-address-index'])
   })
 
@@ -66,9 +66,22 @@ describe('resolveWithDependencies', () => {
 describe('registryItems data', () => {
   it('contains autocomplete and cascade-select with template files', () => {
     expect(resolveRegistryItem('autocomplete')?.files[0].source).toBe('react/ts/thai-address-autocomplete.tsx')
-    expect(resolveRegistryItem('cascade-select')?.files[0].target).toEqual({ dir: 'componentDir', file: 'ThaiAddressCascadeSelect.tsx' })
+    expect(resolveRegistryItem('cascade-select')?.files[0].target).toEqual({ dir: 'componentDir', file: 'thai-address-cascade-select.tsx' })
     for (const item of registryItems) {
       expect(() => resolveWithDependencies([item])).not.toThrow()
     }
+  })
+
+  it('cascade-select points at the Base UI template and shares the lib/hook items', () => {
+    const item = resolveRegistryItem('cascade')
+    expect(item?.files).toEqual([
+      {
+        source: 'react/ts/thai-address-cascade-select.tsx',
+        target: { dir: 'componentDir', file: 'thai-address-cascade-select.tsx' },
+      },
+    ])
+    expect(item?.dependencies).toEqual(['thaizip', '@base-ui/react'])
+    expect(item?.registryDependencies).toEqual(['utils', 'use-thai-address-index'])
+    expect(item?.exportName).toBe('ThaiAddressCascadeSelect')
   })
 })

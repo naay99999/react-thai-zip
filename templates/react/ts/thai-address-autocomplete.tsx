@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Combobox } from '@base-ui-components/react/combobox'
+import { Combobox } from '@base-ui/react/combobox'
 import { useThaiAddressAutocomplete } from 'thaizip/react'
 import type { ResolvedThaiAddress, ThaiAddressSuggestion, TrigramIndex } from 'thaizip'
 import { cn } from '@/lib/utils'

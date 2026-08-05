@@ -44,7 +44,7 @@ src/utils/
 templates/react/
   ts/                           # TypeScript component templates (TS-only; no JS templates)
     thai-address-autocomplete.tsx    # Base UI Combobox-based autocomplete (imports `@/lib/utils` + `@/hooks/use-thai-address-index`)
-    ThaiAddressCascadeSelect.tsx     # legacy province > district > sub-district select
+    thai-address-cascade-select.tsx  # Base UI Select ×3 cascade (imports `@/lib/utils` + `@/hooks/use-thai-address-index`)
     lib/utils.ts                     # cn() class-name helper (clsx + tailwind-merge) — shared registry item
     hooks/use-thai-address-index.ts  # loads the bundled thaizip index — shared registry item
 tsconfig.templates.json         # standalone tsconfig (path-mapped @/lib, @/hooks) used by `typecheck:templates`
@@ -58,7 +58,7 @@ tests/                          # Vitest unit tests, one file per util + command
 Components are resolved by name or alias in `src/registry.ts` against the `RegistryItem` model (multi-file: each item lists one or more `TemplateFile`s with their own target directory, plus `dependencies` and `registryDependencies`). Four registry items exist; only the two `component`-type ones are directly selectable (via `add [target]` or the interactive multiselect / `--help` listing) — the `lib` and `hook` items are pulled in transitively:
 
 - `autocomplete` / `thai-address-autocomplete` / `ThaiAddressAutocomplete` — `component`; `registryDependencies: ['utils', 'use-thai-address-index']`
-- `cascade` / `cascade-select` / `thai-address-cascade-select` / `ThaiAddressCascadeSelect` — `component`; no registry dependencies
+- `cascade` / `cascade-select` / `thai-address-cascade-select` / `ThaiAddressCascadeSelect` — `component`; `registryDependencies: ['utils', 'use-thai-address-index']`
 - `utils` / `cn` — `lib`; writes `<libDir>/utils.ts` (`cn()` via clsx + tailwind-merge)
 - `use-thai-address-index` / `index-hook` — `hook`; writes `<hooksDir>/use-thai-address-index.ts` (loads the bundled thaizip index)
 
@@ -102,8 +102,8 @@ Tailwind CSS is a **prerequisite**, not something this CLI installs. `init` dete
 
 ## Components
 
-- `ThaiAddressAutocomplete` (`thai-address-autocomplete.tsx`) — free-text address autocomplete built on `@base-ui-components/react`'s `Combobox`. Props: controlled/uncontrolled `value`/`defaultValue`/`onValueChange` (`ResolvedThaiAddress | null`), `name` (renders 4 hidden `${name}-subdistrict|-district|-province|-zipcode` inputs), `locale` (`'th' | 'en'`), `texts` (`Partial<Texts>`), `limit`/`debounce`/`threshold` (passed to `useThaiAddressAutocomplete`), `disabled`/`required`/`onBlur`/`onError`, four className slots (`className`/`inputClassName`/`popupClassName`/`itemClassName`), and a forwarded `ref`. Authored against `@/lib/utils` + `@/hooks/use-thai-address-index`, rewritten to relative imports at scaffold time (see "Template import rewriting" above).
-- `ThaiAddressCascadeSelect` — legacy province > district > sub-district select flow; unchanged in Phase 2, pending a Base UI-based redesign in a later phase.
+- `ThaiAddressAutocomplete` (`thai-address-autocomplete.tsx`) — free-text address autocomplete built on `@base-ui/react`'s `Combobox`. Props: controlled/uncontrolled `value`/`defaultValue`/`onValueChange` (`ResolvedThaiAddress | null`), `name` (renders 4 hidden `${name}-subdistrict|-district|-province|-zipcode` inputs), `locale` (`'th' | 'en'`), `texts` (`Partial<Texts>`), `limit`/`debounce`/`threshold` (passed to `useThaiAddressAutocomplete`), `disabled`/`required`/`onBlur`/`onError`, four className slots (`className`/`inputClassName`/`popupClassName`/`itemClassName`), and a forwarded `ref`. Authored against `@/lib/utils` + `@/hooks/use-thai-address-index`, rewritten to relative imports at scaffold time (see "Template import rewriting" above).
+- `ThaiAddressCascadeSelect` (`thai-address-cascade-select.tsx`) — province > district > sub-district cascade built on `@base-ui/react`'s `Select` (×3). Props: controlled/uncontrolled `value`/`defaultValue`/`onValueChange` (`ResolvedThaiAddress | null`), `name` (renders 4 hidden `${name}-subdistrict|-district|-province|-zipcode` inputs), `locale` (`'th' | 'en'`), `texts` (`Partial<Texts>`), `disabled`/`required`/`onBlur`/`onError`/`aria-invalid`, five className slots (`className`/`labelClassName`/`triggerClassName`/`popupClassName`/`itemClassName`), and a `ref` forwarded to the province trigger. Changing a parent select in a way that invalidates a full selection fires `onValueChange(null)` and resets the downstream selects. Built on core `listProvinces`/`listAmphures`/`listTambons`. Authored against `@/lib/utils` + `@/hooks/use-thai-address-index`, rewritten to relative imports at scaffold time (see "Template import rewriting" above).
 
 ## Key constants (`src/utils/config.ts`)
 
@@ -115,4 +115,4 @@ Tailwind CSS is a **prerequisite**, not something this CLI installs. `init` dete
 - `tsup` bundles `src/cli.ts` → `dist/cli.js` as ESM, prepends `#!/usr/bin/env node`
 - `dts: false` — no type declarations emitted (it's a CLI, not a library)
 - `dist/` and `templates/` are both included in the published npm package
-- `@base-ui-components/react`, `clsx`, `tailwind-merge`, `react`, `react-dom` are `devDependencies` here (needed to author/typecheck/test the templates and this repo's own RTL tests) — they are never bundled into `dist/`. `add` installs them into the *target* project instead, per registry item's own `dependencies` list.
+- `@base-ui/react`, `clsx`, `tailwind-merge`, `react`, `react-dom` are `devDependencies` here (needed to author/typecheck/test the templates and this repo's own RTL tests) — they are never bundled into `dist/`. `add` installs them into the *target* project instead, per registry item's own `dependencies` list.

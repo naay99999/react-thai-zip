@@ -42,7 +42,7 @@ describe('rewriteTemplateImports', () => {
   })
 
   it('leaves unrelated import specifiers untouched', () => {
-    const content = `import * as React from 'react'\nimport { Combobox } from '@base-ui-components/react/combobox'\n`
+    const content = `import * as React from 'react'\nimport { Combobox } from '@base-ui/react/combobox'\n`
     const out = rewriteTemplateImports(content, '/p/app/components', baseV2Config, '/p')
     expect(out).toBe(content)
   })

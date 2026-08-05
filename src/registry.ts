@@ -25,20 +25,18 @@ export const registryItems: RegistryItem[] = [
     aliases: ['autocomplete', 'thai-address-autocomplete', 'ThaiAddressAutocomplete'],
     type: 'component',
     files: [{ source: 'react/ts/thai-address-autocomplete.tsx', target: { dir: 'componentDir', file: 'thai-address-autocomplete.tsx' } }],
-    dependencies: ['thaizip', '@base-ui-components/react'],
+    dependencies: ['thaizip', '@base-ui/react'],
     registryDependencies: ['utils', 'use-thai-address-index'],
     exportName: 'ThaiAddressAutocomplete',
   },
   {
     name: 'cascade-select',
-    description: 'Province > district > sub-district select flow',
+    description: 'Province > district > sub-district select flow (Base UI Select)',
     aliases: ['cascade', 'cascade-select', 'thai-address-cascade-select', 'ThaiAddressCascadeSelect'],
     type: 'component',
-    files: [{ source: 'react/ts/ThaiAddressCascadeSelect.tsx', target: { dir: 'componentDir', file: 'ThaiAddressCascadeSelect.tsx' } }],
-    dependencies: ['thaizip'],
-    registryDependencies: [],
-    // Set explicitly (matches the current PascalCase filename today) so the post-scaffold
-    // hint keeps printing valid JS once this file kebab-cases in Phase 3.
+    files: [{ source: 'react/ts/thai-address-cascade-select.tsx', target: { dir: 'componentDir', file: 'thai-address-cascade-select.tsx' } }],
+    dependencies: ['thaizip', '@base-ui/react'],
+    registryDependencies: ['utils', 'use-thai-address-index'],
     exportName: 'ThaiAddressCascadeSelect',
   },
   {
