@@ -135,4 +135,23 @@ describe('ThaiAddressAutocomplete — Base UI selection-state sync', () => {
     await waitFor(() => expect(input.value).toBe(''))
     expect(onValueChange).toHaveBeenLastCalledWith(null)
   })
+
+  it('disables the hidden form-integration inputs so a disabled field is excluded from submission', async () => {
+    const { container } = render(
+      <ThaiAddressAutocomplete name="addr" disabled defaultValue={DEFAULT_ADDRESS} />,
+    )
+
+    // Wait for the async index load to finish and the "Ready" subtree (which renders the
+    // hidden inputs) to mount, mirroring getReadyInput()'s readiness wait above.
+    await screen.findByRole('combobox')
+
+    for (const suffix of ['subdistrict', 'district', 'province', 'zipcode']) {
+      const hiddenInput = await waitFor(() => {
+        const el = container.querySelector<HTMLInputElement>(`input[name="addr-${suffix}"]`)
+        expect(el).not.toBeNull()
+        return el as HTMLInputElement
+      })
+      expect(hiddenInput.disabled).toBe(true)
+    }
+  })
 })

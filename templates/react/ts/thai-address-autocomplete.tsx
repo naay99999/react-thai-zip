@@ -333,10 +333,30 @@ function ThaiAddressAutocompleteReady({
 
       {name && (
         <>
-          <input type="hidden" name={`${name}-subdistrict`} value={resolvedAddress?.subdistrict ?? ''} />
-          <input type="hidden" name={`${name}-district`} value={resolvedAddress?.district ?? ''} />
-          <input type="hidden" name={`${name}-province`} value={resolvedAddress?.province ?? ''} />
-          <input type="hidden" name={`${name}-zipcode`} value={resolvedAddress?.zipCode ?? ''} />
+          <input
+            type="hidden"
+            name={`${name}-subdistrict`}
+            value={resolvedAddress?.subdistrict ?? ''}
+            disabled={disabled}
+          />
+          <input
+            type="hidden"
+            name={`${name}-district`}
+            value={resolvedAddress?.district ?? ''}
+            disabled={disabled}
+          />
+          <input
+            type="hidden"
+            name={`${name}-province`}
+            value={resolvedAddress?.province ?? ''}
+            disabled={disabled}
+          />
+          <input
+            type="hidden"
+            name={`${name}-zipcode`}
+            value={resolvedAddress?.zipCode ?? ''}
+            disabled={disabled}
+          />
         </>
       )}
     </div>
