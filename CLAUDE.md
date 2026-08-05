@@ -102,7 +102,7 @@ Tailwind CSS is a **prerequisite**, not something this CLI installs. `init` dete
 
 ## Components
 
-- `ThaiAddressAutocomplete` (`thai-address-autocomplete.tsx`) — free-text address autocomplete built on `@base-ui-components/react`'s `Combobox`. Props: controlled/uncontrolled `value`/`defaultValue`/`onValueChange` (`ResolvedThaiAddress | null`), `name` (renders 4 hidden `${name}-subdistrict|-district|-province|-zipcode` inputs), `locale` (`'th' | 'en'`), `texts` (`Partial<Texts>`), `limit`/`debounce`/`threshold` (passed to `useThaiAddressAutocomplete`), `disabled`/`required`/`onBlur`/`onError`, four className slots (`className`/`inputClassName`/`popupClassName`/`itemClassName`), and a forwarded `ref`. Authored against `@/lib/utils` + `@/hooks/use-thai-address-index`, rewritten to relative imports at scaffold time (see "Template import rewriting" above).
+- `ThaiAddressAutocomplete` (`thai-address-autocomplete.tsx`) — free-text address autocomplete built on `@base-ui/react`'s `Combobox`. Props: controlled/uncontrolled `value`/`defaultValue`/`onValueChange` (`ResolvedThaiAddress | null`), `name` (renders 4 hidden `${name}-subdistrict|-district|-province|-zipcode` inputs), `locale` (`'th' | 'en'`), `texts` (`Partial<Texts>`), `limit`/`debounce`/`threshold` (passed to `useThaiAddressAutocomplete`), `disabled`/`required`/`onBlur`/`onError`, four className slots (`className`/`inputClassName`/`popupClassName`/`itemClassName`), and a forwarded `ref`. Authored against `@/lib/utils` + `@/hooks/use-thai-address-index`, rewritten to relative imports at scaffold time (see "Template import rewriting" above).
 - `ThaiAddressCascadeSelect` — legacy province > district > sub-district select flow; unchanged in Phase 2, pending a Base UI-based redesign in a later phase.
 
 ## Key constants (`src/utils/config.ts`)
@@ -115,4 +115,4 @@ Tailwind CSS is a **prerequisite**, not something this CLI installs. `init` dete
 - `tsup` bundles `src/cli.ts` → `dist/cli.js` as ESM, prepends `#!/usr/bin/env node`
 - `dts: false` — no type declarations emitted (it's a CLI, not a library)
 - `dist/` and `templates/` are both included in the published npm package
-- `@base-ui-components/react`, `clsx`, `tailwind-merge`, `react`, `react-dom` are `devDependencies` here (needed to author/typecheck/test the templates and this repo's own RTL tests) — they are never bundled into `dist/`. `add` installs them into the *target* project instead, per registry item's own `dependencies` list.
+- `@base-ui/react`, `clsx`, `tailwind-merge`, `react`, `react-dom` are `devDependencies` here (needed to author/typecheck/test the templates and this repo's own RTL tests) — they are never bundled into `dist/`. `add` installs them into the *target* project instead, per registry item's own `dependencies` list.

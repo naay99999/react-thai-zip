@@ -23,7 +23,7 @@ describe('registry', () => {
 
   it('autocomplete depends on thaizip + Base UI and pulls in utils + use-thai-address-index', () => {
     const item = resolveRegistryItem('autocomplete')
-    expect(item?.dependencies).toEqual(['thaizip', '@base-ui-components/react'])
+    expect(item?.dependencies).toEqual(['thaizip', '@base-ui/react'])
     expect(item?.registryDependencies).toEqual(['utils', 'use-thai-address-index'])
   })
 

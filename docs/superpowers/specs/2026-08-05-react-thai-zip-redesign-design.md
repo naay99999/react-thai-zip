@@ -10,6 +10,13 @@ Status: approved pending user review
 `.dark { ... }` class-based block never applies. Fixed in Phase 1; Phase 2/3
 components that rely on dark-mode tokens depend on this.
 
+**Amendment (Phase 3, 2026-08-05):** the Base UI package is `@base-ui/react`
+(pinned `^1.7.0`), not `@base-ui-components/react` — the latter was deprecated
+on npm ("renamed to @base-ui/react") and frozen at `1.0.0-rc.0`. All template
+imports and registry `dependencies` use the new name. The Combobox API relied
+on by the autocomplete (`onInputValueChange` signature, `'input-change'`
+reason) is unchanged in 1.7.x.
+
 ## Goal
 
 Rebuild `react-thaizip` into a shadcn-style scaffold tool: components composed from
@@ -24,7 +31,7 @@ commands, browser/E2E tests of the scaffolded components.
 
 | Topic | Decision |
 |---|---|
-| Headless primitive | Base UI (`@base-ui-components/react`) |
+| Headless primitive | Base UI (`@base-ui/react`) |
 | Template language | TypeScript only — `templates/react/js/` is deleted |
 | Styling | shadcn design tokens (CSS variables) + `cn()` (clsx + tailwind-merge) |
 | Component set | 2 high-quality components: `ThaiAddressAutocomplete`, `ThaiAddressCascadeSelect` |
@@ -45,7 +52,7 @@ After `npx react-thaizip add autocomplete`:
 ```
 
 npm dependencies installed into the user project: `thaizip`,
-`@base-ui-components/react`, `clsx`, `tailwind-merge`.
+`@base-ui/react`, `clsx`, `tailwind-merge`.
 
 ### Registry (multi-file, shadcn-style)
 
@@ -187,7 +194,7 @@ templates and registry entries, `src/locales.ts`, `src/utils/installTailwind.ts`
 ## Testing
 
 - **Templates are typechecked in CI**: a dedicated tsconfig covers `templates/`;
-  `@types/react`, `@base-ui-components/react`, and `thaizip` become devDependencies
+  `@types/react`, `@base-ui/react`, and `thaizip` become devDependencies
   of this repo for that purpose.
 - New unit tests: transitive `registryDependencies` resolution + skip-existing,
   config migration/validation, Tailwind v4 detection, `--yes`/`--overwrite`,

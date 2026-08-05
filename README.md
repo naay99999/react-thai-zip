@@ -7,7 +7,7 @@ npx react-thaizip init
 npx react-thaizip add autocomplete
 ```
 
-`add autocomplete` installs `thaizip`, `@base-ui-components/react`, `clsx`, and `tailwind-merge`, then scaffolds 3 files: the component plus its two shared dependencies (`lib/utils.ts` and `hooks/use-thai-address-index.ts`).
+`add autocomplete` installs `thaizip`, `@base-ui/react`, `clsx`, and `tailwind-merge`, then scaffolds 3 files: the component plus its two shared dependencies (`lib/utils.ts` and `hooks/use-thai-address-index.ts`).
 
 ## Prerequisite: Tailwind CSS
 
@@ -55,7 +55,7 @@ npx react-thaizip add autocomplete cascade-select
 
 Running `add` with no targets prompts an interactive multiselect (only these two components are listed — `--help` shows the same list). `add` also requires `thaizip` >= 0.7.0 (the version that added the cascade/enumeration API and bilingual labels the templates rely on) — if an older version is already installed, `add` reports the version it found and exits without writing files.
 
-- **`autocomplete`** (`ThaiAddressAutocomplete`) — free-text address search built on [Base UI](https://base-ui.com/react/components/combobox)'s `Combobox`. Scaffolds 3 files: the component (`<componentDir>/thai-address-autocomplete.tsx`) plus its two shared dependencies, `<libDir>/utils.ts` (`cn()` helper) and `<hooksDir>/use-thai-address-index.ts` (loads the bundled thaizip index) — pulled in automatically, no need to `add` them by name. Installs `thaizip`, `@base-ui-components/react`, `clsx`, and `tailwind-merge`.
+- **`autocomplete`** (`ThaiAddressAutocomplete`) — free-text address search built on [Base UI](https://base-ui.com/react/components/combobox)'s `Combobox`. Scaffolds 3 files: the component (`<componentDir>/thai-address-autocomplete.tsx`) plus its two shared dependencies, `<libDir>/utils.ts` (`cn()` helper) and `<hooksDir>/use-thai-address-index.ts` (loads the bundled thaizip index) — pulled in automatically, no need to `add` them by name. Installs `thaizip`, `@base-ui/react`, `clsx`, and `tailwind-merge`.
 - **`cascade-select`** (`ThaiAddressCascadeSelect`) — province > district > sub-district select flow. Legacy component, pending a Base UI-based redesign in a later phase. Installs only `thaizip`.
 
 ### `ThaiAddressAutocomplete` props

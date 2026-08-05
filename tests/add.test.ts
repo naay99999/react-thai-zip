@@ -29,7 +29,7 @@ async function tempProjectWithConfigV2(options: { thaizipRange?: string } = {}) 
     JSON.stringify({
       dependencies: {
         thaizip: thaizipRange,
-        '@base-ui-components/react': '^1.0.0',
+        '@base-ui/react': '^1.0.0',
         clsx: '^2.0.0',
         'tailwind-merge': '^2.0.0',
       },
@@ -226,7 +226,7 @@ describe('addComponents', () => {
       JSON.stringify({
         dependencies: {
           thaizip: '^0.7.0',
-          '@base-ui-components/react': '^1.0.0',
+          '@base-ui/react': '^1.0.0',
           clsx: '^2.0.0',
           'tailwind-merge': '^2.0.0',
         },

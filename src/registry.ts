@@ -25,7 +25,7 @@ export const registryItems: RegistryItem[] = [
     aliases: ['autocomplete', 'thai-address-autocomplete', 'ThaiAddressAutocomplete'],
     type: 'component',
     files: [{ source: 'react/ts/thai-address-autocomplete.tsx', target: { dir: 'componentDir', file: 'thai-address-autocomplete.tsx' } }],
-    dependencies: ['thaizip', '@base-ui-components/react'],
+    dependencies: ['thaizip', '@base-ui/react'],
     registryDependencies: ['utils', 'use-thai-address-index'],
     exportName: 'ThaiAddressAutocomplete',
   },
