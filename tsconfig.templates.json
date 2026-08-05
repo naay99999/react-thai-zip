@@ -16,6 +16,7 @@
   "include": [
     "templates/react/ts/**/*.ts",
     "templates/react/ts/**/*.tsx",
-    "tests/thai-address-autocomplete.test.tsx"
+    "tests/thai-address-autocomplete.test.tsx",
+    "tests/thai-address-cascade-select.test.tsx"
   ]
 }
