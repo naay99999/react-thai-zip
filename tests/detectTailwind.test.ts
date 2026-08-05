@@ -34,4 +34,13 @@ describe('detectTailwind', () => {
     const cwd = await tempProject()
     expect(await detectTailwind(cwd)).toBeNull()
   })
+
+  it('detects v3 from the package.json dependency range when there is no config file or css', async () => {
+    const cwd = await tempProject()
+    await writeFile(
+      path.join(cwd, 'package.json'),
+      JSON.stringify({ devDependencies: { tailwindcss: '^3.4.0' } }),
+    )
+    expect(await detectTailwind(cwd)).toEqual({ version: 3, cssPath: null })
+  })
 })

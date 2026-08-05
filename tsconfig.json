@@ -14,6 +14,7 @@
   "include": ["src", "tests", "tsup.config.ts", "vitest.config.ts"],
   "exclude": [
     "tests/thai-address-autocomplete.test.tsx",
-    "tests/thai-address-cascade-select.test.tsx"
+    "tests/thai-address-cascade-select.test.tsx",
+    "tests/thai-address-autocomplete-loading.test.tsx"
   ]
 }

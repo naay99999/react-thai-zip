@@ -7,16 +7,13 @@ import { pathExists } from './fs.js'
 export const CONFIG_FILE = 'thaizip.config.json'
 export const CORE_PACKAGE_NAME = 'thaizip'
 // thaizip 0.7.0 introduced the cascade/enumeration API and bilingual (en/th)
-// labels that the scaffolded templates rely on; it also replaced the
-// `thaizip/react` subpath import used by the previous template generation.
-// Left as an open-ended floor rather than a caret range so it doesn't
-// exclude the real "latest" tag.
+// labels that the scaffolded templates rely on. Left as an open-ended floor
+// rather than a caret range so it doesn't exclude the real "latest" tag.
 export const CORE_PACKAGE_VERSION = '>=0.7.0'
 // Minimum thaizip version required for the cascade/enumeration API and
-// bilingual labels used by every scaffolded component (no longer the 0.6.0
-// `thaizip/react` subpath). Kept separate from CORE_PACKAGE_VERSION (a range
-// string) so version-gate logic has a single plain version to compare
-// against.
+// bilingual labels used by every scaffolded component. Kept separate from
+// CORE_PACKAGE_VERSION (a range string) so version-gate logic has a single
+// plain version to compare against.
 export const MINIMUM_THAIZIP_VERSION = '0.7.0'
 
 const PACKAGE_MANAGERS: readonly PackageManager[] = ['npm', 'yarn', 'pnpm', 'bun']

@@ -31,6 +31,7 @@ npx react-thaizip --version
 - `--overwrite` — overwrite existing component files without prompting (`add` only)
 - `--help`, `-h` — print usage and the list of available components
 - `--version`, `-v` — print the CLI's own version
+- `init --help` / `add --help` — print command-scoped usage (`add --help` includes the component list)
 
 ## Components
 
@@ -85,7 +86,7 @@ Running `add` with no targets prompts an interactive multiselect (only these two
 
 ## Customizing labels (`texts` prop)
 
-Every generated component ships with English default labels and accepts an optional `texts` prop for overriding any subset of them — useful for Thai-language UIs or other locales:
+Every generated component ships with Thai default labels (`locale` defaults to `'th'`); pass `locale="en"` to switch to the built-in English set. The optional `texts` prop overrides any subset of the active set:
 
 ```tsx
 <ThaiAddressCascadeSelect

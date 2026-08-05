@@ -77,12 +77,15 @@ react-thaizip init [--yes]
 react-thaizip add [component...] [--yes] [--overwrite]
 react-thaizip --help
 react-thaizip --version
+react-thaizip init --help
+react-thaizip add --help
 ```
 
 - `--yes` / `-y` — skip confirmation prompts (both `init` and `add`)
 - `--overwrite` — overwrite existing component files without prompting (`add` only)
 - `--help` / `-h` — print usage and the list of `component`-type registry items (the `lib`/`hook` items are internal-only and not listed)
 - `--version` / `-v` — print the CLI's own package version
+- `--help` after a command prints command-scoped usage; `--help` wins over `--version` when both are passed
 
 ## Tailwind prerequisite
 
@@ -103,7 +106,7 @@ Tailwind CSS is a **prerequisite**, not something this CLI installs. `init` dete
 ## Components
 
 - `ThaiAddressAutocomplete` (`thai-address-autocomplete.tsx`) — free-text address autocomplete built on `@base-ui/react`'s `Combobox`. Props: controlled/uncontrolled `value`/`defaultValue`/`onValueChange` (`ResolvedThaiAddress | null`), `name` (renders 4 hidden `${name}-subdistrict|-district|-province|-zipcode` inputs), `locale` (`'th' | 'en'`), `texts` (`Partial<Texts>`), `limit`/`debounce`/`threshold` (passed to `useThaiAddressAutocomplete`), `disabled`/`required`/`onBlur`/`onError`, four className slots (`className`/`inputClassName`/`popupClassName`/`itemClassName`), and a forwarded `ref`. Authored against `@/lib/utils` + `@/hooks/use-thai-address-index`, rewritten to relative imports at scaffold time (see "Template import rewriting" above).
-- `ThaiAddressCascadeSelect` (`thai-address-cascade-select.tsx`) — province > district > sub-district cascade built on `@base-ui/react`'s `Select` (×3). Props: controlled/uncontrolled `value`/`defaultValue`/`onValueChange` (`ResolvedThaiAddress | null`), `name` (renders 4 hidden `${name}-subdistrict|-district|-province|-zipcode` inputs), `locale` (`'th' | 'en'`), `texts` (`Partial<Texts>`), `disabled`/`required`/`onBlur`/`onError`/`aria-invalid`, five className slots (`className`/`labelClassName`/`triggerClassName`/`popupClassName`/`itemClassName`), and a `ref` forwarded to the province trigger. Changing a parent select in a way that invalidates a full selection fires `onValueChange(null)` and resets the downstream selects. Built on core `listProvinces`/`listAmphures`/`listTambons`. Authored against `@/lib/utils` + `@/hooks/use-thai-address-index`, rewritten to relative imports at scaffold time (see "Template import rewriting" above).
+- `ThaiAddressCascadeSelect` (`thai-address-cascade-select.tsx`) — province > district > sub-district cascade built on `@base-ui/react`'s `Select` (×3). Props: controlled/uncontrolled `value`/`defaultValue`/`onValueChange` (`ResolvedThaiAddress | null`), `name` (renders 4 hidden `${name}-subdistrict|-district|-province|-zipcode` inputs), `locale` (`'th' | 'en'`), `texts` (`Partial<Texts>`), `disabled`/`required`/`onBlur`/`onError`/`aria-invalid` (all three triggers), five className slots (`className`/`labelClassName`/`triggerClassName`/`popupClassName`/`itemClassName`), and a `ref` forwarded to the province trigger. Changing a parent select in a way that invalidates a full selection fires `onValueChange(null)` and resets the downstream selects. Built on core `listProvinces`/`listAmphures`/`listTambons`. Authored against `@/lib/utils` + `@/hooks/use-thai-address-index`, rewritten to relative imports at scaffold time (see "Template import rewriting" above).
 
 ## Key constants (`src/utils/config.ts`)
 
@@ -116,3 +119,4 @@ Tailwind CSS is a **prerequisite**, not something this CLI installs. `init` dete
 - `dts: false` — no type declarations emitted (it's a CLI, not a library)
 - `dist/` and `templates/` are both included in the published npm package
 - `@base-ui/react`, `clsx`, `tailwind-merge`, `react`, `react-dom` are `devDependencies` here (needed to author/typecheck/test the templates and this repo's own RTL tests) — they are never bundled into `dist/`. `add` installs them into the *target* project instead, per registry item's own `dependencies` list.
+- `.github/workflows/ci.yml` runs `npm test` + both typechecks + `build` on pushes to `main` and all PRs; `release-please.yml` handles releases.

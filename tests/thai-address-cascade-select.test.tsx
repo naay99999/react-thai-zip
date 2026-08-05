@@ -35,7 +35,9 @@ let expectedAddress: ResolvedThaiAddress
 beforeAll(async () => {
   const index = await loadDefaultIndex()
   province = listProvinces(index)[0]
-  amphure = listAmphures(index, province.id)[0]
+  const amphures = listAmphures(index, province.id)
+  expect(amphures.length).toBeGreaterThanOrEqual(2)
+  amphure = amphures[0]
   tambon = listTambons(index, amphure.id)[0]
   expectedAddress = {
     tambon: tambon.nameTh,
@@ -204,6 +206,40 @@ describe('ThaiAddressCascadeSelect — cascade flow', () => {
     expect(isDisabled(subdistrictTrigger)).toBe(true)
     expect(districtTrigger.textContent).not.toContain(amphure.nameTh)
     expect(screen.queryByDisplayValue(tambon.zipCode)).toBeNull()
+  })
+
+  it('applies aria-invalid to all three triggers', async () => {
+    render(<ThaiAddressCascadeSelect aria-invalid />)
+    const triggers = await screen.findAllByRole('combobox')
+    for (const trigger of triggers) {
+      expect(trigger.getAttribute('aria-invalid')).toBe('true')
+    }
+  })
+
+  it('keeps an in-progress district re-pick in controlled mode', async () => {
+    function Controlled() {
+      const [value, setValue] = React.useState<ResolvedThaiAddress | null>(null)
+      return <ThaiAddressCascadeSelect value={value} onValueChange={setValue} />
+    }
+
+    const user = userEvent.setup()
+    render(<Controlled />)
+
+    const { provinceTrigger, districtTrigger, subdistrictTrigger } = await getTriggers()
+    await pickOption(user, provinceTrigger, province.nameTh)
+    await waitFor(() => expect(isDisabled(districtTrigger)).toBe(false))
+    await pickOption(user, districtTrigger, amphure.nameTh)
+    await waitFor(() => expect(isDisabled(subdistrictTrigger)).toBe(false))
+    await pickOption(user, subdistrictTrigger, tambon.nameTh)
+    await waitFor(() => expect(visibleDisplayValue(tambon.zipCode)).toBeTruthy())
+
+    // full selection committed; now re-pick a different district — the null echo
+    // must not wipe the new district pick
+    const index = await loadDefaultIndex()
+    const otherAmphure = listAmphures(index, province.id)[1]
+    await pickOption(user, districtTrigger, otherAmphure.nameTh)
+    await waitFor(() => expect(districtTrigger.textContent).toContain(otherAmphure.nameTh))
+    expect(provinceTrigger.textContent).toContain(province.nameTh)
   })
 
   it('controlled mode: an explicit external clear (value -> null with no in-progress pick) resets the full chain', async () => {

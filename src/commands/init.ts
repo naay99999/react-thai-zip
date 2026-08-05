@@ -57,7 +57,7 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
         : `\nDesign tokens already present in ${cssPath}. Skipped writing.`,
     )
   } else {
-    console.log('\nNo global CSS file was found. Add the design tokens manually — see README.')
+    console.log('\nNo global CSS file was found. Add these design tokens to your global CSS manually:')
     console.log(buildTokenBlock(version))
   }
 
@@ -69,7 +69,17 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
     const shouldInstall = await confirm('thaizip is not installed. Install it?', true, yes)
 
     if (shouldInstall) {
-      await installPackage([`${CORE_PACKAGE_NAME}@${CORE_PACKAGE_VERSION}`], { cwd, pm })
+      const spec = `${CORE_PACKAGE_NAME}@${CORE_PACKAGE_VERSION}`
+      try {
+        await installPackage([spec], { cwd, pm })
+      } catch (error) {
+        const hint = pm === 'npm' ? `npm i '${spec}'` : `${pm} add '${spec}'`
+        console.error(`\nFailed to install ${CORE_PACKAGE_NAME}.`)
+        console.error(`Install it manually (${hint}), then re-run npx react-thaizip init.`)
+        if (error instanceof Error) console.error(`\n${error.message}`)
+        process.exitCode = 1
+        return
+      }
     }
   }
 
