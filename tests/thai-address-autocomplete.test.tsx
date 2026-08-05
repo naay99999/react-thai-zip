@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import * as React from 'react'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -153,5 +154,60 @@ describe('ThaiAddressAutocomplete — Base UI selection-state sync', () => {
       })
       expect(hiddenInput.disabled).toBe(true)
     }
+  })
+
+  it("renders English placeholder and suggestion labels when locale='en'", async () => {
+    const user = userEvent.setup()
+    render(<ThaiAddressAutocomplete locale="en" />)
+    const input = await getReadyInput()
+    expect(input.placeholder).toBe('Type sub-district, district, province or postal code')
+    await user.type(input, sampleRecord.tambonNameEn.slice(0, 4))
+    const option = await screen.findByRole('option', { name: new RegExp(escapeRegExp(sampleRecord.tambonNameEn), 'i') })
+    expect(option).toBeTruthy()
+  })
+
+  it('re-syncs the visible text when a controlled value is set and cleared', async () => {
+    function Harness() {
+      const [value, setValue] = React.useState<ResolvedThaiAddress | null>(null)
+      return (
+        <div>
+          <ThaiAddressAutocomplete value={value} onValueChange={setValue} />
+          <button type="button" onClick={() => setValue(DEFAULT_ADDRESS)}>
+            set
+          </button>
+          <button type="button" onClick={() => setValue(null)}>
+            unset
+          </button>
+        </div>
+      )
+    }
+    const user = userEvent.setup()
+    render(<Harness />)
+    const input = await getReadyInput()
+    await user.click(screen.getByRole('button', { name: 'set' }))
+    await waitFor(() => expect(input.value).toBe(DEFAULT_ADDRESS_LABEL))
+    await user.click(screen.getByRole('button', { name: 'unset' }))
+    await waitFor(() => expect(input.value).toBe(''))
+  })
+
+  it('populates the hidden inputs after a selection and nulls the value when the input is emptied', async () => {
+    const onValueChange = vi.fn()
+    const user = userEvent.setup()
+    render(<ThaiAddressAutocomplete name="addr" onValueChange={onValueChange} />)
+    const input = await getReadyInput()
+    await user.type(input, sampleRecord.tambonNameTh.slice(0, 4))
+    const option = await screen.findByRole('option', { name: new RegExp(escapeRegExp(sampleRecord.tambonNameTh)) })
+    await user.click(option)
+    await waitFor(() =>
+      expect((document.querySelector('input[name="addr-zipcode"]') as HTMLInputElement).value).toBe(
+        sampleRecord.zipCode,
+      ),
+    )
+    expect((document.querySelector('input[name="addr-province"]') as HTMLInputElement).value).toBe(
+      sampleRecord.provinceNameTh,
+    )
+    expect(onValueChange).toHaveBeenCalledTimes(1)
+    await user.clear(input)
+    await waitFor(() => expect(onValueChange).toHaveBeenLastCalledWith(null))
   })
 })

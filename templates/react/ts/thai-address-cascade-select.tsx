@@ -41,8 +41,10 @@ export type ThaiAddressCascadeSelectProps = {
   texts?: Partial<ThaiAddressCascadeSelectTexts>
   disabled?: boolean
   required?: boolean
+  /** Blur handler for the province trigger (the cascade's primary control). */
   onBlur?: React.FocusEventHandler<HTMLButtonElement>
   onError?: (error: Error) => void
+  /** Marks all three select triggers invalid (e.g. after failed form validation). */
   'aria-invalid'?: React.AriaAttributes['aria-invalid']
   /** Applied to the root grid wrapper element. */
   className?: string
@@ -343,6 +345,7 @@ function ThaiAddressCascadeSelectReady({
         disabled={disabled || provinceId === null}
         required={required}
         locale={locale}
+        ariaInvalid={ariaInvalid}
         labelClassName={labelClassName}
         triggerClassName={triggerClassName}
         popupClassName={popupClassName}
@@ -359,6 +362,7 @@ function ThaiAddressCascadeSelectReady({
         disabled={disabled || amphureId === null}
         required={required}
         locale={locale}
+        ariaInvalid={ariaInvalid}
         labelClassName={labelClassName}
         triggerClassName={triggerClassName}
         popupClassName={popupClassName}
