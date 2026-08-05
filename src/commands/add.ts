@@ -1,3 +1,4 @@
+import { readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import prompts from 'prompts'
 import { installPackage } from '../utils/install.js'
@@ -8,6 +9,7 @@ import { detectTailwind } from '../utils/detectTailwind.js'
 import { getInstalledPackageVersion, getPackageDependencyRange, hasPackageDependency } from '../utils/packageJson.js'
 import { confirm } from '../utils/prompt.js'
 import { extractVersionAnchor, isVersionAtLeast } from '../utils/semver.js'
+import { rewriteTemplateImports } from '../utils/rewriteImports.js'
 import { registryItems, resolveRegistryItem, resolveWithDependencies, type RegistryItem } from '../registry.js'
 import { initProject } from './init.js'
 
@@ -129,15 +131,25 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
 
       if (copied === 'skipped') {
         console.log(`\nSkipped ${file.target.file} (already exists).`)
-      } else if (index === 0) {
-        primaryFileCopied = true
+      } else {
+        if (index === 0) {
+          primaryFileCopied = true
+        }
+
+        if (item.type === 'component') {
+          const content = await readFile(destination, 'utf8')
+          const rewritten = rewriteTemplateImports(content, path.dirname(destination), config, cwd)
+          if (rewritten !== content) {
+            await writeFile(destination, rewritten, 'utf8')
+          }
+        }
       }
     }
 
     if (item.type === 'component' && primaryFileCopied) {
       const primaryFile = item.files[0]
       const destination = path.join(cwd, config[primaryFile.target.dir], primaryFile.target.file)
-      const importSymbol = path.basename(primaryFile.target.file, path.extname(primaryFile.target.file))
+      const importSymbol = item.exportName ?? path.basename(primaryFile.target.file, path.extname(primaryFile.target.file))
       const importPath = `./${path.relative(cwd, destination).replace(/\\/g, '/').replace(/\.(tsx|jsx|ts|js)$/, '')}`
       console.log(`\n${item.name} added successfully.`)
       console.log(`Import it from:`)

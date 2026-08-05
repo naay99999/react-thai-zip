@@ -1,7 +1,7 @@
 export type RegistryItemType = 'component' | 'lib' | 'hook'
 export type TargetDirKey = 'componentDir' | 'libDir' | 'hooksDir'
 export type TemplateFile = {
-  source: string // path under templates/, e.g. 'react/ts/ThaiAddressAutocomplete.tsx'
+  source: string // path under templates/, e.g. 'react/ts/thai-address-autocomplete.tsx'
   target: { dir: TargetDirKey; file: string } // resolved as path.join(cwd, config[dir], file)
 }
 export type RegistryItem = {
@@ -12,17 +12,22 @@ export type RegistryItem = {
   files: TemplateFile[]
   dependencies: string[] // npm packages
   registryDependencies: string[] // names of other RegistryItems
+  // Named export the primary template file provides, for the post-scaffold "import it from"
+  // hint. Only needed when it can't be derived from the (possibly kebab-case) filename —
+  // defaults to a basename derivation in add.ts when omitted.
+  exportName?: string
 }
 
 export const registryItems: RegistryItem[] = [
   {
     name: 'autocomplete',
-    description: 'Free-text Thai address autocomplete',
+    description: 'Free-text Thai address autocomplete (Base UI Combobox)',
     aliases: ['autocomplete', 'thai-address-autocomplete', 'ThaiAddressAutocomplete'],
     type: 'component',
-    files: [{ source: 'react/ts/ThaiAddressAutocomplete.tsx', target: { dir: 'componentDir', file: 'ThaiAddressAutocomplete.tsx' } }],
-    dependencies: ['thaizip'],
-    registryDependencies: [],
+    files: [{ source: 'react/ts/thai-address-autocomplete.tsx', target: { dir: 'componentDir', file: 'thai-address-autocomplete.tsx' } }],
+    dependencies: ['thaizip', '@base-ui-components/react'],
+    registryDependencies: ['utils', 'use-thai-address-index'],
+    exportName: 'ThaiAddressAutocomplete',
   },
   {
     name: 'cascade-select',
@@ -30,6 +35,27 @@ export const registryItems: RegistryItem[] = [
     aliases: ['cascade', 'cascade-select', 'thai-address-cascade-select', 'ThaiAddressCascadeSelect'],
     type: 'component',
     files: [{ source: 'react/ts/ThaiAddressCascadeSelect.tsx', target: { dir: 'componentDir', file: 'ThaiAddressCascadeSelect.tsx' } }],
+    dependencies: ['thaizip'],
+    registryDependencies: [],
+    // Set explicitly (matches the current PascalCase filename today) so the post-scaffold
+    // hint keeps printing valid JS once this file kebab-cases in Phase 3.
+    exportName: 'ThaiAddressCascadeSelect',
+  },
+  {
+    name: 'utils',
+    description: 'cn() class-name helper (clsx + tailwind-merge)',
+    aliases: ['utils', 'cn'],
+    type: 'lib',
+    files: [{ source: 'react/ts/lib/utils.ts', target: { dir: 'libDir', file: 'utils.ts' } }],
+    dependencies: ['clsx', 'tailwind-merge'],
+    registryDependencies: [],
+  },
+  {
+    name: 'use-thai-address-index',
+    description: 'Shared hook that loads the bundled thaizip address index',
+    aliases: ['use-thai-address-index', 'index-hook'],
+    type: 'hook',
+    files: [{ source: 'react/ts/hooks/use-thai-address-index.ts', target: { dir: 'hooksDir', file: 'use-thai-address-index.ts' } }],
     dependencies: ['thaizip'],
     registryDependencies: [],
   },

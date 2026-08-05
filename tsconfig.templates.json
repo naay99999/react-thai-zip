@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": [],
+    "paths": {
+      "@/lib/utils": ["./templates/react/ts/lib/utils.ts"],
+      "@/hooks/use-thai-address-index": ["./templates/react/ts/hooks/use-thai-address-index.ts"]
+    }
+  },
+  "include": [
+    "templates/react/ts/**/*.ts",
+    "templates/react/ts/**/*.tsx",
+    "tests/thai-address-autocomplete.test.tsx"
+  ]
+}

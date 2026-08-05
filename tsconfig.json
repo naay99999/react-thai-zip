@@ -11,5 +11,8 @@
     "resolveJsonModule": true,
     "types": ["node", "vitest/globals"]
   },
-  "include": ["src", "tests", "tsup.config.ts", "vitest.config.ts"]
+  "include": ["src", "tests", "tsup.config.ts", "vitest.config.ts"],
+  "exclude": [
+    "tests/thai-address-autocomplete.test.tsx"
+  ]
 }
