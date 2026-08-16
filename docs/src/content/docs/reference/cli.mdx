@@ -1,0 +1,85 @@
+---
+title: คำสั่ง CLI
+description: รูปแบบคำสั่ง flags, aliases และการเลือกคอมโพเนนต์ของ react-thaizip
+---
+
+เรียก CLI ผ่าน `npx react-thaizip` ภายในโฟลเดอร์รากของโปรเจกต์ React หรือ Next.js ที่ต้องการ scaffold
+
+## รูปแบบคำสั่ง
+
+```text
+react-thaizip init [--yes]
+react-thaizip add [component...] [--yes] [--overwrite]
+react-thaizip --help
+react-thaizip --version
+react-thaizip init --help
+react-thaizip add --help
+```
+
+เมื่อใช้งานจริง ให้เติม `npx` ข้างหน้า เช่น `npx react-thaizip add autocomplete`
+
+## `init`
+
+```bash
+npx react-thaizip init
+```
+
+`init` ทำงานตามลำดับนี้:
+
+1. ตรวจหา package manager และโครงสร้างโปรเจกต์
+2. ให้ยืนยันหรือแก้ `componentDir` ถ้าไม่ได้ส่ง `--yes`
+3. ตรวจหา Tailwind CSS v3 หรือ v4 ซึ่งต้องติดตั้งไว้ก่อนแล้ว
+4. เพิ่ม design tokens ลง global CSS หรือพิมพ์ block ให้นำไปวางเอง
+5. สำหรับ Tailwind v3 พิมพ์ `theme.extend` snippet ให้นำไปเพิ่มเอง
+6. เสนอให้ติดตั้ง `thaizip` ถ้ายังไม่มี
+7. สร้าง `thaizip.config.json`
+
+ดูรูปแบบไฟล์และกฎการตรวจหาได้ที่ [ข้อมูลอ้างอิงการตั้งค่า](/react-thai-zip/reference/config/)
+
+## `add`
+
+เพิ่มคอมโพเนนต์หนึ่งตัว:
+
+```bash
+npx react-thaizip add autocomplete
+```
+
+เพิ่มหลายตัวพร้อมกันได้โดยคั่นชื่อด้วยช่องว่าง:
+
+```bash
+npx react-thaizip add autocomplete cascade-select
+```
+
+ถ้าไม่ระบุชื่อ `add` จะแสดง interactive multiselect ที่มีเฉพาะคอมโพเนนต์สาธารณะสองตัว:
+
+```bash
+npx react-thaizip add
+```
+
+### ชื่อและ aliases ที่ใช้ได้
+
+การจับคู่ชื่อไม่แยกตัวพิมพ์เล็ก-ใหญ่
+
+| คอมโพเนนต์ | ชื่อและ aliases |
+| --- | --- |
+| `ThaiAddressAutocomplete` | `autocomplete`, `thai-address-autocomplete`, `ThaiAddressAutocomplete` |
+| `ThaiAddressCascadeSelect` | `cascade`, `cascade-select`, `thai-address-cascade-select`, `ThaiAddressCascadeSelect` |
+
+แต่ละคอมโพเนนต์ดึง `utils` และ hook สำหรับโหลดดัชนีมาเป็น registry dependencies โดยอัตโนมัติ รายการภายในเหล่านี้ไม่แสดงใน multiselect หรือ `--help` และไม่ต้องระบุชื่อเอง
+
+ก่อนเขียนไฟล์ `add` จะตรวจว่า `thaizip` ที่มีอยู่เป็นเวอร์ชัน `0.7.0` ขึ้นไป ติดตั้ง dependencies ที่ขาดเมื่อได้รับการยืนยัน แล้วเขียนไฟล์ตามตำแหน่งใน `thaizip.config.json`
+
+## Flags
+
+| Flag | ผลลัพธ์ |
+| --- | --- |
+| `--yes`, `-y` | ไม่แสดง confirmation prompts และใช้คำตอบเริ่มต้นของแต่ละ prompt |
+| `--overwrite` | เขียนทับไฟล์คอมโพเนนต์ที่มีอยู่โดยไม่ถาม ใช้กับ `add` เท่านั้น |
+| `--help`, `-h` | แสดง help; วางหลัง `init` หรือ `add` เพื่อดู help เฉพาะคำสั่ง |
+| `--version`, `-v` | แสดงเวอร์ชันของ CLI |
+
+Flags ที่รู้จักวางตำแหน่งใดก็ได้ในอาร์กิวเมนต์ ถ้าส่งทั้ง help และ version **help จะทำงานก่อนเสมอ** และจะไม่เรียก `init` หรือ `add`
+
+`--yes` ไม่ได้แปลว่าเขียนทับทุกอย่าง: คำตอบเริ่มต้นของ prompt เขียนทับไฟล์คอมโพเนนต์และไฟล์ config คือ “ไม่” ดังนั้นไฟล์ที่มีอยู่ยังถูกข้าม ใช้ `--overwrite` แยกต่างหากเมื่อตั้งใจแทนที่คอมโพเนนต์ ส่วนไฟล์ hook และ `lib` ที่มีอยู่จะไม่ถูกเขียนทับแม้ส่ง `--overwrite`
+
+ถ้าใช้ flag ที่ไม่รู้จัก CLI จะจบด้วย error ก่อนเรียกคำสั่ง ดูวิธีแก้ปัญหาการติดตั้งและไฟล์ที่มีอยู่ได้ที่ [การแก้ปัญหา](/react-thai-zip/troubleshooting/)

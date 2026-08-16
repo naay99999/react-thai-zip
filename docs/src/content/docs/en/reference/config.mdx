@@ -1,0 +1,86 @@
+---
+title: Configuration reference
+description: thaizip.config.json v2 and directory, package-manager, and Tailwind detection rules
+---
+
+`npx react-thaizip init` writes `thaizip.config.json` at the project root. The `add` command reads it to locate component and shared-file destinations.
+
+## v2 shape
+
+This example shows every v2 field. Actual values depend on the project and the CLI version that created the file.
+
+```json
+{
+  "typescript": true,
+  "componentDir": "app/components",
+  "libDir": "lib",
+  "hooksDir": "hooks",
+  "packageManager": "npm",
+  "tailwind": {
+    "version": 4,
+    "css": "app/globals.css"
+  },
+  "registryVersion": "0.2.1"
+}
+```
+
+| Field | Accepted value | Meaning |
+| --- | --- | --- |
+| `typescript` | `true` | Only TypeScript templates are available; `false` is invalid. |
+| `componentDir` | non-empty string | Component destination relative to the project root. |
+| `libDir` | non-empty string | Destination for `utils.ts`; `init` defaults to `lib`. |
+| `hooksDir` | non-empty string | Destination for `use-thai-address-index.ts`; defaults to `hooks`. |
+| `packageManager` | `npm`, `yarn`, `pnpm`, `bun` | Package manager used by `add` for dependency installation. |
+| `tailwind.version` | `3` or `4` | Detected Tailwind major version. |
+| `tailwind.css` | string | Project-relative global CSS path, or `""` when no file was found. |
+| `registryVersion` | non-empty string | CLI version recorded by `init`; registry metadata, not the `thaizip` dependency version. |
+
+Every path is resolved from the working directory where the CLI runs. Run `init` and `add` from the same project root that contains the config file.
+
+## Project-structure detection
+
+`init` chooses the initial `componentDir` in this order, checking from the project root:
+
+| Condition | Component directory |
+| --- | --- |
+| `app/` exists | `app/components/` |
+| `app/` does not exist and `pages/` exists | `components/` |
+| Neither exists | `src/components/` |
+
+If both `app/` and `pages/` exist, `app/components/` wins. Without `--yes`, you can change the detected destination at the prompt before the config is written.
+
+## Package-manager detection
+
+The CLI uses the first lockfile found in this order:
+
+1. `bun.lock` or `bun.lockb` → `bun`
+2. `pnpm-lock.yaml` → `pnpm`
+3. `yarn.lock` → `yarn`
+4. `package-lock.json` → `npm`
+5. No recognized lockfile → `npm`
+
+## Tailwind detection
+
+Tailwind is a prerequisite; `init` does not install it. Detection proceeds in this order:
+
+1. Look for `@import "tailwindcss"` or its single-quoted form in a known global stylesheet. A match means Tailwind v4 with that CSS path.
+2. If the `tailwindcss` dependency declares major version 4 or newer, use v4 and store `tailwind.css` as `""` when no stylesheet was found.
+3. Look for `tailwind.config.ts`, `.js`, `.cjs`, or `.mjs`. A match means v3; the CLI then looks for a known global stylesheet containing `@tailwind`.
+4. If the dependency declares major version 3, use v3 and store an empty CSS path when no stylesheet was found.
+5. If none match, `init` stops and points you to Tailwind installation instructions.
+
+The global CSS candidates, in order, are `app/globals.css`, `src/app/globals.css`, `styles/globals.css`, `src/styles/globals.css`, `src/index.css`, `src/App.css`, and `app/global.css`.
+
+## File writes and import paths
+
+Component templates are authored with `@/lib/*` and `@/hooks/*` imports so they can typecheck in the registry. Whenever `add` copies a component file, including an overwrite, it rewrites those specifiers to extensionless relative paths from `componentDir` to the configured `libDir` and `hooksDir`.
+
+For example, with `componentDir` set to `app/components`, `libDir` to `lib`, and `hooksDir` to `hooks`, imports point out of `app/components` to those two directories. The target project does not need an `@` alias for generated component imports.
+
+Existing `lib` and hook files are always preserved, even with `--overwrite`. Existing component files are skipped by default and replaced only after confirmation or with `--overwrite`. Import rewriting therefore runs only when a component is actually copied.
+
+## Legacy configuration
+
+When `add` reads a recognized v1 config, it migrates the file in place to v2 by adding `libDir`, `hooksDir`, and detected Tailwind metadata. If Tailwind detection fails, migration uses version `4` with an empty CSS path. JavaScript configs (`typescript: false`) and invalid configs are not migrated; run `npx react-thaizip init` again to generate a valid file.
+
+If paths or metadata do not match the project, follow the recovery steps in [Troubleshooting](/react-thai-zip/en/troubleshooting/).

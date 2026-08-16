@@ -41,7 +41,16 @@ export default defineConfig({
           translations: { en: 'Guides' },
           items: [{ slug: 'guides/forms' }, { slug: 'guides/customization' }],
         },
-        { label: 'Core API', link: 'https://naay99999.github.io/thai-zip/' },
+        {
+          label: 'ข้อมูลอ้างอิง',
+          translations: { en: 'Reference' },
+          items: [
+            { slug: 'reference/cli' },
+            { slug: 'reference/config' },
+            { slug: 'troubleshooting' },
+            { label: 'Core API', link: 'https://naay99999.github.io/thai-zip/' },
+          ],
+        },
       ],
     }),
     react(),

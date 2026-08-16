@@ -1,0 +1,113 @@
+---
+title: การแก้ปัญหา
+description: สาเหตุและคำสั่งกู้คืนสำหรับ init, add, Tailwind, dependencies และไฟล์ที่มีอยู่
+---
+
+รันคำสั่งทั้งหมดจากรากโปรเจกต์ที่มี `package.json` และ `thaizip.config.json` เว้นแต่หัวข้อนั้นกำลังสร้าง config ใหม่
+
+## `init` ตรวจไม่พบ Tailwind
+
+**ปัญหา:** `init` แสดงว่า Tailwind CSS จำเป็นและหยุดโดยไม่สร้าง config
+
+**สาเหตุ:** โปรเจกต์ไม่มีรูปแบบ Tailwind v3/v4 ที่ CLI รู้จัก Tailwind เป็น prerequisite และ react-thaizip ไม่ติดตั้งให้
+
+**วิธีแก้:** ติดตั้งและตั้งค่า Tailwind ตาม framework ให้มี dependency และรูปแบบ CSS/config ที่ถูกต้อง แล้วรัน:
+
+```bash
+npx react-thaizip init
+```
+
+## ไม่พบ global CSS
+
+**ปัญหา:** `init` พิมพ์ `No global CSS file was found` ตามด้วย design-token block
+
+**สาเหตุ:** ตรวจพบเวอร์ชัน Tailwind จาก dependency หรือ config แต่ไม่พบ stylesheet ที่รองรับ
+
+**วิธีแก้:** คัดลอก block ทั้งหมดที่ `init` พิมพ์ไปไว้ใน global stylesheet ที่แอปโหลดจริง แล้วเก็บ path ที่ถูกต้องใน `tailwind.css` ของ [`thaizip.config.json`](/react-thai-zip/reference/config/) ถ้าจำเป็น
+
+## Tailwind v3 ไม่มี styles ของ token
+
+**ปัญหา:** คอมโพเนนต์มี classes เช่น `bg-background` หรือ `border-input` แต่ไม่มีสีหรือ style ตามที่คาด
+
+**สาเหตุ:** Tailwind v3 ไม่มี `@theme inline`; `init` จึงพิมพ์ mapping สำหรับ `theme.extend` แต่ไม่แก้ Tailwind config ให้อัตโนมัติ
+
+**วิธีแก้:** นำ `theme.extend` snippet ที่ `init` พิมพ์ไปเพิ่มใต้ `theme.extend` ใน `tailwind.config.js` หรือ `tailwind.config.ts` แล้ว restart dev server ถ้ากำลังทำงานอยู่
+
+## `thaizip` ต่ำกว่า `0.7.0`
+
+**ปัญหา:** `add` รายงานเวอร์ชันที่พบและต้องการ `thaizip >=0.7.0` แล้วหยุดก่อน scaffold
+
+**สาเหตุ:** Template ต้องใช้ cascade/enumeration API และป้ายกำกับสองภาษาที่เริ่มใช้ใน `0.7.0`
+
+**วิธีแก้:** อัปเกรดแล้วรันคำสั่ง `add` เดิมอีกครั้ง:
+
+```bash
+npm i thaizip@latest
+npx react-thaizip add autocomplete
+```
+
+ถ้าใช้ yarn, pnpm หรือ bun ให้ใช้คำสั่ง add ของ package manager นั้นแทน และเปลี่ยน target ในบรรทัดที่สองให้ตรงกับคำสั่งเดิม
+
+## ติดตั้ง dependencies ไม่สำเร็จ
+
+**ปัญหา:** `init` หรือ `add` แสดง `Failed to install` และรายการแพ็กเกจ
+
+**สาเหตุ:** package manager จบด้วย error เช่น registry, network หรือ lockfile มีปัญหา CLI จะหยุดโดยไม่เขียนคอมโพเนนต์
+
+**วิธีแก้:** ติดตั้งรายการที่ error พิมพ์ด้วย package manager ของโปรเจกต์ แล้วรันคำสั่งเดิมอีกครั้ง ตัวอย่างสำหรับรายการเต็มของ autocomplete:
+
+```bash
+npm i 'thaizip@>=0.7.0' @base-ui/react clsx tailwind-merge
+npx react-thaizip add autocomplete
+```
+
+ถ้า `init` ล้มเหลวตอนติดตั้ง `thaizip` ให้ติดตั้งแพ็กเกจนั้นก่อน แล้วรัน `npx react-thaizip init` ใหม่
+
+## มีไฟล์คอมโพเนนต์อยู่แล้ว
+
+**ปัญหา:** `add` ถามว่าจะ overwrite หรือแสดงว่า skipped เพราะไฟล์มีอยู่
+
+**สาเหตุ:** ค่าเริ่มต้นคือเก็บซอร์สคอมโพเนนต์ของคุณไว้ `--yes` ใช้คำตอบเริ่มต้น “ไม่” จึงไม่เขียนทับ
+
+**วิธีแก้:** ตรวจ diff หรือสำรองการแก้ไขของคุณก่อน จากนั้นตอบยืนยันใน prompt หรือใช้ flag นี้เมื่อเจตนาแทนที่ไฟล์จริง:
+
+```bash
+npx react-thaizip add autocomplete --overwrite
+```
+
+## มีไฟล์ hook หรือ `lib` อยู่แล้ว
+
+**ปัญหา:** `add` ข้าม `lib/utils.ts` หรือ `hooks/use-thai-address-index.ts` แม้ส่ง `--overwrite`
+
+**สาเหตุ:** เป็นพฤติกรรมตั้งใจเพื่อรักษา shared files ที่คุณอาจแก้ไขเอง `--overwrite` ใช้กับไฟล์คอมโพเนนต์เท่านั้น
+
+**วิธีแก้:** ถ้าไฟล์ที่มีอยู่ทำงานถูกต้อง ไม่ต้องทำอะไร ถ้าต้องการสำเนาใหม่ ให้ย้ายหรือเปลี่ยนชื่อไฟล์นั้นด้วยตนเองก่อน แล้วรัน `add` เดิมอีกครั้ง ตรวจสอบการแก้ไขของคุณก่อนแทนที่ไฟล์เสมอ
+
+## Import paths ไม่ตรงที่คาด
+
+**ปัญหา:** คอมโพเนนต์ที่ scaffold import `utils` หรือ hook จาก relative path ที่ผิดสำหรับ layout ปัจจุบัน
+
+**สาเหตุ:** `add` คำนวณ imports จาก working directory และ `componentDir`, `libDir`, `hooksDir` ใน config อาจเรียก CLI จาก directory ผิดหรือ path ใน config ไม่ตรงกับโปรเจกต์
+
+**วิธีแก้:** เปิด `thaizip.config.json` และตรวจสอบ directory ทั้งสามให้เป็น path เทียบจากรากโปรเจกต์ จากนั้น `cd` ไปที่รากนั้นและ scaffold ใหม่ ถ้ามีคอมโพเนนต์อยู่แล้ว ต้องตั้งใจใช้ `--overwrite` เพื่อให้ไฟล์และ imports ถูกเขียนใหม่:
+
+```bash
+npx react-thaizip add autocomplete --overwrite
+```
+
+ไฟล์ hook และ `lib` ที่มีอยู่จะยังไม่ถูกเขียนทับ
+
+## ไม่มี `thaizip.config.json`
+
+**ปัญหา:** `add` ถาม `No thaizip.config.json found. Run init now?`
+
+**สาเหตุ:** ยังไม่ได้รัน `init`, ไฟล์ถูกลบ หรือกำลังรันจาก directory อื่น
+
+**วิธีแก้:** ยอมรับ prompt เพื่อให้ `add` เรียก `init` แล้วทำงานต่อ หรือรันคำสั่งนี้เองจากรากโปรเจกต์ก่อนเรียก `add`:
+
+```bash
+npx react-thaizip init
+npx react-thaizip add autocomplete
+```
+
+ดูคำสั่งและ flags ทั้งหมดได้ที่ [ข้อมูลอ้างอิง CLI](/react-thai-zip/reference/cli/)

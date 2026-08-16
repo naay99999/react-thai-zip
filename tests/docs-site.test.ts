@@ -9,6 +9,9 @@ const requiredDocSlugs = [
   'components/cascade-select.mdx',
   'guides/forms.mdx',
   'guides/customization.mdx',
+  'reference/cli.mdx',
+  'reference/config.mdx',
+  'troubleshooting.mdx',
 ]
 
 async function read(relativePath: string): Promise<string> {

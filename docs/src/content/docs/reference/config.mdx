@@ -1,0 +1,86 @@
+---
+title: การตั้งค่า
+description: รูปแบบ thaizip.config.json v2 และกฎการตรวจหา directory, package manager และ Tailwind
+---
+
+`npx react-thaizip init` สร้าง `thaizip.config.json` ที่รากโปรเจกต์ คำสั่ง `add` อ่านไฟล์นี้เพื่อหาตำแหน่งเขียนคอมโพเนนต์และไฟล์ช่วยเหลือ
+
+## รูปแบบ v2
+
+ตัวอย่างนี้แสดงทุกฟิลด์ของ config v2 ค่าจริงขึ้นอยู่กับโปรเจกต์และเวอร์ชัน CLI ที่ใช้สร้างไฟล์
+
+```json
+{
+  "typescript": true,
+  "componentDir": "app/components",
+  "libDir": "lib",
+  "hooksDir": "hooks",
+  "packageManager": "npm",
+  "tailwind": {
+    "version": 4,
+    "css": "app/globals.css"
+  },
+  "registryVersion": "0.2.1"
+}
+```
+
+| ฟิลด์ | ค่าที่ใช้ได้ | ความหมาย |
+| --- | --- | --- |
+| `typescript` | `true` | มีเฉพาะ template TypeScript; `false` ใช้ไม่ได้ |
+| `componentDir` | string ที่ไม่ว่าง | ตำแหน่งเขียนไฟล์คอมโพเนนต์ เทียบจากรากโปรเจกต์ |
+| `libDir` | string ที่ไม่ว่าง | ตำแหน่งเขียน `utils.ts`; ค่าเริ่มต้นจาก `init` คือ `lib` |
+| `hooksDir` | string ที่ไม่ว่าง | ตำแหน่งเขียน `use-thai-address-index.ts`; ค่าเริ่มต้นคือ `hooks` |
+| `packageManager` | `npm`, `yarn`, `pnpm`, `bun` | package manager ที่ `add` ใช้ติดตั้ง dependencies |
+| `tailwind.version` | `3` หรือ `4` | major version ของ Tailwind ที่ตรวจพบ |
+| `tailwind.css` | string | path ของ global CSS เทียบจากรากโปรเจกต์ หรือ `""` เมื่อหาไฟล์ไม่พบ |
+| `registryVersion` | string ที่ไม่ว่าง | เวอร์ชัน CLI ที่บันทึกตอน `init`; เป็น metadata ของ registry ไม่ใช่เวอร์ชัน `thaizip` |
+
+Path ทุกค่าถูกตีความจาก working directory ที่เรียก CLI จึงควรรัน `init` และ `add` ที่รากโปรเจกต์เดียวกับไฟล์ config
+
+## การตรวจหาโครงสร้างโปรเจกต์
+
+`init` เลือก `componentDir` เริ่มต้นตามลำดับนี้ โดยตรวจจากรากโปรเจกต์:
+
+| เงื่อนไข | Component directory |
+| --- | --- |
+| มี `app/` | `app/components/` |
+| ไม่มี `app/` แต่มี `pages/` | `components/` |
+| ไม่มีทั้งสองอย่าง | `src/components/` |
+
+ถ้ามีทั้ง `app/` และ `pages/` จะเลือก `app/components/` เมื่อไม่ใช้ `--yes` คุณแก้ตำแหน่งที่ prompt ได้ก่อนเขียน config
+
+## การตรวจหา package manager
+
+CLI ใช้ lockfile แรกที่พบตามลำดับนี้:
+
+1. `bun.lock` หรือ `bun.lockb` → `bun`
+2. `pnpm-lock.yaml` → `pnpm`
+3. `yarn.lock` → `yarn`
+4. `package-lock.json` → `npm`
+5. ถ้าไม่มี lockfile เหล่านี้ → `npm`
+
+## การตรวจหา Tailwind
+
+Tailwind เป็นสิ่งที่ต้องติดตั้งก่อน `init` CLI ไม่ได้ติดตั้ง Tailwind ให้ กฎการตรวจหาทำงานตามลำดับ:
+
+1. หา `@import "tailwindcss"` หรือรูปแบบ single quote ใน global CSS ที่รู้จัก ถ้าพบให้เป็น Tailwind v4 พร้อม path ของไฟล์นั้น
+2. ถ้า dependency `tailwindcss` ระบุ major version 4 ขึ้นไป ให้เป็น v4 และเก็บ `tailwind.css` เป็น `""` เมื่อยังหา stylesheet ไม่พบ
+3. หา `tailwind.config.ts`, `.js`, `.cjs` หรือ `.mjs` ถ้าพบให้เป็น v3 และหา global CSS ที่มี `@tailwind`
+4. ถ้า dependency ระบุ major version 3 ให้เป็น v3 และเก็บ CSS path เป็น `""` เมื่อหาไม่พบ
+5. ถ้าไม่มีเงื่อนไขใดตรง `init` จะหยุดและแนะนำให้ติดตั้ง Tailwind
+
+Global CSS ที่ค้นหาตามลำดับคือ `app/globals.css`, `src/app/globals.css`, `styles/globals.css`, `src/styles/globals.css`, `src/index.css`, `src/App.css` และ `app/global.css`
+
+## การเขียนไฟล์และ import paths
+
+Template คอมโพเนนต์ถูกเขียนต้นฉบับด้วย imports `@/lib/*` และ `@/hooks/*` เพื่อ typecheck ใน registry แต่ทุกครั้งที่ `add` คัดลอกไฟล์คอมโพเนนต์ รวมถึงการเขียนทับ จะเขียน specifiers เหล่านั้นเป็น relative paths จาก `componentDir` ไปยัง `libDir` และ `hooksDir` ที่กำหนดใน config โดยไม่ใส่นามสกุลไฟล์
+
+ตัวอย่าง เมื่อ `componentDir` เป็น `app/components`, `libDir` เป็น `lib` และ `hooksDir` เป็น `hooks` imports จะชี้ออกจาก `app/components` ไปยัง directory สองแห่งนั้น ไม่จำเป็นต้องตั้ง alias `@` ในโปรเจกต์ปลายทาง
+
+ไฟล์ `lib` และ hook ที่มีอยู่จะถูกเก็บไว้เสมอ แม้ใช้ `--overwrite` ส่วนไฟล์คอมโพเนนต์ที่มีอยู่จะถูกข้ามตามค่าเริ่มต้นและจะเขียนทับเฉพาะเมื่อยืนยันหรือส่ง `--overwrite` การ rewrite imports จึงเกิดเฉพาะเมื่อคัดลอกคอมโพเนนต์จริง
+
+## Config รุ่นเก่า
+
+เมื่อ `add` อ่าน config v1 ที่รองรับได้ จะย้ายไฟล์เป็น v2 ในตำแหน่งเดิม โดยเติม `libDir`, `hooksDir` และ Tailwind metadata ที่ตรวจพบ หากตรวจ Tailwind ไม่ได้ migration จะใช้ version `4` และ CSS path ว่าง Config JavaScript (`typescript: false`) และ config ที่มีค่าไม่ถูกต้องจะไม่ถูกย้าย ให้รัน `npx react-thaizip init` ใหม่เพื่อสร้างไฟล์ที่ถูกต้อง
+
+หาก path หรือ metadata ไม่ตรงกับโปรเจกต์ ดูขั้นตอนกู้คืนที่ [การแก้ปัญหา](/react-thai-zip/troubleshooting/)

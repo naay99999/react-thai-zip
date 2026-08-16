@@ -1,0 +1,113 @@
+---
+title: Troubleshooting
+description: Causes and exact recovery steps for init, add, Tailwind, dependencies, and existing files
+---
+
+Run commands from the project root containing `package.json` and `thaizip.config.json`, except when a section is creating that config for the first time.
+
+## `init` cannot detect Tailwind
+
+**Problem:** `init` says Tailwind CSS is required and stops without writing a config.
+
+**Cause:** The project has no Tailwind v3/v4 signal the CLI recognizes. Tailwind is a prerequisite; react-thaizip does not install it.
+
+**Recovery:** Install and configure Tailwind for your framework so the dependency and CSS/config entry points are present, then run:
+
+```bash
+npx react-thaizip init
+```
+
+## No global CSS file was found
+
+**Problem:** `init` prints `No global CSS file was found`, followed by a design-token block.
+
+**Cause:** It detected the Tailwind version from a dependency or config but could not locate a supported stylesheet.
+
+**Recovery:** Copy the entire printed block into the global stylesheet your app actually loads. If necessary, record its correct project-relative path in `tailwind.css` in [`thaizip.config.json`](/react-thai-zip/en/reference/config/).
+
+## Tailwind v3 token styles are missing
+
+**Problem:** The component has classes such as `bg-background` or `border-input`, but the expected color or style is absent.
+
+**Cause:** Tailwind v3 has no `@theme inline`. `init` prints the required `theme.extend` mapping but does not edit the Tailwind config automatically.
+
+**Recovery:** Add the `theme.extend` snippet printed by `init` under `theme.extend` in `tailwind.config.js` or `tailwind.config.ts`, then restart a running development server.
+
+## `thaizip` is older than `0.7.0`
+
+**Problem:** `add` reports the version it found, requires `thaizip >=0.7.0`, and stops before scaffolding.
+
+**Cause:** The templates use the cascade/enumeration API and bilingual labels introduced in `0.7.0`.
+
+**Recovery:** Upgrade the package, then rerun the original `add` command:
+
+```bash
+npm i thaizip@latest
+npx react-thaizip add autocomplete
+```
+
+Use the equivalent add command for yarn, pnpm, or bun, and replace the second-line target with the one from your original command.
+
+## Dependency installation failed
+
+**Problem:** `init` or `add` prints `Failed to install` and a package list.
+
+**Cause:** The package manager exited with an error, for example because of a registry, network, or lockfile problem. The CLI stops without writing components.
+
+**Recovery:** Install the printed list with the project's package manager, then rerun the original command. For example, the full autocomplete dependency set with npm is:
+
+```bash
+npm i 'thaizip@>=0.7.0' @base-ui/react clsx tailwind-merge
+npx react-thaizip add autocomplete
+```
+
+If `init` failed while installing `thaizip`, install that package first and rerun `npx react-thaizip init`.
+
+## A component file already exists
+
+**Problem:** `add` asks whether to overwrite or reports that it skipped an existing component.
+
+**Cause:** The safe default preserves your component source. `--yes` uses the default “no” answer, so it does not overwrite the file.
+
+**Recovery:** Review the diff or back up your changes, then confirm the prompt or use this flag only when you intend to replace the file:
+
+```bash
+npx react-thaizip add autocomplete --overwrite
+```
+
+## A hook or `lib` file already exists
+
+**Problem:** `add` skips `lib/utils.ts` or `hooks/use-thai-address-index.ts`, even with `--overwrite`.
+
+**Cause:** This is intentional: shared files may contain your edits, and `--overwrite` applies only to component files.
+
+**Recovery:** If the existing file is correct, do nothing. If you need a fresh copy, manually move or rename that individual file before rerunning the original `add` command. Always review your changes before replacing it.
+
+## Import paths are unexpected
+
+**Problem:** A scaffolded component imports `utils` or the hook from a relative path that does not fit the current layout.
+
+**Cause:** `add` calculates imports from the working directory and the configured `componentDir`, `libDir`, and `hooksDir`. The command may have run from the wrong directory, or the config paths may not match the project.
+
+**Recovery:** Inspect all three directories in `thaizip.config.json` and make sure they are relative to the project root. Then `cd` to that root and scaffold again. If the component already exists, intentionally pass `--overwrite` so the file and imports are regenerated:
+
+```bash
+npx react-thaizip add autocomplete --overwrite
+```
+
+Existing hook and `lib` files remain untouched.
+
+## `thaizip.config.json` is missing
+
+**Problem:** `add` asks `No thaizip.config.json found. Run init now?`
+
+**Cause:** `init` has not run, the file was removed, or the command is running from a different directory.
+
+**Recovery:** Accept the prompt so `add` runs `init` and continues, or run these commands yourself from the project root:
+
+```bash
+npx react-thaizip init
+npx react-thaizip add autocomplete
+```
+
+See the [CLI reference](/react-thai-zip/en/reference/cli/) for all commands and flags.

@@ -7,7 +7,7 @@ react-thaizip เป็น CLI สำหรับ scaffold ไม่ใช่แ
 
 ## สิ่งที่ต้องมี
 
-ใช้ Node.js 18 ขึ้นไป และโปรเจกต์ React หรือ Next.js ที่ติดตั้ง Tailwind CSS v3 หรือ v4 ไว้แล้ว `init` ตรวจหา Tailwind แต่จะไม่ติดตั้งให้
+ใช้ Node.js 18 ขึ้นไป และโปรเจกต์ React หรือ Next.js ที่ติดตั้ง Tailwind CSS v3 หรือ v4 ไว้แล้ว `init` ตรวจหา Tailwind แต่จะไม่ติดตั้งให้ หากตรวจไม่พบ ให้ทำตาม [ขั้นตอนแก้ปัญหา Tailwind](/react-thai-zip/troubleshooting/#init-ตรวจไม่พบ-tailwind)
 
 ## สร้างการตั้งค่า
 
@@ -15,7 +15,7 @@ react-thaizip เป็น CLI สำหรับ scaffold ไม่ใช่แ
 npx react-thaizip init
 ```
 
-คำสั่งนี้ตรวจสอบโครงสร้างโปรเจกต์และ Tailwind เลือก package manager แล้วสร้าง `thaizip.config.json` ไฟล์นี้บันทึกตำแหน่งคอมโพเนนต์, hook และ `lib` ที่คำสั่ง `add` จะใช้
+คำสั่งนี้ตรวจสอบโครงสร้างโปรเจกต์และ Tailwind เลือก package manager แล้วสร้าง `thaizip.config.json` ไฟล์นี้บันทึกตำแหน่งคอมโพเนนต์, hook และ `lib` ที่คำสั่ง `add` จะใช้ ดูทุกฟิลด์และกฎการตรวจหาได้ที่ [ข้อมูลอ้างอิงการตั้งค่า](/react-thai-zip/reference/config/)
 
 `init` เพิ่ม design tokens แบบ CSS custom properties ลงใน global stylesheet ด้วย สำหรับ Tailwind v3 จะพิมพ์ `theme.extend` snippet ที่ต้องนำไปเพิ่มในไฟล์ตั้งค่า Tailwind เอง
 
@@ -36,7 +36,7 @@ lib/
   utils.ts
 ```
 
-คำสั่งยังติดตั้ง dependency ที่คอมโพเนนต์ต้องใช้หากยังไม่มี
+คำสั่งยังติดตั้ง dependency ที่คอมโพเนนต์ต้องใช้หากยังไม่มี ดู targets, aliases และ flags เพิ่มเติมได้ที่ [ข้อมูลอ้างอิง CLI](/react-thai-zip/reference/cli/)
 
 ## ใช้คอมโพเนนต์ครั้งแรก
 
