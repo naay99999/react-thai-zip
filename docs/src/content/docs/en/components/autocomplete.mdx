@@ -1,0 +1,109 @@
+---
+title: Address autocomplete
+description: Search Thai addresses from typed text and receive a structured address value
+---
+
+import AutocompleteDemo from '../../../../components/demos/AutocompleteDemo'
+
+`ThaiAddressAutocomplete` is for forms where people can search an address by sub-district, district, province, or postal code.
+
+## Install
+
+```bash
+npx react-thaizip add autocomplete
+```
+
+The command adds the component plus `utils` and the address-index loading hook to the directories recorded in `thaizip.config.json`.
+
+## Basic usage
+
+Import from the location generated in your project:
+
+```tsx
+import { ThaiAddressAutocomplete } from '@/components/thai-address-autocomplete'
+
+export function AddressField() {
+  return <ThaiAddressAutocomplete onValueChange={(address) => console.log(address)} />
+}
+```
+
+`onValueChange` receives `ResolvedThaiAddress | null`. Selecting a suggestion yields a structured address; typing an empty query clears an existing resolved selection with `null`.
+
+## Thai search
+
+<AutocompleteDemo client:visible locale="th" />
+
+## English search
+
+Use `locale="en"` for English labels, placeholders, and suggestions. The returned data still includes Thai and English names.
+
+<AutocompleteDemo client:visible locale="en" />
+
+## Controlled value
+
+Pass `value` to control the selection, or `defaultValue` to seed uncontrolled state. This example includes a clear button for the controlled value and shows the callback output.
+
+<AutocompleteDemo client:visible locale="th" mode="controlled" showOutput />
+
+## Disabled and invalid states
+
+Pass `disabled` to turn off the search field, or `aria-invalid` after failed form validation.
+
+<AutocompleteDemo client:visible locale="th" disabled />
+
+<AutocompleteDemo client:visible locale="th" invalid />
+
+## Props
+
+### Value
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `value` | `ResolvedThaiAddress \| null` | Controlled value; pass `null` to clear it. |
+| `defaultValue` | `ResolvedThaiAddress \| null` | Uncontrolled seed value; also pre-fills the initial search text. |
+| `onValueChange` | `(address: ResolvedThaiAddress \| null) => void` | Called when an address is selected or cleared. |
+
+### Search
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `limit` | `number` | Maximum suggestions; passed to the core hook. |
+| `debounce` | `number` | Search delay in milliseconds; passed to the core hook. |
+| `threshold` | `number` | Minimum query length; passed to the core hook. |
+
+### Field
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `name` | `string` | Renders four hidden inputs for subdistrict, district, province, and zipcode. |
+| `locale` | `'th' \| 'en'` | Text and label locale; defaults to `'th'`. |
+| `disabled` | `boolean` | Disables the search input. |
+| `required` | `boolean` | Marks the input as required. |
+| `aria-invalid` | `React.AriaAttributes['aria-invalid']` | Marks the input as invalid. |
+| `onBlur` | `React.FocusEventHandler<HTMLInputElement>` | Runs when the input loses focus. |
+| `onError` | `(error: Error) => void` | Runs if the address index cannot load. |
+
+### Text
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `texts` | `Partial<ThaiAddressAutocompleteTexts>` | Overrides the placeholder, loading/error/empty states, and clear/retry labels. |
+
+### Class slots
+
+| Prop | Applied to |
+| --- | --- |
+| `className` | Root wrapper |
+| `inputClassName` | Search input |
+| `popupClassName` | Results popup |
+| `itemClassName` | Each result item |
+
+### Ref
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `ref` | `React.Ref<HTMLInputElement>` | Forwarded to the input. |
+
+## Related guides
+
+Forms and Customization guides will cover form submission and visual changes when they are published. For ordered address selection, see [cascade select](/react-thai-zip/en/components/cascade-select/).

@@ -1,0 +1,108 @@
+---
+title: เลือกที่อยู่แบบลำดับชั้น
+description: เลือกจังหวัด อำเภอหรือเขต และตำบลหรือแขวงตามลำดับ
+---
+
+import CascadeSelectDemo from '../../../components/demos/CascadeSelectDemo'
+
+`ThaiAddressCascadeSelect` เหมาะกับฟอร์มที่ต้องการให้ผู้ใช้เลือกที่อยู่ตามลำดับ จังหวัด → อำเภอ/เขต → ตำบล/แขวง
+
+## ติดตั้ง
+
+```bash
+npx react-thaizip add cascade-select
+```
+
+คำสั่งจะเพิ่มคอมโพเนนต์ รวมถึง `utils` และ hook สำหรับโหลดดัชนีที่อยู่ลงในตำแหน่งที่บันทึกไว้ใน `thaizip.config.json`
+
+## ใช้งานพื้นฐาน
+
+นำเข้าจากตำแหน่งที่ CLI สร้างในโปรเจกต์ของคุณ:
+
+```tsx
+import { ThaiAddressCascadeSelect } from '@/components/thai-address-cascade-select'
+
+export function AddressField() {
+  return <ThaiAddressCascadeSelect onValueChange={(address) => console.log(address)} />
+}
+```
+
+`onValueChange` จะส่ง `ResolvedThaiAddress | null` เมื่อเลือกครบทั้งสามระดับ
+
+## เลือกข้อมูลภาษาไทย
+
+<CascadeSelectDemo client:visible locale="th" />
+
+## เลือกข้อมูลภาษาอังกฤษ
+
+ใช้ `locale="en"` เพื่อแสดงป้ายและตัวเลือกเป็นภาษาอังกฤษ
+
+<CascadeSelectDemo client:visible locale="en" />
+
+## ควบคุมค่าจากภายนอก
+
+ส่ง `value` เพื่อควบคุมค่าทั้งชุด หรือ `defaultValue` เพื่อตั้งลำดับที่เลือกไว้ตอนเริ่มต้น ตัวอย่างนี้แสดงค่า callback และมีปุ่มล้างค่า
+
+<CascadeSelectDemo client:visible locale="th" mode="controlled" showOutput />
+
+## เมื่อเปลี่ยนตัวเลือกหลัก
+
+เมื่อเลือกที่อยู่ครบแล้ว การเปลี่ยนจังหวัดหรืออำเภอ/เขตจะเรียก `onValueChange(null)` และล้างตัวเลือกปลายทางที่ไม่สอดคล้องกัน ผู้ใช้จึงต้องเลือกตัวเลือกที่อยู่ถัดไปใหม่
+
+## ปิดใช้งานและแสดงข้อผิดพลาด
+
+ส่ง `disabled` เพื่อปิดทุก select หรือ `aria-invalid` เพื่อทำเครื่องหมายว่าไม่ผ่านการตรวจสอบทั้งสาม trigger
+
+<CascadeSelectDemo client:visible locale="th" disabled />
+
+<CascadeSelectDemo client:visible locale="th" invalid />
+
+## Props
+
+### ค่า
+
+| Prop | Type | รายละเอียด |
+| --- | --- | --- |
+| `value` | `ResolvedThaiAddress \| null` | ค่าที่ควบคุมอยู่; ส่ง `null` เพื่อล้าง |
+| `defaultValue` | `ResolvedThaiAddress \| null` | ค่าเริ่มต้นของโหมด uncontrolled และเลือกครบลำดับที่อยู่ |
+| `onValueChange` | `(address: ResolvedThaiAddress \| null) => void` | เรียกเมื่อเลือกครบหรือล้างที่อยู่ |
+
+### ฟิลด์
+
+| Prop | Type | รายละเอียด |
+| --- | --- | --- |
+| `name` | `string` | สร้าง hidden inputs สี่ช่องสำหรับ subdistrict, district, province และ zipcode |
+| `locale` | `'th' \| 'en'` | ภาษาของป้ายและตัวเลือก; ค่าเริ่มต้นคือ `'th'` |
+| `disabled` | `boolean` | ปิดใช้งานทุก select |
+| `required` | `boolean` | กำหนดให้ select ทั้งสามเป็นฟิลด์ที่ต้องกรอก |
+| `aria-invalid` | `React.AriaAttributes['aria-invalid']` | ทำเครื่องหมาย trigger ทั้งสามว่าไม่ผ่านการตรวจสอบ |
+| `onBlur` | `React.FocusEventHandler<HTMLButtonElement>` | ทำงานเมื่อ province trigger สูญเสียโฟกัส |
+| `onError` | `(error: Error) => void` | ทำงานเมื่อโหลดดัชนีที่อยู่ไม่สำเร็จ |
+
+### ข้อความ
+
+| Prop | Type | รายละเอียด |
+| --- | --- | --- |
+| `texts` | `Partial<ThaiAddressCascadeSelectTexts>` | แทนที่ป้าย placeholder และข้อความ loading/error/retry |
+
+### Class slots
+
+| Prop | ใช้กับ |
+| --- | --- |
+| `className` | grid wrapper หลัก |
+| `labelClassName` | ป้ายกำกับทุกฟิลด์ |
+| `triggerClassName` | select trigger และช่องรหัสไปรษณีย์ |
+| `popupClassName` | กล่องตัวเลือก |
+| `itemClassName` | แต่ละตัวเลือก |
+
+### Ref
+
+| Prop | Type | รายละเอียด |
+| --- | --- | --- |
+| `ref` | `React.Ref<HTMLButtonElement>` | ref ที่ส่งต่อไปยัง province trigger ซึ่งเป็น control หลัก |
+
+ทั้ง `ref` และ `onBlur` จะอ้างถึง province trigger ไม่ใช่ trigger ของอำเภอหรือแขวง
+
+## คู่มือที่เกี่ยวข้อง
+
+สำหรับการส่งค่าที่อยู่กับฟอร์มและการปรับแต่งหน้าตา โปรดดูคู่มือ Forms และ Customization เมื่อเผยแพร่ ถ้าต้องการค้นหาจากข้อความ ดู [autocomplete](/react-thai-zip/components/autocomplete/)

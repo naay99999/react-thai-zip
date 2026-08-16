@@ -31,6 +31,11 @@ export default defineConfig({
           translations: { en: 'Start Here' },
           items: [{ slug: 'getting-started' }],
         },
+        {
+          label: 'คอมโพเนนต์',
+          translations: { en: 'Components' },
+          items: [{ slug: 'components/autocomplete' }, { slug: 'components/cascade-select' }],
+        },
         { label: 'Core API', link: 'https://naay99999.github.io/thai-zip/' },
       ],
     }),

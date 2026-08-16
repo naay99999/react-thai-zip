@@ -2,7 +2,12 @@ import { readFile, readdir } from 'node:fs/promises'
 import path from 'node:path'
 
 const root = process.cwd()
-const requiredDocSlugs = ['index.mdx', 'getting-started.mdx']
+const requiredDocSlugs = [
+  'index.mdx',
+  'getting-started.mdx',
+  'components/autocomplete.mdx',
+  'components/cascade-select.mdx',
+]
 
 async function read(relativePath: string): Promise<string> {
   return readFile(path.join(root, relativePath), 'utf8')
@@ -60,6 +65,7 @@ describe('documentation site structure', () => {
 
     expect(autocomplete).toContain("from '@/thai-address-autocomplete'")
     expect(cascade).toContain("from '@/thai-address-cascade-select'")
+    expect(cascade).toContain('export default CascadeSelectDemo')
     expect(form).toMatch(/from '@\/thai-address-(autocomplete|cascade-select)'/)
   })
 
