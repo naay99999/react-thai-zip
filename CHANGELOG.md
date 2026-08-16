@@ -1,5 +1,59 @@
 # Changelog
 
+## [0.3.0](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.2.1...react-thaizip-v0.3.0) (2026-08-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* cascade v2 — Base UI Select, @base-ui/react migration, ResolvedThaiAddress value model
+* ThaiAddressCascadeSelect drops onSelect/onClear and the slate-styled native selects; it now emits ResolvedThaiAddress via onValueChange, follows locale, and scaffolds shared lib/hook files.
+* migrate Base UI dependency to @base-ui/react ^1.7.0
+* autocomplete v2 — Base UI Combobox, shared registry items, import rewriting
+* autocomplete v2 — Base UI registry entry, transitive scaffold, import rewriting
+* registry v2 — multi-file registry, config v2, Tailwind v4, CLI flags
+* add v2 — multi-file scaffolding, per-item version gate on thaizip 0.7, --yes/--overwrite
+* init v2 — Tailwind prerequisite, token writing, v2 config, --yes
+* config v2 with libDir/hooksDir/tailwind, validation, and legacy migration
+* remove JS templates, PostalCodeForm/DisplayFields, --lang, Tailwind auto-install, and dead code
+
+### Features
+
+* add --lang flag to scaffold components with Thai default labels ([74a1ef1](https://github.com/naay99999/react-thai-zip/commit/74a1ef1c6bad5858499ac116042b0a7fdc9fd01f))
+* add --yes/--overwrite/--help/--version flags to the CLI ([9d27d9d](https://github.com/naay99999/react-thai-zip/commit/9d27d9d77a99e1f97dca5fa4e0356a88ad5f6ec1))
+* add customizable texts prop and ARIA combobox to address components ([b3e7e26](https://github.com/naay99999/react-thai-zip/commit/b3e7e26debf1efb583dc18de47efcdeb30111182))
+* add utils and use-thai-address-index shared registry items ([badfbc0](https://github.com/naay99999/react-thai-zip/commit/badfbc0186ee3e4325e167b919221dbc629febfb))
+* add v2 — multi-file scaffolding, per-item version gate on thaizip 0.7, --yes/--overwrite ([454f1d8](https://github.com/naay99999/react-thai-zip/commit/454f1d83b4c30d215b0c6a89f0006aee4068628c))
+* autocomplete v2 — Base UI Combobox, shared registry items, import rewriting ([a103da5](https://github.com/naay99999/react-thai-zip/commit/a103da550f32823d4bc62d14ef5a468732ed428b))
+* autocomplete v2 — Base UI registry entry, transitive scaffold, import rewriting ([0882e9e](https://github.com/naay99999/react-thai-zip/commit/0882e9ebca675e4af3135ba02a064112657f0f5e))
+* cascade v2 — Base UI Select, @base-ui/react migration, ResolvedThaiAddress value model ([5eeeb90](https://github.com/naay99999/react-thai-zip/commit/5eeeb90ec2b2a777dfd459f315512a5c72490cc5))
+* cascade-select v2 — Base UI Select, ResolvedThaiAddress value model ([dda77b0](https://github.com/naay99999/react-thai-zip/commit/dda77b0b1d2697d9fbf5c6c65fc1fa4a18632bfb))
+* config v2 with libDir/hooksDir/tailwind, validation, and legacy migration ([ae463b3](https://github.com/naay99999/react-thai-zip/commit/ae463b3ae992d0bb12f9166e4745c31afdc26a98))
+* detect Tailwind v3 vs v4 and locate the global CSS file ([4e3fce1](https://github.com/naay99999/react-thai-zip/commit/4e3fce15d40dae4bc2523c27dc47d9a45b66b479))
+* init v2 — Tailwind prerequisite, token writing, v2 config, --yes ([412b771](https://github.com/naay99999/react-thai-zip/commit/412b771130a5e235bf5d34a97b37fef71aa146b1))
+* migrate Base UI dependency to @base-ui/react ^1.7.0 ([da2047f](https://github.com/naay99999/react-thai-zip/commit/da2047f2025a5128506f83f8ae6f0c5b5911db14))
+* multi-file registry model with transitive dependency resolution ([8005084](https://github.com/naay99999/react-thai-zip/commit/80050844919aedfab500acc75b14a629a6400a36))
+* new ThaiAddressAutocomplete template on Base UI Combobox + template typecheck rig ([fb3c103](https://github.com/naay99999/react-thai-zip/commit/fb3c10320c9f8cf774eb5032681e46cf20677252))
+* new ThaiAddressCascadeSelect template on Base UI Select + cascade API ([6eec915](https://github.com/naay99999/react-thai-zip/commit/6eec915cd71f3bb0600849daad60888cb9cf957a))
+* registry v2 — multi-file registry, config v2, Tailwind v4, CLI flags ([58c9742](https://github.com/naay99999/react-thai-zip/commit/58c9742c5f36e9c68d17b025631a2b84cda5f706))
+* remove JS templates, PostalCodeForm/DisplayFields, --lang, Tailwind auto-install, and dead code ([857bc79](https://github.com/naay99999/react-thai-zip/commit/857bc79fda1cceb626591a8b956a63f85752a765))
+* shadcn design-token writer for Tailwind v3 and v4 ([068783c](https://github.com/naay99999/react-thai-zip/commit/068783c742b5988f2df2d3002f68647f725be5ef))
+
+
+### Bug Fixes
+
+* apply aria-invalid to every cascade trigger; backfill template RTL coverage ([3aaf8a0](https://github.com/naay99999/react-thai-zip/commit/3aaf8a089868ff5556f492d22e6c536ae2cefcb8))
+* CLI hardening — install error handling, pinned core install, Tailwind v3 fallback, per-command help ([2976860](https://github.com/naay99999/react-thai-zip/commit/297686047583a70eb3694dbf8cb59df56e61f5ff))
+* enable class-based dark mode in the Tailwind v4 token block ([1051b2a](https://github.com/naay99999/react-thai-zip/commit/1051b2a20c85f367f9d95eb3a4ff73c9ceb715e8))
+* exclude hidden address inputs from submission when disabled ([93f81f1](https://github.com/naay99999/react-thai-zip/commit/93f81f1ed9f50c19da4ad34c4d1b600506a7ff43))
+* guard against selectSuggestion returning null, unpin registryVersion in test ([4c8be4c](https://github.com/naay99999/react-thai-zip/commit/4c8be4cb032d7ecad3d89a0b9397b653920729e6))
+* keep in-progress cascade picks when controlled value echoes null ([e0ff9ab](https://github.com/naay99999/react-thai-zip/commit/e0ff9aba5474651cc840b2be8a372b025358ede8))
+* print valid export names in the post-scaffold import hint ([6f3de69](https://github.com/naay99999/react-thai-zip/commit/6f3de6973da8d47296e4c84b95e26fa57efbfbc7))
+* require thaizip &gt;=0.6.0 and block scaffolding on older versions ([578ee11](https://github.com/naay99999/react-thai-zip/commit/578ee111dfbb8b24feda8bc7d2286268e78f1f68))
+* require thaizip &gt;=0.6.0 and block scaffolding on older versions ([97ce01e](https://github.com/naay99999/react-thai-zip/commit/97ce01eb3b55ad9abe8ae6383dd17979f2580f6a))
+* surface init-bailout in add, reject legacy typescript:false configs, filter help to components ([b95a398](https://github.com/naay99999/react-thai-zip/commit/b95a398bb3fe4276ddb77357f0e328a2566d7cbe))
+* sync Base UI Combobox selection state with component selection; RTL repros ([6012643](https://github.com/naay99999/react-thai-zip/commit/60126438ffbf74bf756fef53357f8ca5e2a644a8))
+* validate migrated config before persisting; update 0.7.0 gate wording ([8d30cee](https://github.com/naay99999/react-thai-zip/commit/8d30ceefb8924116744e500c7c63e63490d52fe8))
+
 ## [0.2.1](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.2.0...react-thaizip-v0.2.1) (2026-05-05)
 
 
