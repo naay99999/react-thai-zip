@@ -50,6 +50,12 @@ describe('documentation site structure', () => {
     expect(config).toContain("{ label: 'Core API', link: 'https://naay99999.github.io/thai-zip/' }")
   })
 
+  it('uses the approved Thai and English Reference sidebar labels', async () => {
+    const config = await read('docs/astro.config.mjs')
+
+    expect(config).toMatch(/label: 'อ้างอิง',\s+translations: \{ en: 'Reference' \}/)
+  })
+
   it('does not track generated Astro directories', async () => {
     const ignore = await read('.gitignore')
     expect(ignore).toContain('docs/node_modules/')

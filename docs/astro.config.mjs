@@ -42,7 +42,7 @@ export default defineConfig({
           items: [{ slug: 'guides/forms' }, { slug: 'guides/customization' }],
         },
         {
-          label: 'ข้อมูลอ้างอิง',
+          label: 'อ้างอิง',
           translations: { en: 'Reference' },
           items: [
             { slug: 'reference/cli' },
