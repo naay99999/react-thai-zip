@@ -16,6 +16,9 @@
   color: var(--sl-color-text);
   cursor: pointer;
 }
+.tz-demo [aria-invalid='true'] {
+  border-color: var(--destructive);
+}
 .tz-demo-output {
   margin-top: 1rem;
   padding: 0.75rem;

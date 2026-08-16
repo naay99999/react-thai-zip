@@ -63,6 +63,10 @@ describe('documentation site structure', () => {
     expect(ignore).toContain('docs/.astro/')
   })
 
+  it('ships the favicon referenced by Starlight', async () => {
+    await expect(read('docs/public/favicon.svg')).resolves.toContain('<svg')
+  })
+
   it('does not contain copied component implementations', async () => {
     const entries = await readdir(path.join(root, 'docs/src'), { recursive: true })
     expect(entries.some((entry) => entry.endsWith('thai-address-autocomplete.tsx'))).toBe(false)
@@ -87,6 +91,14 @@ describe('documentation site structure', () => {
     expect(form).toContain('value.subdistrict')
     expect(form).toContain('value.subdistrictEn')
     expect(form).toContain('value.zipCode')
+  })
+
+  it('visually distinguishes invalid demo controls', async () => {
+    const css = await read('docs/src/components/demos/demos.css')
+
+    expect(css).toMatch(
+      /\.tz-demo \[aria-invalid=['"]true['"]\]\s*\{[^}]*border-color:\s*var\(--destructive\)/s,
+    )
   })
 
   it('documents the cascade select partial-state boundary in both Forms guides', async () => {
