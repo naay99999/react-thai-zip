@@ -44,4 +44,14 @@ describe('documentation site structure', () => {
     expect(entries.some((entry) => entry.endsWith('thai-address-autocomplete.tsx'))).toBe(false)
     expect(entries.some((entry) => entry.endsWith('thai-address-cascade-select.tsx'))).toBe(false)
   })
+
+  it('demo wrappers import canonical templates through the template alias', async () => {
+    const autocomplete = await read('docs/src/components/demos/AutocompleteDemo.tsx')
+    const cascade = await read('docs/src/components/demos/CascadeSelectDemo.tsx')
+    const form = await read('docs/src/components/demos/FormDemo.tsx')
+
+    expect(autocomplete).toContain("from '@/thai-address-autocomplete'")
+    expect(cascade).toContain("from '@/thai-address-cascade-select'")
+    expect(form).toMatch(/from '@\/thai-address-(autocomplete|cascade-select)'/)
+  })
 })
