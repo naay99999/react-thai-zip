@@ -4,6 +4,30 @@ description: Add ready-to-use Thai address components to React and Next.js proje
 template: splash
 hero:
   tagline: Scaffold autocomplete and cascade components whose source code you own
+  actions:
+    - text: Get started
+      link: /react-thai-zip/en/getting-started/
+      icon: right-arrow
+      variant: primary
 ---
 
-Add ready-to-use Thai address components to React and Next.js projects.
+import AutocompleteDemo from '../../../components/demos/AutocompleteDemo'
+
+<AutocompleteDemo client:load locale="en" />
+
+## Try the live component
+
+This is the canonical `ThaiAddressAutocomplete` scaffold from react-thaizip, not a copy built only for these docs. After adding it to your project, you own the generated source and can tailor it freely.
+
+## Quick start
+
+```bash
+npx react-thaizip init
+npx react-thaizip add autocomplete cascade-select
+```
+
+The first command checks Tailwind and creates configuration; the second adds both components and their required shared files.
+
+## Continue exploring
+
+The autocomplete and cascade component guides are coming next. In the meantime, explore the address index and lower-level APIs in the [thai-zip Core API](https://naay99999.github.io/thai-zip/) documentation.

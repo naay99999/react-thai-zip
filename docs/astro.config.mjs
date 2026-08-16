@@ -25,7 +25,14 @@ export default defineConfig({
         { icon: 'github', label: 'GitHub', href: 'https://github.com/naay99999/react-thai-zip' },
       ],
       plugins: [starlightLinksValidator({ errorOnRelativeLinks: false })],
-      sidebar: [{ label: 'Core API', link: 'https://naay99999.github.io/thai-zip/' }],
+      sidebar: [
+        {
+          label: 'เริ่มต้น',
+          translations: { en: 'Start Here' },
+          items: [{ slug: 'getting-started' }],
+        },
+        { label: 'Core API', link: 'https://naay99999.github.io/thai-zip/' },
+      ],
     }),
     react(),
   ],

@@ -55,3 +55,5 @@ export function AutocompleteDemo({
     </DemoFrame>
   )
 }
+
+export default AutocompleteDemo

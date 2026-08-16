@@ -4,6 +4,30 @@ description: เพิ่มคอมโพเนนต์ที่อยู่�
 template: splash
 hero:
   tagline: Scaffold คอมโพเนนต์ autocomplete และ cascade ที่คุณเป็นเจ้าของโค้ดเอง
+  actions:
+    - text: เริ่มต้นใช้งาน
+      link: /react-thai-zip/getting-started/
+      icon: right-arrow
+      variant: primary
 ---
 
-เพิ่มคอมโพเนนต์ที่อยู่ไทยพร้อมใช้ให้โปรเจกต์ React และ Next.js
+import AutocompleteDemo from '../../components/demos/AutocompleteDemo'
+
+<AutocompleteDemo client:load locale="th" />
+
+## ลองคอมโพเนนต์จริง
+
+ตัวอย่างนี้คือ `ThaiAddressAutocomplete` จาก scaffold มาตรฐานของ react-thaizip ไม่ใช่สำเนาที่เขียนขึ้นสำหรับเว็บเอกสาร เมื่อเพิ่มลงโปรเจกต์แล้ว คุณเป็นเจ้าของซอร์สโค้ดและปรับแต่งได้เต็มที่
+
+## เริ่มอย่างรวดเร็ว
+
+```bash
+npx react-thaizip init
+npx react-thaizip add autocomplete cascade-select
+```
+
+คำสั่งแรกตรวจสอบ Tailwind และสร้างการตั้งค่า ส่วนคำสั่งที่สองเพิ่มคอมโพเนนต์พร้อมไฟล์ช่วยเหลือที่จำเป็น
+
+## ไปต่อจากนี้
+
+คู่มือคอมโพเนนต์ autocomplete และ cascade จะอธิบายการใช้งานแต่ละแบบในเร็ว ๆ นี้ ระหว่างนี้ ดูข้อมูลดัชนีและ API ระดับล่างได้ที่ [thai-zip Core API](https://naay99999.github.io/thai-zip/)

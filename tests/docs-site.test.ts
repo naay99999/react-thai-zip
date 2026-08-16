@@ -2,12 +2,20 @@ import { readFile, readdir } from 'node:fs/promises'
 import path from 'node:path'
 
 const root = process.cwd()
+const requiredDocSlugs = ['index.mdx', 'getting-started.mdx']
 
 async function read(relativePath: string): Promise<string> {
   return readFile(path.join(root, relativePath), 'utf8')
 }
 
 describe('documentation site structure', () => {
+  it('keeps required Thai and English pages mirrored', async () => {
+    for (const slug of requiredDocSlugs) {
+      await expect(read(`docs/src/content/docs/${slug}`)).resolves.toBeTruthy()
+      await expect(read(`docs/src/content/docs/en/${slug}`)).resolves.toBeTruthy()
+    }
+  })
+
   it('has a private Astro package with the required scripts', async () => {
     const manifest = JSON.parse(await read('docs/package.json')) as {
       private?: boolean

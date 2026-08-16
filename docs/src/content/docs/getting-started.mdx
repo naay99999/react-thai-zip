@@ -1,0 +1,51 @@
+---
+title: เริ่มต้นใช้งาน
+description: Scaffold คอมโพเนนต์ที่อยู่ไทยชิ้นแรกในโปรเจกต์ของคุณ
+---
+
+react-thaizip เป็น CLI สำหรับ scaffold ไม่ใช่แพ็กเกจคอมโพเนนต์ runtime: มันเขียนซอร์สโค้ดคอมโพเนนต์ลงในโปรเจกต์ของคุณ และคุณเป็นเจ้าของซอร์สที่สร้างขึ้นทั้งหมด
+
+## สิ่งที่ต้องมี
+
+ใช้ Node.js 18 ขึ้นไป และโปรเจกต์ React หรือ Next.js ที่ติดตั้ง Tailwind CSS v3 หรือ v4 ไว้แล้ว `init` ตรวจหา Tailwind แต่จะไม่ติดตั้งให้
+
+## สร้างการตั้งค่า
+
+```bash
+npx react-thaizip init
+```
+
+คำสั่งนี้ตรวจสอบโครงสร้างโปรเจกต์และ Tailwind เลือก package manager แล้วสร้าง `thaizip.config.json` ไฟล์นี้บันทึกตำแหน่งคอมโพเนนต์, hook และ `lib` ที่คำสั่ง `add` จะใช้
+
+`init` เพิ่ม design tokens แบบ CSS custom properties ลงใน global stylesheet ด้วย สำหรับ Tailwind v3 จะพิมพ์ `theme.extend` snippet ที่ต้องนำไปเพิ่มในไฟล์ตั้งค่า Tailwind เอง
+
+## เพิ่ม autocomplete
+
+```bash
+npx react-thaizip add autocomplete
+```
+
+โดยค่าเริ่มต้น ไฟล์ที่สร้างจะมีหน้าตาเช่นนี้ (ตำแหน่งคอมโพเนนต์อาจต่างกันตามโครงสร้างโปรเจกต์หรือการเลือกใน `init`):
+
+```text
+components/
+  thai-address-autocomplete.tsx
+hooks/
+  use-thai-address-index.ts
+lib/
+  utils.ts
+```
+
+คำสั่งยังติดตั้ง dependency ที่คอมโพเนนต์ต้องใช้หากยังไม่มี
+
+## ใช้คอมโพเนนต์ครั้งแรก
+
+```tsx
+import { ThaiAddressAutocomplete } from './components/thai-address-autocomplete'
+
+export function AddressField() {
+  return <ThaiAddressAutocomplete onValueChange={(address) => console.log(address)} />
+}
+```
+
+ต่อไป คู่มือ cascade และฟอร์มจะช่วยคุณเลือก UI ให้เหมาะกับลำดับการกรอกข้อมูลและการส่งค่าในฟอร์ม
