@@ -24,7 +24,7 @@ export function FormDemo({ locale = 'th', component = 'autocomplete' }: FormDemo
           submit: 'Submit form',
           output: 'Submitted fields',
           blur: 'Blur count',
-          selected: 'Current address selected.',
+          selected: 'Current address:',
           empty: 'No address selected yet.',
         }
       : {
@@ -34,7 +34,7 @@ export function FormDemo({ locale = 'th', component = 'autocomplete' }: FormDemo
           submit: 'ส่งฟอร์ม',
           output: 'ข้อมูลที่ส่ง',
           blur: 'จำนวนครั้งที่ blur',
-          selected: 'เลือกที่อยู่แล้ว',
+          selected: 'ที่อยู่ปัจจุบัน:',
           empty: 'ยังไม่ได้เลือกที่อยู่',
         }
 
@@ -48,6 +48,13 @@ export function FormDemo({ locale = 'th', component = 'autocomplete' }: FormDemo
     if (component === 'autocomplete') autocompleteRef.current?.focus()
     else cascadeRef.current?.focus()
   }
+
+  const selectedAddress =
+    value === null
+      ? null
+      : locale === 'en'
+        ? `${value.subdistrictEn}, ${value.districtEn}, ${value.provinceEn} ${value.zipCode}`
+        : `${value.subdistrict}, ${value.district}, ${value.province} ${value.zipCode}`
 
   return (
     <DemoFrame title={copy.title} description={copy.description}>
@@ -81,7 +88,7 @@ export function FormDemo({ locale = 'th', component = 'autocomplete' }: FormDemo
         </div>
       </form>
       <p>
-        {copy.blur}: {blurCount}. {value ? copy.selected : copy.empty}
+        {copy.blur}: {blurCount}. {selectedAddress ? `${copy.selected} ${selectedAddress}` : copy.empty}
       </p>
       <DemoOutput label={copy.output} value={payload} />
     </DemoFrame>

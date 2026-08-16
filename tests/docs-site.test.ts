@@ -54,4 +54,12 @@ describe('documentation site structure', () => {
     expect(cascade).toContain("from '@/thai-address-cascade-select'")
     expect(form).toMatch(/from '@\/thai-address-(autocomplete|cascade-select)'/)
   })
+
+  it('form demo presents the localized current resolved address', async () => {
+    const form = await read('docs/src/components/demos/FormDemo.tsx')
+
+    expect(form).toContain('value.subdistrict')
+    expect(form).toContain('value.subdistrictEn')
+    expect(form).toContain('value.zipCode')
+  })
 })
