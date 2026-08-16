@@ -1,0 +1,108 @@
+---
+title: Address cascade select
+description: Choose province, district, and sub-district in order
+---
+
+import CascadeSelectDemo from '../../../../components/demos/CascadeSelectDemo'
+
+`ThaiAddressCascadeSelect` is for forms where people choose an address in the order province → district → sub-district.
+
+## Install
+
+```bash
+npx react-thaizip add cascade-select
+```
+
+The command adds the component plus `utils` and the address-index loading hook to the directories recorded in [`thaizip.config.json`](/react-thai-zip/en/reference/config/).
+
+## Basic usage
+
+Import from the location generated in your project:
+
+```tsx
+import { ThaiAddressCascadeSelect } from '@/components/thai-address-cascade-select'
+
+export function AddressField() {
+  return <ThaiAddressCascadeSelect onValueChange={(address) => console.log(address)} />
+}
+```
+
+`onValueChange` receives `ResolvedThaiAddress | null` once all three levels have been chosen.
+
+## Thai choices
+
+<CascadeSelectDemo client:visible locale="th" />
+
+## English choices
+
+Use `locale="en"` for English labels and options.
+
+<CascadeSelectDemo client:visible locale="en" />
+
+## Controlled value
+
+Pass `value` to control the full selection, or `defaultValue` to seed the selected address. This example includes a clear button and shows the callback value.
+
+<CascadeSelectDemo client:visible locale="th" mode="controlled" showOutput />
+
+## Changing a parent choice
+
+After a complete selection, changing the province or district emits `onValueChange(null)` and clears downstream selections that no longer match. The person then chooses the remaining address levels again.
+
+## Disabled and invalid states
+
+Pass `disabled` to disable every select, or `aria-invalid` to mark all three triggers invalid.
+
+<CascadeSelectDemo client:visible locale="th" disabled />
+
+<CascadeSelectDemo client:visible locale="th" invalid />
+
+## Props
+
+### Value
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `value` | `ResolvedThaiAddress \| null` | Controlled value; pass `null` to clear it. |
+| `defaultValue` | `ResolvedThaiAddress \| null` | Uncontrolled seed value; pre-selects the complete address chain. |
+| `onValueChange` | `(address: ResolvedThaiAddress \| null) => void` | Called when an address is completed or cleared. |
+
+### Field
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `name` | `string` | Renders four hidden inputs for subdistrict, district, province, and zipcode. |
+| `locale` | `'th' \| 'en'` | Label and option locale; defaults to `'th'`. |
+| `disabled` | `boolean` | Disables all selects. |
+| `required` | `boolean` | Marks all three selects as required. |
+| `aria-invalid` | `React.AriaAttributes['aria-invalid']` | Marks all three triggers invalid. |
+| `onBlur` | `React.FocusEventHandler<HTMLButtonElement>` | Runs when the province trigger loses focus. |
+| `onError` | `(error: Error) => void` | Runs if the address index cannot load. |
+
+### Text
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `texts` | `Partial<ThaiAddressCascadeSelectTexts>` | Overrides labels, placeholders, and loading/error/retry text. |
+
+### Class slots
+
+| Prop | Applied to |
+| --- | --- |
+| `className` | Root grid wrapper |
+| `labelClassName` | Every field label |
+| `triggerClassName` | Select triggers and the postal-code input |
+| `popupClassName` | Option popups |
+| `itemClassName` | Each option item |
+
+### Ref
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `ref` | `React.Ref<HTMLButtonElement>` | Forwarded to the province trigger, the cascade's primary control. |
+
+Both `ref` and `onBlur` target the province trigger, not the district or sub-district trigger.
+
+## Related guides
+
+See [Forms](/react-thai-zip/en/guides/forms/) to submit address values and [Customization](/react-thai-zip/en/guides/customization/) to change the presentation. For free-text search, see [autocomplete](/react-thai-zip/en/components/autocomplete/).

@@ -2,6 +2,8 @@
 
 CLI scaffold tool for adding Thai address React components powered by [`thaizip`](https://www.npmjs.com/package/thaizip).
 
+📚 [Documentation and live component demos](https://naay99999.github.io/react-thai-zip/)
+
 ```bash
 npx react-thaizip init
 npx react-thaizip add autocomplete

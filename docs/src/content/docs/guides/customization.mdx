@@ -1,0 +1,128 @@
+---
+title: การปรับแต่ง
+description: เปลี่ยนภาษา ข้อความ class slots และ design tokens ของคอมโพเนนต์ที่ scaffold
+---
+
+ไฟล์ที่ `react-thaizip add` สร้างเป็นซอร์สในโปรเจกต์ของคุณ จึงเริ่มปรับแต่งด้วย props และ Tailwind classes ก่อน แล้วแก้ซอร์สที่ scaffold เมื่อจำเป็นต้องเปลี่ยนพฤติกรรมหรือ markup ให้ลึกกว่านั้น
+
+## ภาษาและข้อความ
+
+ส่ง `locale="en"` เพื่อใช้ label, placeholder และตัวเลือกภาษาอังกฤษ `texts` รับค่าเพียงบางส่วนได้ โดยคีย์ที่ไม่ได้ระบุจะใช้ข้อความมาตรฐานของ locale นั้น
+
+```tsx
+<ThaiAddressAutocomplete
+  locale="en"
+  texts={{
+    placeholder: 'Search delivery address',
+    emptyText: 'No delivery area found',
+  }}
+/>
+```
+
+autocomplete รองรับ `placeholder`, `clearAriaLabel`, `loadingText`, `errorText`, `retryLabel` และ `emptyText` ใน `texts` ส่วน cascade select รองรับ `provinceLabel`, `districtLabel`, `subdistrictLabel`, `zipLabel`, placeholder ทั้งสามช่อง และ `loadingText`, `errorText`, `retryLabel`
+
+## Class slots ของ autocomplete
+
+| Prop | ใช้กับ |
+| --- | --- |
+| `className` | wrapper หลัก |
+| `inputClassName` | ช่องค้นหา |
+| `popupClassName` | กล่องผลลัพธ์ |
+| `itemClassName` | แต่ละผลลัพธ์ |
+
+```tsx
+<ThaiAddressAutocomplete
+  inputClassName="border-sky-500 focus-visible:ring-sky-500"
+  popupClassName="border-sky-200 shadow-lg"
+/>
+```
+
+## Class slots ของ cascade select
+
+| Prop | ใช้กับ |
+| --- | --- |
+| `className` | grid wrapper หลัก |
+| `labelClassName` | ป้ายกำกับทุกฟิลด์ |
+| `triggerClassName` | select trigger และช่องรหัสไปรษณีย์ |
+| `popupClassName` | กล่องตัวเลือก |
+| `itemClassName` | แต่ละตัวเลือก |
+
+ส่ง `triggerClassName` เมื่อต้องการให้ trigger ทั้งสามและช่องรหัสไปรษณีย์มีหน้าตาเดียวกัน หรือใช้ `labelClassName` เพื่อจัด label ทั้งชุด
+
+## Tokens ที่ `init` เพิ่ม
+
+เมื่อ `init` เพิ่ม token block ลงใน global stylesheet จะใช้ CSS custom properties ต่อไปนี้กับคอมโพเนนต์ เช่น `--background`, `--foreground`, `--popover`, `--primary`, `--muted`, `--accent`, `--destructive`, `--border`, `--input`, `--ring` และ `--radius`
+
+ตัวอย่างจาก block ของ Tailwind v4:
+
+```css
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --primary: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --accent: oklch(0.97 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --radius: 0.625rem;
+}
+```
+
+ใน block เดียวกัน `.dark` จะ override color properties เหล่านี้ ส่วน `--radius` ยังใช้ค่าร่วมจาก `:root` เว้นแต่จะ override เพิ่มเอง แก้ค่าของ theme ที่ต้องการใน stylesheet เพื่อเปลี่ยนสีของ component ที่ scaffold
+
+## Tailwind v4
+
+สำหรับ Tailwind v4 `init` เพิ่ม `@theme inline` ใน token block ที่เขียนลง stylesheet โดย map CSS properties ไปเป็น Tailwind theme values อัตโนมัติ:
+
+```css
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-popover: var(--popover);
+  --color-primary: var(--primary);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+```
+
+จึงใช้ classes เช่น `bg-background`, `border-input` และ `focus-visible:ring-ring` ได้ทันทีหลัง `init` เขียน block นี้
+
+## Tailwind v3
+
+Tailwind v3 ไม่มี `@theme inline` ดังนั้น `init` จะพิมพ์ snippet นี้ให้เพิ่มเองภายใต้ `theme.extend` ใน `tailwind.config.{js,ts}`:
+
+```ts
+colors: {
+  background: 'hsl(var(--background))',
+  foreground: 'hsl(var(--foreground))',
+  popover: { DEFAULT: 'hsl(var(--popover))', foreground: 'hsl(var(--popover-foreground))' },
+  primary: { DEFAULT: 'hsl(var(--primary))', foreground: 'hsl(var(--primary-foreground))' },
+  muted: { DEFAULT: 'hsl(var(--muted))', foreground: 'hsl(var(--muted-foreground))' },
+  accent: { DEFAULT: 'hsl(var(--accent))', foreground: 'hsl(var(--accent-foreground))' },
+  destructive: { DEFAULT: 'hsl(var(--destructive))', foreground: 'hsl(var(--destructive-foreground))' },
+  border: 'hsl(var(--border))',
+  input: 'hsl(var(--input))',
+  ring: 'hsl(var(--ring))',
+},
+borderRadius: { lg: 'var(--radius)', md: 'calc(var(--radius) - 2px)', sm: 'calc(var(--radius) - 4px)' },
+```
+
+ขั้นตอนนี้จำเป็นสำหรับ Tailwind v3 ก่อนที่ token classes ของคอมโพเนนต์จะ resolve ได้ หาก classes ยังไม่มี style ให้ตรวจตาม [การแก้ปัญหา Tailwind v3](/react-thai-zip/troubleshooting/#tailwind-v3-ไม่มี-styles-ของ-token)
+
+## ปรับลึกกว่าด้วยซอร์สที่ scaffold
+
+หากต้องการเปลี่ยน layout, เพิ่ม slot หรือเปลี่ยนพฤติกรรม ให้แก้ไฟล์ component ที่ `add` สร้างในโปรเจกต์ของคุณโดยตรง คง import ของ `utils` และ hook ที่ CLI สร้างไว้ แล้วปรับ markup และ Tailwind classes ให้เข้ากับ design system ของคุณ
+
+## คู่มือที่เกี่ยวข้อง
+
+ดู [การใช้งานร่วมกับฟอร์ม](/react-thai-zip/guides/forms/) สำหรับ `name`, hidden fields และ validation semantics

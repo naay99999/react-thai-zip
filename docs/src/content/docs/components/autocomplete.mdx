@@ -1,0 +1,109 @@
+---
+title: ค้นหาที่อยู่แบบ autocomplete
+description: ค้นหาที่อยู่ไทยจากข้อความที่พิมพ์ พร้อมค่าที่อยู่แบบมีโครงสร้าง
+---
+
+import AutocompleteDemo from '../../../components/demos/AutocompleteDemo'
+
+`ThaiAddressAutocomplete` เหมาะกับหน้าฟอร์มที่ผู้ใช้ต้องการค้นหาที่อยู่ด้วยตำบล อำเภอ/เขต จังหวัด หรือรหัสไปรษณีย์
+
+## ติดตั้ง
+
+```bash
+npx react-thaizip add autocomplete
+```
+
+คำสั่งจะเพิ่มคอมโพเนนต์ รวมถึง `utils` และ hook สำหรับโหลดดัชนีที่อยู่ลงในตำแหน่งที่บันทึกไว้ใน [`thaizip.config.json`](/react-thai-zip/reference/config/)
+
+## ใช้งานพื้นฐาน
+
+นำเข้าจากตำแหน่งที่ CLI สร้างในโปรเจกต์ของคุณ:
+
+```tsx
+import { ThaiAddressAutocomplete } from '@/components/thai-address-autocomplete'
+
+export function AddressField() {
+  return <ThaiAddressAutocomplete onValueChange={(address) => console.log(address)} />
+}
+```
+
+ค่าใน `onValueChange` คือ `ResolvedThaiAddress | null` เมื่อผู้ใช้เลือกคำแนะนำจะได้ที่อยู่แบบมีโครงสร้าง และการพิมพ์ให้ข้อความว่างจะล้างที่อยู่ที่เลือกอยู่แล้วด้วยค่า `null`
+
+## ค้นหาภาษาไทย
+
+<AutocompleteDemo client:visible locale="th" />
+
+## ค้นหาภาษาอังกฤษ
+
+ใช้ `locale="en"` เพื่อแสดงป้ายกำกับ คำใบ้ และผลลัพธ์เป็นภาษาอังกฤษ ข้อมูลที่ส่งกลับยังมีชื่อทั้งไทยและอังกฤษ
+
+<AutocompleteDemo client:visible locale="en" />
+
+## ควบคุมค่าจากภายนอก
+
+ส่ง `value` เพื่อควบคุมค่า หรือส่ง `defaultValue` เพื่อตั้งค่าเริ่มต้นสำหรับโหมด uncontrolled ปุ่มในตัวอย่างนี้ล้างค่าที่ควบคุมอยู่และแสดงผลลัพธ์ที่ callback ส่งกลับมา
+
+<AutocompleteDemo client:visible locale="th" mode="controlled" showOutput />
+
+## ปิดใช้งานและแสดงข้อผิดพลาด
+
+ส่ง `disabled` เพื่อปิดช่องค้นหา หรือ `aria-invalid` เมื่อผลตรวจฟอร์มไม่ผ่าน
+
+<AutocompleteDemo client:visible locale="th" disabled />
+
+<AutocompleteDemo client:visible locale="th" invalid />
+
+## Props
+
+### ค่า
+
+| Prop | Type | รายละเอียด |
+| --- | --- | --- |
+| `value` | `ResolvedThaiAddress \| null` | ค่าที่ควบคุมอยู่; ส่ง `null` เพื่อล้าง |
+| `defaultValue` | `ResolvedThaiAddress \| null` | ค่าเริ่มต้นของโหมด uncontrolled และเติมข้อความค้นหาเริ่มต้น |
+| `onValueChange` | `(address: ResolvedThaiAddress \| null) => void` | เรียกเมื่อเลือกหรือล้างที่อยู่ |
+
+### การค้นหา
+
+| Prop | Type | รายละเอียด |
+| --- | --- | --- |
+| `limit` | `number` | จำนวนคำแนะนำสูงสุด ส่งต่อไปยัง core hook |
+| `debounce` | `number` | ระยะหน่วงก่อนค้นหา (มิลลิวินาที) ส่งต่อไปยัง core hook |
+| `threshold` | `number` | จำนวนอักขระขั้นต่ำก่อนค้นหา ส่งต่อไปยัง core hook |
+
+### ฟิลด์
+
+| Prop | Type | รายละเอียด |
+| --- | --- | --- |
+| `name` | `string` | สร้าง hidden inputs สี่ช่องสำหรับ subdistrict, district, province และ zipcode |
+| `locale` | `'th' \| 'en'` | ภาษาของข้อความและป้ายกำกับ; ค่าเริ่มต้นคือ `'th'` |
+| `disabled` | `boolean` | ปิดใช้งานช่องค้นหา |
+| `required` | `boolean` | กำหนดให้ input ต้องมีค่า |
+| `aria-invalid` | `React.AriaAttributes['aria-invalid']` | ระบุสถานะไม่ผ่านการตรวจสอบของ input |
+| `onBlur` | `React.FocusEventHandler<HTMLInputElement>` | ทำงานเมื่อ input สูญเสียโฟกัส |
+| `onError` | `(error: Error) => void` | ทำงานเมื่อโหลดดัชนีที่อยู่ไม่สำเร็จ |
+
+### ข้อความ
+
+| Prop | Type | รายละเอียด |
+| --- | --- | --- |
+| `texts` | `Partial<ThaiAddressAutocompleteTexts>` | แทนที่ placeholder, ข้อความโหลด/ผิดพลาด/ไม่พบผลลัพธ์ และป้ายปุ่มล้าง/ลองใหม่ |
+
+### Class slots
+
+| Prop | ใช้กับ |
+| --- | --- |
+| `className` | wrapper หลัก |
+| `inputClassName` | ช่องพิมพ์ค้นหา |
+| `popupClassName` | กล่องผลลัพธ์ |
+| `itemClassName` | แต่ละผลลัพธ์ |
+
+### Ref
+
+| Prop | Type | รายละเอียด |
+| --- | --- | --- |
+| `ref` | `React.Ref<HTMLInputElement>` | ref ที่ส่งต่อไปยัง input |
+
+## คู่มือที่เกี่ยวข้อง
+
+ดู [การใช้งานร่วมกับฟอร์ม](/react-thai-zip/guides/forms/) สำหรับการส่งค่าที่อยู่ และ [การปรับแต่ง](/react-thai-zip/guides/customization/) สำหรับปรับหน้าตา ส่วน UI แบบเลือกตามลำดับ ดู [cascade select](/react-thai-zip/components/cascade-select/)

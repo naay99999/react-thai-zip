@@ -1,0 +1,51 @@
+---
+title: Get started
+description: Scaffold your first Thai address component into a project you own
+---
+
+react-thaizip is a scaffold CLI, not a runtime component package: it writes component source into your project, and you own every generated file.
+
+## Prerequisites
+
+Use Node.js 18 or later and an existing React or Next.js project with Tailwind CSS v3 or v4 already installed. `init` detects Tailwind; it does not install it for you. If detection fails, follow the [Tailwind troubleshooting steps](/react-thai-zip/en/troubleshooting/#init-cannot-detect-tailwind).
+
+## Create your configuration
+
+```bash
+npx react-thaizip init
+```
+
+This command checks the project structure and Tailwind setup, chooses the package manager, and creates `thaizip.config.json`. That file records the component, hook, and `lib` directories used by `add`. See every field and detection rule in the [configuration reference](/react-thai-zip/en/reference/config/).
+
+`init` also adds CSS custom-property design tokens to the global stylesheet. With Tailwind v3, it prints a `theme.extend` snippet that you add to your Tailwind configuration yourself.
+
+## Add autocomplete
+
+```bash
+npx react-thaizip add autocomplete
+```
+
+The generated files look like this by default (the component location can differ with your project structure or the choice made during `init`):
+
+```text
+components/
+  thai-address-autocomplete.tsx
+hooks/
+  use-thai-address-index.ts
+lib/
+  utils.ts
+```
+
+The command also installs any component dependencies that are not already present. See the [CLI reference](/react-thai-zip/en/reference/cli/) for more targets, aliases, and flags.
+
+## Use your first component
+
+```tsx
+import { ThaiAddressAutocomplete } from './components/thai-address-autocomplete'
+
+export function AddressField() {
+  return <ThaiAddressAutocomplete onValueChange={(address) => console.log(address)} />
+}
+```
+
+Next, see the [cascade select](/react-thai-zip/en/components/cascade-select/) guide for ordered address entry, then [Forms](/react-thai-zip/en/guides/forms/) to submit address values with a browser form.
