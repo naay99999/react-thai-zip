@@ -94,3 +94,5 @@ export function FormDemo({ locale = 'th', component = 'autocomplete' }: FormDemo
     </DemoFrame>
   )
 }
+
+export default FormDemo

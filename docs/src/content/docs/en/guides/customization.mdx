@@ -1,0 +1,128 @@
+---
+title: Customization
+description: Change locale, text, class slots, and design tokens in scaffolded components
+---
+
+The files created by `react-thaizip add` are source files in your project. Start with props and Tailwind classes, then edit the scaffolded source when you need deeper behavior or markup changes.
+
+## Locale and text
+
+Pass `locale="en"` for English labels, placeholders, and options. `texts` accepts a partial override, so every omitted key keeps that locale's default text.
+
+```tsx
+<ThaiAddressAutocomplete
+  locale="en"
+  texts={{
+    placeholder: 'Search delivery address',
+    emptyText: 'No delivery area found',
+  }}
+/>
+```
+
+Autocomplete supports `placeholder`, `clearAriaLabel`, `loadingText`, `errorText`, `retryLabel`, and `emptyText` in `texts`. Cascade select supports `provinceLabel`, `districtLabel`, `subdistrictLabel`, `zipLabel`, its three placeholders, plus `loadingText`, `errorText`, and `retryLabel`.
+
+## Autocomplete class slots
+
+| Prop | Applied to |
+| --- | --- |
+| `className` | Root wrapper |
+| `inputClassName` | Search input |
+| `popupClassName` | Results popup |
+| `itemClassName` | Each result item |
+
+```tsx
+<ThaiAddressAutocomplete
+  inputClassName="border-sky-500 focus-visible:ring-sky-500"
+  popupClassName="border-sky-200 shadow-lg"
+/>
+```
+
+## Cascade-select class slots
+
+| Prop | Applied to |
+| --- | --- |
+| `className` | Root grid wrapper |
+| `labelClassName` | Every field label |
+| `triggerClassName` | Select triggers and the postal-code input |
+| `popupClassName` | Option popups |
+| `itemClassName` | Each option item |
+
+Use `triggerClassName` when the three triggers and postal-code input need one treatment, or `labelClassName` to style the whole label set.
+
+## Tokens inserted by `init`
+
+When `init` inserts its token block into the global stylesheet, the components use CSS custom properties including `--background`, `--foreground`, `--popover`, `--primary`, `--muted`, `--accent`, `--destructive`, `--border`, `--input`, `--ring`, and `--radius`.
+
+This is an example from the Tailwind v4 block:
+
+```css
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --primary: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --accent: oklch(0.97 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --radius: 0.625rem;
+}
+```
+
+The same block includes `.dark` values for those properties. Edit the values for the theme you want in the stylesheet to change the scaffolded components' colors.
+
+## Tailwind v4
+
+For Tailwind v4, `init` writes `@theme inline` in its token block and automatically maps the CSS properties to Tailwind theme values:
+
+```css
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-popover: var(--popover);
+  --color-primary: var(--primary);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+```
+
+That makes classes such as `bg-background`, `border-input`, and `focus-visible:ring-ring` available once `init` has written the block.
+
+## Tailwind v3
+
+Tailwind v3 has no `@theme inline`, so `init` prints this snippet for you to add under `theme.extend` in `tailwind.config.{js,ts}`:
+
+```ts
+colors: {
+  background: 'hsl(var(--background))',
+  foreground: 'hsl(var(--foreground))',
+  popover: { DEFAULT: 'hsl(var(--popover))', foreground: 'hsl(var(--popover-foreground))' },
+  primary: { DEFAULT: 'hsl(var(--primary))', foreground: 'hsl(var(--primary-foreground))' },
+  muted: { DEFAULT: 'hsl(var(--muted))', foreground: 'hsl(var(--muted-foreground))' },
+  accent: { DEFAULT: 'hsl(var(--accent))', foreground: 'hsl(var(--accent-foreground))' },
+  destructive: { DEFAULT: 'hsl(var(--destructive))', foreground: 'hsl(var(--destructive-foreground))' },
+  border: 'hsl(var(--border))',
+  input: 'hsl(var(--input))',
+  ring: 'hsl(var(--ring))',
+},
+borderRadius: { lg: 'var(--radius)', md: 'calc(var(--radius) - 2px)', sm: 'calc(var(--radius) - 4px)' },
+```
+
+This manual step is required in Tailwind v3 before the components' token classes can resolve.
+
+## Go deeper in the scaffolded source
+
+To change layout, add a slot, or alter behavior, edit the component file that `add` generated in your project. Keep the CLI-generated `utils` and hook imports, then adapt the markup and Tailwind classes to your design system.
+
+## Related guides
+
+See [Forms](/react-thai-zip/en/guides/forms/) for `name`, hidden fields, and validation semantics.

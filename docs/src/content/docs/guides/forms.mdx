@@ -1,0 +1,67 @@
+---
+title: การใช้งานร่วมกับฟอร์ม
+description: ส่งค่าที่อยู่ไทยด้วยฟอร์มของเบราว์เซอร์ หรือเชื่อมต่อกับ state ของไลบรารีฟอร์ม
+---
+
+import FormDemo from '../../../components/demos/FormDemo'
+
+คอมโพเนนต์ที่ CLI สร้างเป็น element ของฟอร์มในเบราว์เซอร์ปกติ ไม่ได้ส่งข้อมูลหรือเก็บข้อมูลให้คุณเอง เมื่อใส่ `name` คอมโพเนนต์จะสร้าง hidden inputs เพื่อให้ `FormData` และการ submit ตามปกติอ่านค่าที่อยู่ได้
+
+## ส่งด้วยฟอร์มของเบราว์เซอร์
+
+ตั้ง `name="address"` เพื่อให้ได้ฟิลด์สี่ช่องนี้:
+
+```text
+address-subdistrict
+address-district
+address-province
+address-zipcode
+```
+
+หลังเลือกที่อยู่แล้ว `new FormData(form)` มี payload รูปแบบนี้ โดยชื่อพื้นที่เป็นชื่อภาษาไทยของข้อมูลที่เลือก แม้ UI จะแสดงภาษาอังกฤษ:
+
+```ts
+{
+  'address-subdistrict': 'คลองตันเหนือ',
+  'address-district': 'วัฒนา',
+  'address-province': 'กรุงเทพมหานคร',
+  'address-zipcode': '10110',
+}
+```
+
+ตัวอย่างนี้ดัก `submit` ไว้ อ่าน `FormData` และแสดงผลในหน้านี้ จึงใช้งานได้โดยไม่ต้องมี server:
+
+<FormDemo client:visible locale="th" component="autocomplete" />
+
+<FormDemo client:visible locale="th" component="cascade-select" />
+
+ทั้ง autocomplete และ cascade select สร้างฟิลด์ชื่อเดียวกัน หากส่ง `disabled` ควบคู่กัน hidden inputs ทั้งสี่ช่องก็จะถูก disabled และจะไม่ปรากฏใน `FormData`
+
+## ใช้กับไลบรารีฟอร์ม
+
+เก็บ `ResolvedThaiAddress | null` ไว้ใน state ของฟอร์มหรือ controller ของไลบรารีที่ใช้ แล้วส่งกลับเข้าคอมโพเนนต์ผ่าน `value` การจัดการแบบ controlled ทำให้ validation, reset และการ submit ของฟอร์มมีแหล่งข้อมูลเดียวกัน
+
+```tsx
+const [address, setAddress] = useState<ResolvedThaiAddress | null>(null)
+
+<ThaiAddressAutocomplete
+  name="address"
+  value={address}
+  onValueChange={setAddress}
+/>
+```
+
+ใช้รูปแบบเดียวกันกับ `ThaiAddressCascadeSelect` เมื่อ reset ฟอร์ม ให้ส่ง `null` กลับไปที่ `value` เพื่อเคลียร์ UI และข้อมูลที่เลือก
+
+## การตรวจสอบและการเข้าถึง
+
+- `required` ส่งต่อไปยัง input ของ autocomplete หรือ select ทั้งสามของ cascade select
+- `aria-invalid` ระบุสถานะไม่ผ่าน validation: autocomplete ส่งให้ input และ cascade select ส่งให้ trigger ทั้งสาม
+- `onBlur` ของ autocomplete ทำงานเมื่อ input สูญเสียโฟกัส ส่วนของ cascade select ทำงานเมื่อ province trigger สูญเสียโฟกัส
+- `ref` ของ autocomplete ชี้ไปที่ `HTMLInputElement`; `ref` ของ cascade select ชี้ไปที่ปุ่ม province trigger จึงใช้สำหรับ focus จาก logic ของฟอร์มได้
+
+ตัวอย่างเช่น ส่ง `aria-invalid={Boolean(error)}` ตาม validation state ของฟอร์ม และเรียก `ref.current?.focus()` เพื่อพาผู้ใช้กลับไปยัง control หลักที่ต้องแก้ไข
+
+## คู่มือที่เกี่ยวข้อง
+
+ดู [autocomplete](/react-thai-zip/components/autocomplete/) สำหรับ UI ค้นหาจากข้อความ, [cascade select](/react-thai-zip/components/cascade-select/) สำหรับการเลือกตามลำดับ และ [การปรับแต่ง](/react-thai-zip/guides/customization/) สำหรับข้อความและ class slots

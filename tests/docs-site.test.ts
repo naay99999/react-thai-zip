@@ -7,6 +7,8 @@ const requiredDocSlugs = [
   'getting-started.mdx',
   'components/autocomplete.mdx',
   'components/cascade-select.mdx',
+  'guides/forms.mdx',
+  'guides/customization.mdx',
 ]
 
 async function read(relativePath: string): Promise<string> {
@@ -67,6 +69,7 @@ describe('documentation site structure', () => {
     expect(cascade).toContain("from '@/thai-address-cascade-select'")
     expect(cascade).toContain('export default CascadeSelectDemo')
     expect(form).toMatch(/from '@\/thai-address-(autocomplete|cascade-select)'/)
+    expect(form).toContain('export default FormDemo')
   })
 
   it('form demo presents the localized current resolved address', async () => {
