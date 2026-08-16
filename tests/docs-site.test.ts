@@ -29,6 +29,7 @@ describe('documentation site structure', () => {
     expect(config).toContain("base: '/react-thai-zip'")
     expect(config).toContain("new URL('../templates/react/ts', import.meta.url)")
     expect(config).toContain("'@': templatesDir")
+    expect(config).toContain("{ label: 'Core API', link: 'https://naay99999.github.io/thai-zip/' }")
   })
 
   it('does not track generated Astro directories', async () => {
