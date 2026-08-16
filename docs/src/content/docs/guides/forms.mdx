@@ -39,7 +39,7 @@ address-zipcode
 
 ## ใช้กับไลบรารีฟอร์ม
 
-เก็บ `ResolvedThaiAddress | null` ไว้ใน state ของฟอร์มหรือ controller ของไลบรารีที่ใช้ แล้วส่งกลับเข้าคอมโพเนนต์ผ่าน `value` การจัดการแบบ controlled ทำให้ validation, reset และการ submit ของฟอร์มมีแหล่งข้อมูลเดียวกัน
+เก็บ `ResolvedThaiAddress | null` ไว้ใน state ของฟอร์มหรือ controller ของไลบรารีที่ใช้ แล้วส่งกลับเข้าคอมโพเนนต์ผ่าน `value` สำหรับ autocomplete การจัดการแบบ controlled ทำให้ validation, reset และการ submit ของฟอร์มมีแหล่งข้อมูลเดียวกัน
 
 ```tsx
 const [address, setAddress] = useState<ResolvedThaiAddress | null>(null)
@@ -51,7 +51,13 @@ const [address, setAddress] = useState<ResolvedThaiAddress | null>(null)
 />
 ```
 
-ใช้รูปแบบเดียวกันกับ `ThaiAddressCascadeSelect` เมื่อ reset ฟอร์ม ให้ส่ง `null` กลับไปที่ `value` เพื่อเคลียร์ UI และข้อมูลที่เลือก
+สำหรับ `ThaiAddressCascadeSelect` ให้ใช้ค่าในฟอร์มกับ resolved address ที่เลือกครบเท่านั้น cascade select จัดการการเลือกจังหวัด/อำเภอที่ยังไม่ครบภายใน และจะไม่ส่ง resolved value จนกว่าจะเลือกครบทั้งสามระดับ การส่ง `value={null}` จะล้าง selection ที่เลือกครบอยู่ แต่ตั้งใจคงการเลือกบางส่วนที่กำลังดำเนินอยู่ไว้ ดังนั้น state ของฟอร์มจึงไม่ใช่แหล่งข้อมูลเดียวของ UI การเลือกบางส่วนนี้
+
+เมื่อ reset ฟอร์มตามปกติ ให้ส่ง `null` เพื่อล้างที่อยู่ที่เลือกครบซึ่งเก็บไว้ หาก reset ต้องล้างการเลือกบางส่วนของ cascade ด้วย ให้ remount cascade โดยตั้งใจด้วยการเพิ่มค่า reset key:
+
+```tsx
+<ThaiAddressCascadeSelect key={resetVersion} name="address" value={address} onValueChange={setAddress} />
+```
 
 ## การตรวจสอบและการเข้าถึง
 

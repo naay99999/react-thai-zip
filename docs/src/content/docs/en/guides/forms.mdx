@@ -39,7 +39,7 @@ Autocomplete and cascade select render the same field names. If you pass `disabl
 
 ## Use a form library
 
-Keep `ResolvedThaiAddress | null` in your form state or library controller, then pass it back through `value`. This controlled pattern gives validation, resets, and submission one source of truth.
+Keep `ResolvedThaiAddress | null` in your form state or library controller, then pass it back through `value`. For autocomplete, this controlled pattern gives validation, resets, and submission one source of truth.
 
 ```tsx
 const [address, setAddress] = useState<ResolvedThaiAddress | null>(null)
@@ -51,7 +51,13 @@ const [address, setAddress] = useState<ResolvedThaiAddress | null>(null)
 />
 ```
 
-Use the same pattern for `ThaiAddressCascadeSelect`. When resetting the form, pass `null` to `value` to clear the UI and selected address.
+For `ThaiAddressCascadeSelect`, use the form value for a complete resolved address only. The cascade manages an in-progress province/district selection internally and does not emit a resolved value until all three levels are selected. Passing `value={null}` clears an existing complete selection but intentionally preserves an in-progress partial selection, so form state is not the sole source of truth for that partial UI.
+
+On a normal form reset, pass `null` to clear the saved complete address. If the reset must also discard an in-progress partial cascade selection, deliberately remount the cascade by incrementing a reset key:
+
+```tsx
+<ThaiAddressCascadeSelect key={resetVersion} name="address" value={address} onValueChange={setAddress} />
+```
 
 ## Validation and accessibility
 

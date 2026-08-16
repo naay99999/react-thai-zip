@@ -79,4 +79,14 @@ describe('documentation site structure', () => {
     expect(form).toContain('value.subdistrictEn')
     expect(form).toContain('value.zipCode')
   })
+
+  it('documents the cascade select partial-state boundary in both Forms guides', async () => {
+    const thai = await read('docs/src/content/docs/guides/forms.mdx')
+    const english = await read('docs/src/content/docs/en/guides/forms.mdx')
+
+    expect(thai).toContain('จะไม่ส่ง resolved value จนกว่าจะเลือกครบทั้งสามระดับ')
+    expect(thai).toContain('key={resetVersion}')
+    expect(english).toContain('does not emit a resolved value until all three levels are selected')
+    expect(english).toContain('key={resetVersion}')
+  })
 })
