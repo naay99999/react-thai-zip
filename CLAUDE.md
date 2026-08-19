@@ -51,6 +51,11 @@ tsconfig.templates.json         # standalone tsconfig (path-mapped @/lib, @/hook
 tests/                          # Vitest unit tests, one file per util + command
   thai-address-autocomplete.test.tsx  # RTL/jsdom test for the Base UI autocomplete
   rewriteImports.test.ts              # unit tests for @/lib, @/hooks import rewriting
+  docs-site.test.ts                   # structure guards for the apps/docs website
+apps/
+  docs/                          # Documentation website (Starlight/Astro today; migrating to Fumadocs) — own package.json, deployed to GitHub Pages by .github/workflows/docs.yml
+  sandbox/                       # Local playground for testing the scaffolded components + CLI (Next.js) — gitignored, never committed
+superpowers/                     # SDD specs + plans (tracked design documents)
 ```
 
 ## Component registry

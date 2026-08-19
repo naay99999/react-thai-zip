@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'docs/**'
+      - 'apps/docs/**'
       - 'templates/**'
       - 'src/**'
       - 'package.json'
@@ -12,7 +12,7 @@ on:
       - '.github/workflows/docs.yml'
   pull_request:
     paths:
-      - 'docs/**'
+      - 'apps/docs/**'
       - 'templates/**'
       - 'src/**'
       - 'package.json'
@@ -38,7 +38,7 @@ jobs:
           cache: npm
           cache-dependency-path: |
             package-lock.json
-            docs/package-lock.json
+            apps/docs/package-lock.json
       - name: Install root dependencies
         run: npm ci
       - name: Verify canonical components
@@ -48,17 +48,17 @@ jobs:
           npm run typecheck:templates
           npm run build
       - name: Install docs dependencies
-        working-directory: docs
+        working-directory: apps/docs
         run: npm ci
       - name: Check and build docs
-        working-directory: docs
+        working-directory: apps/docs
         run: |
           npm run check
           npm run build
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request'
         with:
-          path: docs/dist
+          path: apps/docs/dist
 
   deploy:
     if: github.event_name != 'pull_request'

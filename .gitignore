@@ -4,6 +4,7 @@ coverage/
 .DS_Store
 npm-debug.log*
 .worktrees/
-docs/node_modules/
-docs/dist/
-docs/.astro/
+apps/docs/node_modules/
+apps/docs/dist/
+apps/docs/.astro/
+apps/sandbox/

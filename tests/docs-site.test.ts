@@ -21,13 +21,13 @@ async function read(relativePath: string): Promise<string> {
 describe('documentation site structure', () => {
   it('keeps required Thai and English pages mirrored', async () => {
     for (const slug of requiredDocSlugs) {
-      await expect(read(`docs/src/content/docs/${slug}`)).resolves.toBeTruthy()
-      await expect(read(`docs/src/content/docs/en/${slug}`)).resolves.toBeTruthy()
+      await expect(read(`apps/docs/src/content/docs/${slug}`)).resolves.toBeTruthy()
+      await expect(read(`apps/docs/src/content/docs/en/${slug}`)).resolves.toBeTruthy()
     }
   })
 
   it('has a private Astro package with the required scripts', async () => {
-    const manifest = JSON.parse(await read('docs/package.json')) as {
+    const manifest = JSON.parse(await read('apps/docs/package.json')) as {
       private?: boolean
       scripts?: Record<string, string>
     }
@@ -42,41 +42,41 @@ describe('documentation site structure', () => {
   })
 
   it('targets the GitHub Pages project URL and canonical template directory', async () => {
-    const config = await read('docs/astro.config.mjs')
+    const config = await read('apps/docs/astro.config.mjs')
     expect(config).toContain("site: 'https://naay99999.github.io'")
     expect(config).toContain("base: '/react-thai-zip'")
-    expect(config).toContain("new URL('../templates/react/ts', import.meta.url)")
+    expect(config).toContain("new URL('../../templates/react/ts', import.meta.url)")
     expect(config).toContain("'@': templatesDir")
     expect(config).toContain("{ label: 'Core API', link: 'https://naay99999.github.io/thai-zip/' }")
   })
 
   it('uses the approved Thai and English Reference sidebar labels', async () => {
-    const config = await read('docs/astro.config.mjs')
+    const config = await read('apps/docs/astro.config.mjs')
 
     expect(config).toMatch(/label: 'อ้างอิง',\s+translations: \{ en: 'Reference' \}/)
   })
 
   it('does not track generated Astro directories', async () => {
     const ignore = await read('.gitignore')
-    expect(ignore).toContain('docs/node_modules/')
-    expect(ignore).toContain('docs/dist/')
-    expect(ignore).toContain('docs/.astro/')
+    expect(ignore).toContain('apps/docs/node_modules/')
+    expect(ignore).toContain('apps/docs/dist/')
+    expect(ignore).toContain('apps/docs/.astro/')
   })
 
   it('ships the favicon referenced by Starlight', async () => {
-    await expect(read('docs/public/favicon.svg')).resolves.toContain('<svg')
+    await expect(read('apps/docs/public/favicon.svg')).resolves.toContain('<svg')
   })
 
   it('does not contain copied component implementations', async () => {
-    const entries = await readdir(path.join(root, 'docs/src'), { recursive: true })
+    const entries = await readdir(path.join(root, 'apps/docs/src'), { recursive: true })
     expect(entries.some((entry) => entry.endsWith('thai-address-autocomplete.tsx'))).toBe(false)
     expect(entries.some((entry) => entry.endsWith('thai-address-cascade-select.tsx'))).toBe(false)
   })
 
   it('demo wrappers import canonical templates through the template alias', async () => {
-    const autocomplete = await read('docs/src/components/demos/AutocompleteDemo.tsx')
-    const cascade = await read('docs/src/components/demos/CascadeSelectDemo.tsx')
-    const form = await read('docs/src/components/demos/FormDemo.tsx')
+    const autocomplete = await read('apps/docs/src/components/demos/AutocompleteDemo.tsx')
+    const cascade = await read('apps/docs/src/components/demos/CascadeSelectDemo.tsx')
+    const form = await read('apps/docs/src/components/demos/FormDemo.tsx')
 
     expect(autocomplete).toContain("from '@/thai-address-autocomplete'")
     expect(cascade).toContain("from '@/thai-address-cascade-select'")
@@ -86,7 +86,7 @@ describe('documentation site structure', () => {
   })
 
   it('form demo presents the localized current resolved address', async () => {
-    const form = await read('docs/src/components/demos/FormDemo.tsx')
+    const form = await read('apps/docs/src/components/demos/FormDemo.tsx')
 
     expect(form).toContain('value.subdistrict')
     expect(form).toContain('value.subdistrictEn')
@@ -94,7 +94,7 @@ describe('documentation site structure', () => {
   })
 
   it('visually distinguishes invalid demo controls', async () => {
-    const css = await read('docs/src/components/demos/demos.css')
+    const css = await read('apps/docs/src/components/demos/demos.css')
 
     expect(css).toMatch(
       /\.tz-demo \[aria-invalid=['"]true['"]\]\s*\{[^}]*border-color:\s*var\(--destructive\)/s,
@@ -102,8 +102,8 @@ describe('documentation site structure', () => {
   })
 
   it('documents the cascade select partial-state boundary in both Forms guides', async () => {
-    const thai = await read('docs/src/content/docs/guides/forms.mdx')
-    const english = await read('docs/src/content/docs/en/guides/forms.mdx')
+    const thai = await read('apps/docs/src/content/docs/guides/forms.mdx')
+    const english = await read('apps/docs/src/content/docs/en/guides/forms.mdx')
 
     expect(thai).toContain('จะไม่ส่ง resolved value จนกว่าจะเลือกครบทั้งสามระดับ')
     expect(thai).toContain('key={resetVersion}')
