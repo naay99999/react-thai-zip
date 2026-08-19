@@ -3,29 +3,35 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "check": "astro check",
-    "build": "astro build",
-    "preview": "astro preview"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
   },
   "dependencies": {
-    "@astrojs/react": "^4.2.0",
-    "@astrojs/starlight": "^0.36.0",
     "@base-ui/react": "^1.7.0",
-    "@tailwindcss/vite": "^4.1.11",
-    "astro": "^5.6.0",
     "clsx": "^2.1.1",
+    "fumadocs-core": "^16.14.5",
+    "fumadocs-mdx": "^15.3.0",
+    "fumadocs-ui": "^16.14.5",
+    "next": "^16.3.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "starlight-links-validator": "^0.18.0",
     "tailwind-merge": "^3.6.0",
-    "tailwindcss": "^4.1.11",
     "thaizip": "^0.7.2"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.4",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/mdx": "^2.0.13",
+    "@types/node": "^22.10.5",
     "@types/react": "^19.2.4",
     "@types/react-dom": "^19.2.3",
+    "tailwindcss": "^4.3.3",
     "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
   }
 }

@@ -5,6 +5,6 @@ coverage/
 npm-debug.log*
 .worktrees/
 apps/docs/node_modules/
-apps/docs/dist/
-apps/docs/.astro/
+apps/docs/.next/
+apps/docs/.source/
 apps/sandbox/
