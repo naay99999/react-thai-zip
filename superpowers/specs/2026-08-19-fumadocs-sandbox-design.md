@@ -116,8 +116,12 @@ react-thai-zip/
   the `starlight-links-validator` dependency. Thai chrome strings (search
   placeholder, "Previous/Next") are provided through Fumadocs UI i18n
   configuration on `RootProvider`.
-- The `Core API` sidebar entry keeps pointing to
-  `https://naay99999.github.io/thai-zip/` (external link, unaffected).
+- The `Core API` link keeps pointing to `https://naay99999.github.io/thai-zip/`
+  (external link, unaffected). **Amendment (2026-08-20):** the installed
+  `fumadocs-core` meta.json schema only allows strings in `pages`, so the
+  external entry cannot live in the sidebar; it is surfaced in the DocsLayout
+  top navigation via `baseOptions().links` instead, and the structure tests
+  assert it there.
 
 ## Demo components
 
