@@ -6,7 +6,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'astro/config'
 import starlightLinksValidator from 'starlight-links-validator'
 
-const templatesDir = fileURLToPath(new URL('../templates/react/ts', import.meta.url))
+const templatesDir = fileURLToPath(new URL('../../templates/react/ts', import.meta.url))
 
 export default defineConfig({
   site: 'https://naay99999.github.io',
