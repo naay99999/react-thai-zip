@@ -1,0 +1,16 @@
+{
+  "pages": [
+    "index",
+    "getting-started",
+    "---คอมโพเนนต์---",
+    "components/autocomplete",
+    "components/cascade-select",
+    "---คู่มือ---",
+    "guides/forms",
+    "guides/customization",
+    "---อ้างอิง---",
+    "reference/cli",
+    "reference/config",
+    "troubleshooting"
+  ]
+}
