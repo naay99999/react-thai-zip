@@ -1,3 +1,5 @@
+'use client'
+
 import { useRef, useState, type FormEvent } from 'react'
 import type { ResolvedThaiAddress } from 'thaizip'
 import { ThaiAddressAutocomplete } from '@/thai-address-autocomplete'

@@ -1,19 +1,19 @@
 .tz-demo {
   margin-block: 1.5rem;
   padding: 1rem;
-  border: 1px solid var(--sl-color-gray-5);
+  border: 1px solid var(--color-fd-border);
   border-radius: 0.75rem;
-  background: var(--sl-color-bg-nav);
+  background: var(--color-fd-card);
 }
 .tz-demo-copy { margin-bottom: 1rem; }
-.tz-demo-copy p { margin: 0.25rem 0 0; color: var(--sl-color-gray-3); }
+.tz-demo-copy p { margin: 0.25rem 0 0; color: var(--color-fd-muted-foreground); }
 .tz-demo-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
 .tz-demo-action {
-  border: 1px solid var(--sl-color-gray-4);
+  border: 1px solid var(--color-fd-border);
   border-radius: 0.375rem;
   padding: 0.4rem 0.75rem;
-  background: var(--sl-color-bg);
-  color: var(--sl-color-text);
+  background: var(--color-fd-background);
+  color: var(--color-fd-foreground);
   cursor: pointer;
 }
 .tz-demo [aria-invalid='true'] {
@@ -22,13 +22,13 @@
 .tz-demo-output {
   margin-top: 1rem;
   padding: 0.75rem;
-  border: 1px solid var(--sl-color-gray-5);
+  border: 1px solid var(--color-fd-border);
   border-radius: 0.5rem;
-  background: var(--sl-color-bg);
+  background: var(--color-fd-background);
 }
 .tz-demo-output pre {
   max-height: 18rem;
   margin: 0.5rem 0 0;
   overflow: auto;
-  font-size: var(--sl-text-xs);
+  font-size: 0.75rem;
 }
