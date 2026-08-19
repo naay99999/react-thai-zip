@@ -20,6 +20,13 @@ export function baseOptions(): BaseLayoutProps {
     nav: {
       title: 'react-thaizip',
     },
+    links: [
+      {
+        text: 'Core API',
+        url: 'https://naay99999.github.io/thai-zip/',
+        external: true,
+      },
+    ],
     githubUrl: 'https://github.com/naay99999/react-thai-zip',
   };
 }
