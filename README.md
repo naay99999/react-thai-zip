@@ -2,7 +2,7 @@
 
 CLI scaffold tool for adding Thai address React components powered by [`thaizip`](https://www.npmjs.com/package/thaizip).
 
-📚 [Documentation and live component demos](https://naay99999.github.io/react-thai-zip/)
+📚 [Documentation and live component demos](https://react-thai-zip.vercel.app)
 
 ```bash
 npx react-thaizip init
