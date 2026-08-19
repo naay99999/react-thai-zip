@@ -8,3 +8,5 @@ apps/docs/node_modules/
 apps/docs/.next/
 apps/docs/.source/
 apps/sandbox/
+apps/docs/AGENTS.md
+apps/docs/CLAUDE.md
