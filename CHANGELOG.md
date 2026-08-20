@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.1](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.0...react-thaizip-v0.3.1) (2026-08-19)
+
+
+### Features
+
+* add npm run sandbox generator for CLI testing ([b998a16](https://github.com/naay99999/react-thai-zip/commit/b998a169800b604072f5752eabd2e3c1bb6ee715))
+* **docs:** add Core API link to docs navigation ([f64ade3](https://github.com/naay99999/react-thai-zip/commit/f64ade3bee870628c0be077f67599ae2f36f6d98))
+* **docs:** add sidebar navigation, /docs links, and landing page ([f24e71c](https://github.com/naay99999/react-thai-zip/commit/f24e71ccad7c2a9c49cef6227f9da8cfd404675c))
+* **docs:** replace Starlight with Fumadocs app shell ([e98c926](https://github.com/naay99999/react-thai-zip/commit/e98c926754a9c7428e62ea69dffbed66400a0413))
+
 ## [0.3.0](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.2.1...react-thaizip-v0.3.0) (2026-08-05)
 
 
