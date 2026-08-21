@@ -27,7 +27,7 @@ describe('documentation site structure', () => {
     }
   })
 
-  it('has a private Next.js package with the required scripts', async () => {
+  it('has a private Next.js package with a deterministic production build', async () => {
     const manifest = JSON.parse(await read(`${docsDir}/package.json`)) as {
       private?: boolean
       scripts?: Record<string, string>
@@ -36,9 +36,23 @@ describe('documentation site structure', () => {
     expect(manifest.private).toBe(true)
     expect(manifest.scripts).toMatchObject({
       dev: 'next dev',
-      build: 'next build',
+      build: 'next build --webpack',
       start: 'next start',
     })
+  })
+
+  it('makes the monorepo root explicit for build tracing', async () => {
+    const config = await read(`${docsDir}/next.config.mjs`)
+
+    expect(config).toContain('turbopack:')
+    expect(config).toContain('root: repositoryRoot')
+    expect(config).toContain('outputFileTracingRoot: repositoryRoot')
+  })
+
+  it('builds the documentation site in CI', async () => {
+    const workflow = await read('.github/workflows/ci.yml')
+
+    expect(workflow).toMatch(/docs:[\s\S]*working-directory: apps\/docs[\s\S]*- run: npm ci[\s\S]*- run: npm run build/)
   })
 
   it('maps the template alias to the canonical templates directory', async () => {
