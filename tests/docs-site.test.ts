@@ -49,10 +49,20 @@ describe('documentation site structure', () => {
     expect(config).toContain('outputFileTracingRoot: repositoryRoot')
   })
 
-  it('builds the documentation site in CI', async () => {
+  it('builds the documentation site in CI, installing both the repo root and apps/docs', async () => {
     const workflow = await read('.github/workflows/ci.yml')
 
-    expect(workflow).toMatch(/docs:[\s\S]*working-directory: apps\/docs[\s\S]*- run: npm ci[\s\S]*- run: npm run build/)
+    expect(workflow).toMatch(
+      /docs:[\s\S]*- run: npm ci\n[\s\S]*- run: npm ci\n\s*working-directory: apps\/docs\n[\s\S]*- run: npm run build\n\s*working-directory: apps\/docs/,
+    )
+  })
+
+  it('overrides the Vercel install command to also install the repo root', async () => {
+    const config = JSON.parse(await read(`${docsDir}/vercel.json`)) as {
+      installCommand?: string
+    }
+
+    expect(config.installCommand).toBe('cd ../.. && npm ci && cd apps/docs && npm ci')
   })
 
   it('maps the template alias to the canonical templates directory', async () => {

@@ -6,7 +6,7 @@ CLI scaffold tool for adding Thai address React components powered by [`thaizip`
 
 ## Deploy the documentation site
 
-Deploy `apps/docs` as a separate Vercel project. Set its **Root Directory** to `apps/docs`, use Node.js 22 or newer, and keep Vercel's default `npm install` and `npm run build` commands. The docs app owns its own `package-lock.json` and its build uses Webpack for compatibility with the Fumadocs MDX pipeline.
+Deploy `apps/docs` as a separate Vercel project. Set its **Root Directory** to `apps/docs` and use Node.js 22 or newer. The docs app imports the component templates from `templates/react/ts/` directly, and those imports (`thaizip`, `clsx`, `tailwind-merge`, `@base-ui/react`) resolve against this repo's own `node_modules`, not just `apps/docs/node_modules` — `apps/docs/vercel.json` overrides the Install Command to install both. Keep Vercel's default `npm run build` command. The docs app owns its own `package-lock.json` and its build uses Webpack for compatibility with the Fumadocs MDX pipeline.
 
 ```bash
 npx react-thaizip init

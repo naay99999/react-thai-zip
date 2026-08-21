@@ -26,9 +26,6 @@ jobs:
 
   docs:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/docs
     steps:
       - uses: actions/checkout@v4
 
@@ -36,7 +33,16 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: apps/docs/package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            apps/docs/package-lock.json
 
+      # apps/docs imports templates/react/ts/**/* directly; Node resolves
+      # their bare imports (thaizip, clsx, tailwind-merge, @base-ui/react) by
+      # walking up from templates/ to this repo's own node_modules, so it
+      # has to be installed too, not just apps/docs/node_modules.
       - run: npm ci
+      - run: npm ci
+        working-directory: apps/docs
       - run: npm run build
+        working-directory: apps/docs
