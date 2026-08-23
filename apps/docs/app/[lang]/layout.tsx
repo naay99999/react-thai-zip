@@ -1,10 +1,9 @@
 import type { ReactNode } from 'react';
-import { RootProvider } from 'fumadocs-ui/provider/next';
+import { I18nProvider } from 'fumadocs-ui/contexts/i18n';
 import { i18nProvider } from 'fumadocs-ui/i18n';
 import { translations } from '~/lib/layout.shared';
-import '../global.css';
 
-export default async function RootLayout({
+export default async function LocaleLayout({
   children,
   params,
 }: {
@@ -13,11 +12,5 @@ export default async function RootLayout({
 }) {
   const { lang } = await params;
 
-  return (
-    <html lang={lang} suppressHydrationWarning>
-      <body className="flex min-h-screen flex-col">
-        <RootProvider i18n={i18nProvider(translations, lang)}>{children}</RootProvider>
-      </body>
-    </html>
-  );
+  return <I18nProvider {...i18nProvider(translations, lang)}>{children}</I18nProvider>;
 }

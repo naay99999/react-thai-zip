@@ -33,7 +33,7 @@ export default async function HomePage({
 
   return (
     <HomeLayout {...baseOptions()}>
-      <section className="container flex flex-col items-center gap-4 py-20 text-center">
+      <section className="container mx-auto flex flex-col items-center gap-4 py-20 text-center">
         <h1 className="text-4xl font-bold tracking-tight">react-thaizip</h1>
         <p className="max-w-xl text-lg text-fd-muted-foreground">{c.tagline}</p>
         <Link
@@ -43,7 +43,7 @@ export default async function HomePage({
           {c.cta}
         </Link>
       </section>
-      <section className="container max-w-3xl pb-20">
+      <section className="container mx-auto max-w-3xl pb-20">
         <h2 className="mb-4 text-xl font-semibold">{c.tryTitle}</h2>
         <p className="mb-4 text-sm text-fd-muted-foreground">{c.tryBody}</p>
         <AutocompleteDemo locale={lang === 'en' ? 'en' : 'th'} />
