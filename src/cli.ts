@@ -131,16 +131,21 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
   process.exitCode = 1
 }
 
-function isEntryPoint(): boolean {
-  const invoked = process.argv[1]
+// Exported (and parameterized) so the symlink-resolution behavior can be
+// unit-tested directly with a real fs.symlinkSync fixture, without needing a
+// built dist/cli.js or a subprocess.
+export function isEntryPoint(
+  invoked: string | undefined = process.argv[1],
+  moduleUrl: string = import.meta.url,
+): boolean {
   if (!invoked) return false
   // process.argv[1] can be a symlink (e.g. an npm/npx-linked bin), while
   // import.meta.url always reflects the resolved real path — resolve both
   // through realpath so the identity check still matches when run via a bin link.
   try {
-    return import.meta.url === pathToFileURL(realpathSync(invoked)).href
+    return moduleUrl === pathToFileURL(realpathSync(invoked)).href
   } catch {
-    return import.meta.url === pathToFileURL(invoked).href
+    return moduleUrl === pathToFileURL(invoked).href
   }
 }
 

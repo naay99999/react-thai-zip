@@ -1,4 +1,8 @@
-import { main, parseCliArgs } from '../src/cli.js'
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
+import { pathToFileURL } from 'node:url'
+import { isEntryPoint, main, parseCliArgs } from '../src/cli.js'
 
 vi.mock('../src/commands/add.js', () => ({
   addComponents: vi.fn().mockResolvedValue(undefined),
@@ -123,5 +127,86 @@ describe('main flag handling', () => {
     const prefixLengths = lines.map((line) => /^  (\S+)\s+/.exec(line)?.[0].length)
     expect(prefixLengths[0]).toBe(prefixLengths[1])
     log.mockRestore()
+  })
+})
+
+describe('isEntryPoint', () => {
+  // Regression coverage for: npm/npx/yarn/pnpm always invoke a package's
+  // `bin` entry through a symlink. process.argv[1] keeps the symlink path,
+  // but Node's ESM loader resolves import.meta.url through it to the real
+  // file. A naive `moduleUrl === pathToFileURL(invoked).href` comparison
+  // (the pre-fix code) therefore never matches when invoked via a symlinked
+  // bin, so the CLI silently never ran. This exercises the real filesystem
+  // symlink mechanism (fs.symlinkSync) rather than mocking it away.
+  let dir: string
+  let realFile: string
+  let symlinkFile: string
+
+  beforeEach(() => {
+    dir = mkdtempSync(path.join(tmpdir(), 'react-thaizip-cli-entrypoint-'))
+    realFile = path.join(dir, 'real', 'cli.js')
+    symlinkFile = path.join(dir, 'linked-bin')
+  })
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  function makeRealFileAndSymlink(): void {
+    mkdirSync(path.dirname(realFile), { recursive: true })
+    writeFileSync(realFile, '// stub\n')
+    symlinkSync(realFile, symlinkFile)
+  }
+
+  it('sanity check: a symlink and its target do NOT produce the same file:// URL', () => {
+    // Proves this fixture actually exercises the symlink mechanism: if this
+    // assertion ever failed, the test below would pass for the wrong reason.
+    makeRealFileAndSymlink()
+    expect(pathToFileURL(symlinkFile).href).not.toBe(pathToFileURL(realFile).href)
+  })
+
+  it('returns true when invoked via a symlinked bin (matches the real npx/npm-link mechanism)', () => {
+    makeRealFileAndSymlink()
+    // moduleUrl mirrors what import.meta.url would be for the real (symlink-resolved) file.
+    // Node's ESM loader resolves import.meta.url through *every* symlink in
+    // the path (including OS-level ones, e.g. macOS's /var -> /private/var),
+    // so mimic that with realpathSync rather than the raw path.
+    const moduleUrl = pathToFileURL(realpathSync(realFile)).href
+    expect(isEntryPoint(symlinkFile, moduleUrl)).toBe(true)
+  })
+
+  it('would have failed against the old direct (non-realpath) comparison', () => {
+    makeRealFileAndSymlink()
+    // Node's ESM loader resolves import.meta.url through *every* symlink in
+    // the path (including OS-level ones, e.g. macOS's /var -> /private/var),
+    // so mimic that with realpathSync rather than the raw path.
+    const moduleUrl = pathToFileURL(realpathSync(realFile)).href
+    // This is exactly the pre-fix logic: import.meta.url === pathToFileURL(invoked).href
+    const naiveMatch = moduleUrl === pathToFileURL(symlinkFile).href
+    expect(naiveMatch).toBe(false)
+  })
+
+  it('returns true when invoked directly with no symlink involved', () => {
+    makeRealFileAndSymlink()
+    // Node's ESM loader resolves import.meta.url through *every* symlink in
+    // the path (including OS-level ones, e.g. macOS's /var -> /private/var),
+    // so mimic that with realpathSync rather than the raw path.
+    const moduleUrl = pathToFileURL(realpathSync(realFile)).href
+    expect(isEntryPoint(realFile, moduleUrl)).toBe(true)
+  })
+
+  it('returns false when invoked path is undefined', () => {
+    expect(isEntryPoint(undefined, 'file:///whatever')).toBe(false)
+  })
+
+  it('falls back to a direct comparison when the invoked path does not exist on disk', () => {
+    const missing = path.join(dir, 'does-not-exist.js')
+    expect(isEntryPoint(missing, pathToFileURL(missing).href)).toBe(true)
+    expect(isEntryPoint(missing, 'file:///something-else.js')).toBe(false)
+  })
+
+  it('returns false for an unrelated module URL even when the path resolves fine', () => {
+    makeRealFileAndSymlink()
+    expect(isEntryPoint(symlinkFile, 'file:///not-the-same-file.js')).toBe(false)
   })
 })
