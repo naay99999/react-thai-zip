@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.2](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.1...react-thaizip-v0.3.2) (2026-08-27)
+
+
+### Bug Fixes
+
+* install the repo root's node_modules for apps/docs builds ([bd113bb](https://github.com/naay99999/react-thai-zip/commit/bd113bba2d52fbc7a083e93f929d417548d4c983))
+* make apps/docs build reliably on Vercel ([877a6fb](https://github.com/naay99999/react-thai-zip/commit/877a6fb4ca0604579e2c06577abf08f7e58a2976))
+* render English docs content via dir-based i18n parser ([03478f0](https://github.com/naay99999/react-thai-zip/commit/03478f0457d19fe40f3ff894f8ad8b1a4db9be8f))
+* resolve symlinked bin path before comparing to import.meta.url ([5e2d2a2](https://github.com/naay99999/react-thai-zip/commit/5e2d2a2e93ed6201a3893384c057e5ea1d254981))
+
 ## [0.3.1](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.0...react-thaizip-v0.3.1) (2026-08-19)
 
 
