@@ -24,6 +24,15 @@ jobs:
       - run: npm run typecheck:templates
       - run: npm run build
 
+      # Regression guard for the symlinked-bin entry-point bug (fixed in
+      # 5e2d2a2): npm/npx/yarn/pnpm always invoke a package's `bin` entry
+      # through a symlink, which the unit tests alone don't exercise. Build a
+      # symlink to the real dist/cli.js and confirm it actually runs through it.
+      - name: smoke test packaged bin via symlink
+        run: |
+          ln -s "$PWD/dist/cli.js" /tmp/react-thaizip
+          test "$(node /tmp/react-thaizip --version)" = "$(node -p 'require("./package.json").version')"
+
   docs:
     runs-on: ubuntu-latest
     steps:
