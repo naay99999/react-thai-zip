@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.3](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.2...react-thaizip-v0.3.3) (2026-08-28)
+
+
+### Bug Fixes
+
+* keep scaffolded files inside the project root ([9dfcc53](https://github.com/naay99999/react-thai-zip/commit/9dfcc533256521b778c3e74db6664fe333aabaef))
+* keep scaffolded files inside the project root ([31872ab](https://github.com/naay99999/react-thai-zip/commit/31872abf41de944355417175e9e38fc070106a6f))
+
 ## [0.3.2](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.1...react-thaizip-v0.3.2) (2026-08-27)
 
 
