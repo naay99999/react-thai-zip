@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, readdir, symlink, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import prompts from 'prompts'
@@ -349,5 +349,83 @@ describe('addComponents', () => {
     expect(process.exitCode).toBe(1)
     await expect(pathExists(path.join(cwd, 'thaizip.config.json'))).resolves.toBe(false)
     consoleError.mockRestore()
+  })
+})
+
+// S1/S3: `add` joins config directories straight into a write path. A config
+// value that climbs out of the project, or a symlink planted in a checked-out
+// repo, must never let a scaffolded file land outside the project root.
+describe('addComponents write-path containment', () => {
+  const originalLog = console.log
+
+  beforeEach(() => {
+    console.log = vi.fn()
+    mockedPrompts.mockReset()
+    mockedInstallPackage.mockReset()
+    mockedInstallPackage.mockResolvedValue(undefined)
+  })
+
+  afterEach(() => {
+    console.log = originalLog
+    vi.restoreAllMocks()
+  })
+
+  it('refuses a config whose libDir climbs out of the project', async () => {
+    const cwd = await tempProjectWithConfigV2()
+    const outside = await tempDir()
+    const relativeToOutside = path.relative(cwd, outside)
+    await writeFile(
+      path.join(cwd, 'thaizip.config.json'),
+      JSON.stringify({
+        typescript: true,
+        componentDir: 'app/components',
+        libDir: relativeToOutside,
+        hooksDir: 'hooks',
+        packageManager: 'npm',
+        tailwind: { version: 4, css: 'app/globals.css' },
+        registryVersion: '0.1.0',
+      }),
+    )
+
+    await expect(addComponents({ cwd, targets: ['autocomplete'] })).rejects.toThrow(/libDir/)
+    await expect(readdir(outside)).resolves.toEqual([])
+  })
+
+  it('refuses to scaffold through a component directory that symlinks outside the project', async () => {
+    const cwd = await tempProjectWithConfigV2()
+    const outside = await tempDir()
+    await mkdir(path.join(cwd, 'app'), { recursive: true })
+    await symlink(outside, path.join(cwd, 'app/components'), 'dir')
+
+    await expect(addComponents({ cwd, targets: ['widget'], registry: syntheticRegistry })).rejects.toThrow(
+      /outside the project/i,
+    )
+    await expect(readdir(outside)).resolves.toEqual([])
+  })
+
+  it('refuses to write through a dangling symlink pointing outside the project', async () => {
+    const cwd = await tempProjectWithConfigV2()
+    const outside = await tempDir()
+    await mkdir(path.join(cwd, 'lib'), { recursive: true })
+    await symlink(path.join(outside, 'planted.ts'), path.join(cwd, 'lib/utils.ts'))
+
+    await expect(addComponents({ cwd, targets: ['widget'], registry: syntheticRegistry })).rejects.toThrow(
+      /outside the project/i,
+    )
+    await expect(pathExists(path.join(outside, 'planted.ts'))).resolves.toBe(false)
+  })
+
+  it('treats a dangling symlink at a lib destination as an existing file rather than writing through it', async () => {
+    const cwd = await tempProjectWithConfigV2()
+    await mkdir(path.join(cwd, 'lib'), { recursive: true })
+    await mkdir(path.join(cwd, 'real'), { recursive: true })
+    // Points inside the project, so containment passes — the only thing that
+    // can stop the write is the never-overwrite guard for lib files, which
+    // used to see access()'s "doesn't exist" and let the copy through.
+    await symlink(path.join(cwd, 'real/planted.ts'), path.join(cwd, 'lib/utils.ts'))
+
+    await addComponents({ cwd, targets: ['widget'], registry: syntheticRegistry })
+
+    await expect(pathExists(path.join(cwd, 'real/planted.ts'))).resolves.toBe(false)
   })
 })

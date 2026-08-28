@@ -38,8 +38,9 @@ src/utils/
   install.ts                    # Generic package install helper
   copyTemplate.ts               # Copies template files to the destination directory
   rewriteImports.ts             # Rewrites templates' authored `@/lib/*` and `@/hooks/*` imports to relative paths at scaffold time
-  fs.ts                         # Thin fs wrapper (pathExists, etc.)
+  fs.ts                         # Thin fs wrapper (pathExists, pathExistsNoFollow, etc.)
   packageJson.ts                # Reads/checks package.json dependencies and version ranges
+  pathSafety.ts                 # Path-containment guards for the write path (lexical + symlink-resolving)
   semver.ts                     # Minimal semver comparison used for the thaizip version gate
   prompt.ts                     # Confirm-prompt helper (respects --yes)
 templates/react/
@@ -75,6 +76,16 @@ Multiple targets can be passed at once: `npx react-thaizip add autocomplete casc
 ## Template import rewriting
 
 Templates that need `lib`/`hook` helpers are authored against a fixed `@/lib/*` / `@/hooks/*` alias (the shadcn/ui convention) so `tsconfig.templates.json` can typecheck them standalone via `npm run typecheck:templates`. Real user projects rarely have that alias wired up, so `add` rewrites every `@/lib/...` / `@/hooks/...` import in copied **`component`**-type files to a relative path pointing at wherever the user's `thaizip.config.json` actually placed `libDir`/`hooksDir` — `rewriteTemplateImports` in `src/utils/rewriteImports.ts`. It's a regex-based rewrite over quoted specifiers (not a JS/TS parse), so it's only safe to run over trusted, maintainer-authored template content — not arbitrary user files.
+
+## Write-path containment
+
+`thaizip.config.json` lives in the target repo, so its `componentDir`/`libDir`/`hooksDir` are untrusted input that `add` joins straight onto the project root to build write paths. Three layers keep a scaffolded file inside the project:
+
+1. `validateConfig` (`src/utils/config.ts`) rejects a directory that is absolute, contains a `..` segment, or contains a character that would break out of the import string literal the templates get rewritten with. A bad config fails at read time with the usual "re-run init" error, before anything is written.
+2. `assertPathInsideRoot` / `assertRealPathInsideRoot` (`src/utils/pathSafety.ts`) re-check each destination in `add.ts` — the second one resolves symlinks (including dangling ones, by hand via `readlink`) so a `components -> ../../elsewhere` directory or a link planted at the destination can't route the write outside the project. It runs *before* `mkdir`, so nothing is created on the way out.
+3. `pathExistsNoFollow` (`src/utils/fs.ts`) is used instead of `pathExists` on the write path: `access()` reports a dangling symlink as "nothing here", which used to let one slip past the never-overwrite guard for `lib`/`hook` files and have `copyFile` write through the link.
+
+`rewriteTemplateImports` also escapes the computed path for its quote style and refuses a specifier tail that escapes the root. Keep all of this when touching the write path — `tests/pathSafety.test.ts`, the containment block in `tests/add.test.ts`, and the string-literal-safety block in `tests/rewriteImports.test.ts` are the regression coverage.
 
 ## CLI flags
 

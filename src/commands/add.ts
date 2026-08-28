@@ -3,13 +3,14 @@ import path from 'node:path'
 import prompts from 'prompts'
 import { installPackage } from '../utils/install.js'
 import { copyTemplate, getTemplatePath } from '../utils/copyTemplate.js'
-import { pathExists } from '../utils/fs.js'
+import { pathExistsNoFollow } from '../utils/fs.js'
 import { CORE_PACKAGE_NAME, CORE_PACKAGE_VERSION, MINIMUM_THAIZIP_VERSION, configExists, readConfig } from '../utils/config.js'
 import { detectTailwind } from '../utils/detectTailwind.js'
 import { getInstalledPackageVersion, getPackageDependencyRange, hasPackageDependency } from '../utils/packageJson.js'
 import { confirm } from '../utils/prompt.js'
 import { extractVersionAnchor, isVersionAtLeast } from '../utils/semver.js'
 import { rewriteTemplateImports } from '../utils/rewriteImports.js'
+import { assertPathInsideRoot, assertRealPathInsideRoot } from '../utils/pathSafety.js'
 import { registryItems, resolveRegistryItem, resolveWithDependencies, type RegistryItem } from '../registry.js'
 import { initProject } from './init.js'
 
@@ -113,7 +114,13 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
 
     for (const [index, file] of item.files.entries()) {
       const destination = path.join(cwd, config[file.target.dir], file.target.file)
-      const exists = await pathExists(destination)
+      // Defense in depth behind validateConfig's own path checks: the config
+      // could still route the write outside the project through a symlink
+      // planted in the checked-out repo, which mkdir/copyFile follow silently.
+      assertPathInsideRoot(destination, cwd)
+      await assertRealPathInsideRoot(destination, cwd)
+
+      const exists = await pathExistsNoFollow(destination)
 
       let allowOverwrite = false
       if (exists) {

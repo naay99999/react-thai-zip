@@ -146,3 +146,63 @@ describe('readConfig migration', () => {
     expect(onDisk.libDir).toBeUndefined()
   })
 })
+
+// S1: componentDir/libDir/hooksDir are joined straight into a filesystem write
+// path by `add`, so a config value that climbs out of the project (or breaks
+// out of the import string literal the templates are rewritten with) has to be
+// rejected at the point the config is read, not after the file is written.
+describe('validateConfig directory-path safety', () => {
+  const dirKeys = ['componentDir', 'libDir', 'hooksDir'] as const
+
+  for (const key of dirKeys) {
+    it(`rejects a ${key} that climbs out of the project with ..`, () => {
+      const result = validateConfig({ ...v2, [key]: '../../../../tmp/pwned' })
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.errors.join('\n')).toContain(key)
+    })
+
+    it(`rejects an absolute ${key}`, () => {
+      const result = validateConfig({ ...v2, [key]: '/tmp/pwned' })
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.errors.join('\n')).toContain(key)
+    })
+
+    it(`rejects a ${key} containing a quote character`, () => {
+      const result = validateConfig({ ...v2, [key]: "lib'; evil()" })
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.errors.join('\n')).toContain(key)
+    })
+  }
+
+  it('rejects a .. segment buried mid-path', () => {
+    const result = validateConfig({ ...v2, componentDir: 'app/../../escape' })
+    expect(result.ok).toBe(false)
+  })
+
+  it('rejects a Windows-style absolute path', () => {
+    const result = validateConfig({ ...v2, componentDir: 'C:\\Windows\\Temp' })
+    expect(result.ok).toBe(false)
+  })
+
+  it('rejects a .. segment written with a backslash separator', () => {
+    const result = validateConfig({ ...v2, componentDir: 'app\\..\\..\\escape' })
+    expect(result.ok).toBe(false)
+  })
+
+  it('still accepts ordinary nested project-relative directories', () => {
+    expect(validateConfig({ ...v2, componentDir: 'src/components/ui' }).ok).toBe(true)
+  })
+
+  it('accepts a directory name that merely contains dots', () => {
+    expect(validateConfig({ ...v2, componentDir: 'app/..components' }).ok).toBe(true)
+  })
+})
+
+describe('readConfig rejects an unsafe config on disk', () => {
+  it('throws with a re-run-init hint rather than handing back a traversing path', async () => {
+    const cwd = await tempDir()
+    await writeFile(getConfigPath(cwd), JSON.stringify({ ...v2, libDir: '../../../../tmp/pwned' }), 'utf8')
+
+    await expect(readConfig(cwd)).rejects.toThrow(/libDir/)
+  })
+})

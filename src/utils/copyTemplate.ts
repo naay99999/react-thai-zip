@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { existsSync } from 'node:fs'
-import { copyFileEnsuringDir, pathExists } from './fs.js'
+import { copyFileEnsuringDir, pathExistsNoFollow } from './fs.js'
 
 const currentFile = fileURLToPath(import.meta.url)
 const currentDir = path.dirname(currentFile)
@@ -17,7 +17,7 @@ export async function copyTemplate(options: {
   overwrite?: boolean
   templatePath?: string
 }): Promise<'copied' | 'skipped'> {
-  const exists = await pathExists(options.destination)
+  const exists = await pathExistsNoFollow(options.destination)
   if (exists && !options.overwrite) {
     return 'skipped'
   }

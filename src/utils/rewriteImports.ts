@@ -1,5 +1,6 @@
 import path from 'node:path'
 import type { ThaiZipConfig } from './config.js'
+import { assertPathInsideRoot } from './pathSafety.js'
 
 // Templates are authored against a fixed `@/lib/*` and `@/hooks/*` alias
 // (matching the shadcn/ui convention) so they typecheck standalone under
@@ -26,10 +27,34 @@ export function rewriteTemplateImports(content: string, destinationDir: string, 
   let result = content
   for (const { pattern, dirKey } of IMPORT_ALIASES) {
     result = result.replace(pattern, (_match, quote: string, rest: string) => {
-      let relative = path.relative(destinationDir, path.join(cwd, config[dirKey], rest)).split(path.sep).join('/')
+      const target = path.join(cwd, config[dirKey], rest)
+      // The captured specifier tail is whatever sat between the alias and the
+      // closing quote, so `@/lib/../../x` would otherwise point the rewritten
+      // import at a module outside the project entirely.
+      assertPathInsideRoot(target, cwd)
+
+      let relative = path.relative(destinationDir, target).split(path.sep).join('/')
       if (!relative.startsWith('.')) relative = `./${relative}`
-      return `${quote}${relative}${quote}`
+      return `${quote}${escapeStringLiteral(relative, quote)}${quote}`
     })
   }
   return result
+}
+
+/**
+ * Escapes `value` for embedding inside a `quote`-delimited JS string literal.
+ *
+ * The rewritten path is spliced between the template's original quote
+ * characters, so without this a quote inside libDir/hooksDir would terminate
+ * the literal early and turn everything after it into executable code in the
+ * file scaffolded into the user's project.
+ */
+function escapeStringLiteral(value: string, quote: string): string {
+  return value
+    .replace(/\\/g, '\\\\')
+    .replace(new RegExp(quote === '"' ? '"' : "'", 'g'), `\\${quote}`)
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029')
 }

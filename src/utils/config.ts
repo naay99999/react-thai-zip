@@ -42,6 +42,41 @@ export async function configExists(cwd = process.cwd()): Promise<boolean> {
   return pathExists(getConfigPath(cwd))
 }
 
+const DIRECTORY_KEYS = ['componentDir', 'libDir', 'hooksDir'] as const
+
+// A Windows drive path or UNC share; path.isAbsolute only recognizes these
+// when the CLI itself runs on Windows, but the config file travels with the
+// repo and has to be judged the same way everywhere.
+const WINDOWS_ABSOLUTE = /^([a-zA-Z]:[\\/]|\\\\)/
+
+// Every character below would either terminate or extend the string literal
+// that `add` writes these directories into when it rewrites the templates'
+// `@/lib` / `@/hooks` imports. rewriteTemplateImports escapes them too; this
+// keeps them from reaching a config file in the first place.
+const STRING_LITERAL_BREAKERS = /['"`\\\n\r\u2028\u2029]/
+
+/**
+ * Returns why `value` is unsafe to use as a scaffold target directory, or null
+ * when it's an ordinary project-relative path.
+ *
+ * These directories are joined straight onto the project root to build write
+ * paths, so anything that escapes the project (or the generated import string)
+ * has to be rejected when the config is read rather than after a file lands
+ * somewhere it shouldn't.
+ */
+function describeUnsafeDirectory(value: string): string | null {
+  if (path.isAbsolute(value) || WINDOWS_ABSOLUTE.test(value)) {
+    return 'expected a project-relative path, not an absolute one'
+  }
+  if (value.split(/[\\/]/).includes('..')) {
+    return 'must not contain ".." path segments'
+  }
+  if (STRING_LITERAL_BREAKERS.test(value)) {
+    return 'must not contain quote, backslash, or newline characters'
+  }
+  return null
+}
+
 export function validateConfig(value: unknown): { ok: true; config: ThaiZipConfig } | { ok: false; errors: string[] } {
   const errors: string[] = []
 
@@ -54,14 +89,14 @@ export function validateConfig(value: unknown): { ok: true; config: ThaiZipConfi
   if (raw.typescript !== true) {
     errors.push('typescript: JavaScript templates are no longer supported; re-run init')
   }
-  if (typeof raw.componentDir !== 'string' || raw.componentDir.length === 0) {
-    errors.push('componentDir: expected non-empty string')
-  }
-  if (typeof raw.libDir !== 'string' || raw.libDir.length === 0) {
-    errors.push('libDir: expected non-empty string')
-  }
-  if (typeof raw.hooksDir !== 'string' || raw.hooksDir.length === 0) {
-    errors.push('hooksDir: expected non-empty string')
+  for (const key of DIRECTORY_KEYS) {
+    const directory = raw[key]
+    if (typeof directory !== 'string' || directory.length === 0) {
+      errors.push(`${key}: expected non-empty string`)
+      continue
+    }
+    const problem = describeUnsafeDirectory(directory)
+    if (problem) errors.push(`${key}: ${problem}`)
   }
   if (typeof raw.packageManager !== 'string' || !PACKAGE_MANAGERS.includes(raw.packageManager as PackageManager)) {
     errors.push(`packageManager: expected one of ${PACKAGE_MANAGERS.join(', ')}`)
