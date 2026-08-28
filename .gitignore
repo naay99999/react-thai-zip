@@ -11,3 +11,4 @@ apps/docs/.source/
 apps/sandbox/
 apps/docs/AGENTS.md
 apps/docs/CLAUDE.md
+.claude/
