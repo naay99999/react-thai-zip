@@ -25,7 +25,29 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
   const libDir = 'lib'
   const hooksDir = 'hooks'
 
+  // Detect Tailwind before prompting for anything, so a missing Tailwind
+  // install aborts the run immediately instead of after the user has
+  // already answered the componentDir prompt.
+  const tailwind = await detectTailwind(cwd)
+  if (!tailwind) {
+    console.error(
+      '\nTailwind CSS is required. Install it for your framework (https://tailwindcss.com/docs/installation), then re-run npx react-thaizip init.',
+    )
+    process.exitCode = 1
+    return
+  }
+
+  const { version, cssPath } = tailwind
+
   let componentDir = path.relative(cwd, project.directory).replace(/\\/g, '/')
+
+  // Surface what was detected before any files are written or prompts are
+  // answered, so the user can sanity-check the guesses up front.
+  console.log('\nDetected project settings:')
+  console.log(`  Components directory: ${componentDir}`)
+  console.log(`  Package manager: ${pm}`)
+  console.log(`  Tailwind: v${version}${cssPath ? ` (${cssPath})` : ' (no global CSS file found)'}`)
+
   if (!yes) {
     const directoryResponse = await prompts({
       type: 'text',
@@ -38,16 +60,11 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
     }
   }
 
-  const tailwind = await detectTailwind(cwd)
-  if (!tailwind) {
-    console.error(
-      '\nTailwind CSS is required. Install it for your framework (https://tailwindcss.com/docs/installation), then re-run npx react-thaizip init.',
-    )
-    process.exitCode = 1
-    return
-  }
-
-  const { version, cssPath } = tailwind
+  // Manual follow-up steps the user MUST perform by hand (pasting a config
+  // snippet, adding a CSS token block) are collected here instead of being
+  // printed immediately, so they aren't scrolled off-screen by npm install
+  // output. They're all printed together at the very end of the run.
+  const manualSteps: string[] = []
 
   if (cssPath) {
     const result = await ensureTokens(path.join(cwd, cssPath), version)
@@ -57,12 +74,21 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
         : `\nDesign tokens already present in ${cssPath}. Skipped writing.`,
     )
   } else {
-    console.log('\nNo global CSS file was found. Add these design tokens to your global CSS manually:')
-    console.log(buildTokenBlock(version))
+    manualSteps.push(
+      `No global CSS file was found. Add these design tokens to your global CSS manually:\n\n${buildTokenBlock(version)}`,
+    )
   }
 
   if (version === 3) {
-    console.log(buildV3ConfigSnippet())
+    manualSteps.push(buildV3ConfigSnippet())
+  }
+
+  const printManualSteps = () => {
+    if (manualSteps.length === 0) return
+    console.log('\n=== Manual steps required ===')
+    for (const step of manualSteps) {
+      console.log(`\n${step}`)
+    }
   }
 
   if (!(await hasPackageDependency(CORE_PACKAGE_NAME, cwd))) {
@@ -78,6 +104,7 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
         console.error(`Install it manually (${hint}), then re-run npx react-thaizip init.`)
         if (error instanceof Error) console.error(`\n${error.message}`)
         process.exitCode = 1
+        printManualSteps()
         return
       }
     }
@@ -88,6 +115,7 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
 
     if (!shouldOverwrite) {
       console.log('\nSkipped writing thaizip.config.json.')
+      printManualSteps()
       return
     }
   }
@@ -106,4 +134,8 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
   )
 
   console.log('\nCreated thaizip.config.json.')
+
+  printManualSteps()
+
+  console.log('\nNext: run `npx react-thaizip add autocomplete` to add your first component.')
 }

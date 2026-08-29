@@ -104,4 +104,103 @@ describe('initProject', () => {
     expect(await pathExists(path.join(cwd, 'thaizip.config.json'))).toBe(false)
     consoleError.mockRestore()
   })
+
+  it('prints a detection summary — component dir, package manager, Tailwind version + CSS path — before prompting', async () => {
+    const cwd = await tempProject()
+    await mkdir(path.join(cwd, 'app'), { recursive: true })
+    await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
+    await writeFile(path.join(cwd, 'package-lock.json'), '{}')
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    mockedPrompts.mockResolvedValueOnce({})
+
+    await initProject({ cwd })
+
+    const logCalls = (console.log as ReturnType<typeof vi.fn>).mock
+    const logged = logCalls.calls.map((call) => call.join(' ')).join('\n')
+
+    // The guessed settings are surfaced so the user can confirm them.
+    expect(logged).toContain('app/components')
+    expect(logged).toContain('npm')
+    expect(logged).toContain('v4')
+    expect(logged).toContain('app/globals.css')
+
+    // The summary must print BEFORE the componentDir prompt is shown, so the
+    // user can see the guesses before answering it — not after.
+    const summaryCallIndex = logCalls.calls.findIndex((call) => call.join(' ').includes('app/components'))
+    expect(summaryCallIndex).toBeGreaterThanOrEqual(0)
+    expect(logCalls.invocationCallOrder[summaryCallIndex]).toBeLessThan(mockedPrompts.mock.invocationCallOrder[0])
+  })
+
+  it('aborts before any prompts when Tailwind is missing', async () => {
+    const cwd = await tempProject() // no tailwind markers
+
+    await initProject({ cwd, yes: false })
+
+    expect(process.exitCode).toBe(1)
+    process.exitCode = 0
+    expect(mockedPrompts).not.toHaveBeenCalled()
+  })
+
+  it('defers the Tailwind v3 theme.extend snippet to the end of the run, after install and the config-created message', async () => {
+    const cwd = await tempProject()
+    await mkdir(path.join(cwd, 'app'), { recursive: true })
+    await writeFile(path.join(cwd, 'tailwind.config.ts'), '')
+    await writeFile(path.join(cwd, 'app/globals.css'), '@tailwind base;\n@tailwind components;\n@tailwind utilities;\n')
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+
+    await initProject({ cwd, yes: true })
+
+    const logCalls = (console.log as ReturnType<typeof vi.fn>).mock.calls
+    const joined = logCalls.map((call) => call.join(' '))
+    const fullLog = joined.join('\n')
+
+    // Printed exactly once.
+    expect(fullLog.match(/theme\.extend/g)).toHaveLength(1)
+
+    const createdIndex = joined.findIndex((line) => line.includes('Created thaizip.config.json.'))
+    const snippetIndex = joined.findIndex((line) => line.includes('theme.extend'))
+    expect(createdIndex).toBeGreaterThanOrEqual(0)
+    expect(snippetIndex).toBeGreaterThan(createdIndex)
+
+    // Called out under an unmissable heading.
+    expect(fullLog).toContain('Manual steps required')
+  })
+
+  it('defers the "no global CSS file found" token block to the end of the run when no CSS file is found', async () => {
+    const cwd = await tempProject()
+    await mkdir(path.join(cwd, 'app'), { recursive: true })
+    await writeFile(path.join(cwd, 'tailwind.config.ts'), '')
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+
+    await initProject({ cwd, yes: true })
+
+    const logCalls = (console.log as ReturnType<typeof vi.fn>).mock.calls
+    const joined = logCalls.map((call) => call.join(' '))
+    const fullLog = joined.join('\n')
+
+    expect(fullLog.match(/No global CSS file was found/g)).toHaveLength(1)
+    expect(fullLog).toContain('--background')
+    expect(fullLog).toContain('Manual steps required')
+
+    const createdIndex = joined.findIndex((line) => line.includes('Created thaizip.config.json.'))
+    const manualIndex = joined.findIndex((line) => line.includes('No global CSS file was found'))
+    expect(createdIndex).toBeGreaterThanOrEqual(0)
+    expect(manualIndex).toBeGreaterThan(createdIndex)
+  })
+
+  it('ends a successful run with the next command to run', async () => {
+    const cwd = await tempProject()
+    await mkdir(path.join(cwd, 'app'), { recursive: true })
+    await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+
+    await initProject({ cwd, yes: true })
+
+    const logCalls = (console.log as ReturnType<typeof vi.fn>).mock.calls
+    const joined = logCalls.map((call) => call.join(' '))
+    const createdIndex = joined.findIndex((line) => line.includes('Created thaizip.config.json.'))
+    const nextStepIndex = joined.findIndex((line) => line.includes('npx react-thaizip add autocomplete'))
+
+    expect(nextStepIndex).toBeGreaterThan(createdIndex)
+  })
 })
