@@ -3,7 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import prompts from 'prompts'
 import { addComponents } from '../src/commands/add.js'
-import { writeConfig } from '../src/utils/config.js'
+import { getRegistryVersion, writeConfig } from '../src/utils/config.js'
 import { pathExists } from '../src/utils/fs.js'
 import { installPackage } from '../src/utils/install.js'
 import type { RegistryItem } from '../src/registry.js'
@@ -23,7 +23,7 @@ async function tempDir() {
   return mkdtemp(path.join(os.tmpdir(), 'react-thaizip-'))
 }
 
-async function tempProjectWithConfigV2(options: { thaizipRange?: string } = {}) {
+async function tempProjectWithConfigV2(options: { thaizipRange?: string; registryVersion?: string } = {}) {
   const cwd = await tempDir()
   const thaizipRange = options.thaizipRange ?? '^0.7.0'
   // Pre-declare every npm dependency the registry items can pull in (thaizip,
@@ -49,7 +49,7 @@ async function tempProjectWithConfigV2(options: { thaizipRange?: string } = {}) 
       hooksDir: 'hooks',
       packageManager: 'npm',
       tailwind: { version: 4, css: 'app/globals.css' },
-      registryVersion: '0.1.0',
+      registryVersion: options.registryVersion ?? '0.1.0',
     },
     cwd,
   )
@@ -249,12 +249,120 @@ describe('addComponents', () => {
     expect(await pathExists(path.join(cwd, 'app/components/Widget.tsx'))).toBe(true)
   })
 
-  it('never overwrites an existing lib file even with --overwrite', async () => {
+  it('does not overwrite an existing lib file by default (no --overwrite flag)', async () => {
+    const cwd = await tempProjectWithConfigV2()
+    await mkdir(path.join(cwd, 'lib'), { recursive: true })
+    await writeFile(path.join(cwd, 'lib/utils.ts'), '// mine\n')
+    await addComponents({ cwd, targets: ['widget'], yes: true, registry: syntheticRegistry })
+    expect(await readFile(path.join(cwd, 'lib/utils.ts'), 'utf8')).toBe('// mine\n')
+  })
+
+  it('does not overwrite an existing lib file just because --yes was passed (opt-in requires --overwrite specifically)', async () => {
+    const cwd = await tempProjectWithConfigV2()
+    await mkdir(path.join(cwd, 'lib'), { recursive: true })
+    await writeFile(path.join(cwd, 'lib/utils.ts'), '// mine\n')
+    await addComponents({ cwd, targets: ['widget'], yes: true, overwrite: false, registry: syntheticRegistry })
+    expect(await readFile(path.join(cwd, 'lib/utils.ts'), 'utf8')).toBe('// mine\n')
+  })
+
+  it('overwrites an existing lib file when --overwrite is explicitly passed', async () => {
     const cwd = await tempProjectWithConfigV2()
     await mkdir(path.join(cwd, 'lib'), { recursive: true })
     await writeFile(path.join(cwd, 'lib/utils.ts'), '// mine\n')
     await addComponents({ cwd, targets: ['widget'], yes: true, overwrite: true, registry: syntheticRegistry })
-    expect(await readFile(path.join(cwd, 'lib/utils.ts'), 'utf8')).toBe('// mine\n')
+    expect(await readFile(path.join(cwd, 'lib/utils.ts'), 'utf8')).not.toBe('// mine\n')
+  })
+
+  it('reports every file it actually writes, so refreshing a lib/hook target is never silent', async () => {
+    const cwd = await tempProjectWithConfigV2()
+    await mkdir(path.join(cwd, 'lib'), { recursive: true })
+    await writeFile(path.join(cwd, 'lib/utils.ts'), '// mine\n')
+
+    await addComponents({ cwd, targets: ['utils'], yes: true, overwrite: true, registry: syntheticRegistry })
+
+    const logged = (console.log as ReturnType<typeof vi.fn>).mock.calls.map((call) => call.join(' ')).join('\n')
+    expect(logged).toContain('lib/utils.ts')
+    expect(logged).toMatch(/Updated .*lib\/utils\.ts/)
+  })
+
+  it('distinguishes a declined component skip from a protected-by-default lib skip, and the latter mentions --overwrite', async () => {
+    const cwd = await tempProjectWithConfigV2()
+    await mkdir(path.join(cwd, 'lib'), { recursive: true })
+    await writeFile(path.join(cwd, 'lib/utils.ts'), '// mine\n')
+
+    await addComponents({ cwd, targets: ['widget'], yes: true, registry: syntheticRegistry })
+
+    const logged = (console.log as ReturnType<typeof vi.fn>).mock.calls.map((call) => call.join(' ')).join('\n')
+    expect(logged).toContain('lib/utils.ts')
+    expect(logged).toContain('--overwrite')
+    expect(logged).not.toContain('lib/utils.ts (already exists).')
+  })
+
+  it('warns that an existing lib file predates the current registry and names how to refresh it', async () => {
+    const currentVersion = await getRegistryVersion()
+    const cwd = await tempProjectWithConfigV2({ registryVersion: '0.0.1' })
+    await mkdir(path.join(cwd, 'lib'), { recursive: true })
+    await writeFile(path.join(cwd, 'lib/utils.ts'), '// mine\n')
+
+    await addComponents({ cwd, targets: ['widget'], yes: true, registry: syntheticRegistry })
+
+    const logged = (console.log as ReturnType<typeof vi.fn>).mock.calls.map((call) => call.join(' ')).join('\n')
+    expect(logged).toContain('lib/utils.ts')
+    expect(logged).toContain('predates the current registry')
+    expect(logged).toContain('0.0.1')
+    expect(logged).toContain(currentVersion)
+    expect(logged).toContain('--overwrite')
+  })
+
+  it('does not warn about staleness when the recorded registryVersion already matches the current CLI version', async () => {
+    const currentVersion = await getRegistryVersion()
+    const cwd = await tempProjectWithConfigV2({ registryVersion: currentVersion })
+    await mkdir(path.join(cwd, 'lib'), { recursive: true })
+    await writeFile(path.join(cwd, 'lib/utils.ts'), '// mine\n')
+
+    await addComponents({ cwd, targets: ['widget'], yes: true, registry: syntheticRegistry })
+
+    const logged = (console.log as ReturnType<typeof vi.fn>).mock.calls.map((call) => call.join(' ')).join('\n')
+    expect(logged).not.toContain('predates the current registry')
+  })
+
+  it('updates registryVersion in thaizip.config.json to the current CLI version after a successful scaffold', async () => {
+    const currentVersion = await getRegistryVersion()
+    const cwd = await tempProjectWithConfigV2({ registryVersion: '0.0.1' })
+
+    await addComponents({ cwd, targets: ['autocomplete'], yes: true })
+
+    const config = JSON.parse(await readFile(path.join(cwd, 'thaizip.config.json'), 'utf8'))
+    expect(config.registryVersion).toBe(currentVersion)
+  })
+
+  it('preserves unrelated config fields and their order when bumping registryVersion after a scaffold', async () => {
+    const cwd = await tempProjectWithConfigV2({ registryVersion: '0.0.1' })
+    const before = JSON.parse(await readFile(path.join(cwd, 'thaizip.config.json'), 'utf8'))
+
+    await addComponents({ cwd, targets: ['autocomplete'], yes: true })
+
+    const after = JSON.parse(await readFile(path.join(cwd, 'thaizip.config.json'), 'utf8'))
+    expect(Object.keys(after)).toEqual(Object.keys(before))
+    expect(after.componentDir).toBe(before.componentDir)
+    expect(after.libDir).toBe(before.libDir)
+    expect(after.hooksDir).toBe(before.hooksDir)
+    expect(after.packageManager).toBe(before.packageManager)
+    expect(after.tailwind).toEqual(before.tailwind)
+  })
+
+  it('does not bump registryVersion when everything was skipped and nothing was written', async () => {
+    const cwd = await tempProjectWithConfigV2({ registryVersion: '0.0.1' })
+    await mkdir(path.join(cwd, 'app/components'), { recursive: true })
+    await writeFile(path.join(cwd, 'app/components/Widget.tsx'), '// existing component\n')
+    await mkdir(path.join(cwd, 'lib'), { recursive: true })
+    await writeFile(path.join(cwd, 'lib/utils.ts'), '// mine\n')
+    mockedPrompts.mockResolvedValueOnce({ value: false })
+
+    await addComponents({ cwd, targets: ['widget'], registry: syntheticRegistry })
+
+    const config = JSON.parse(await readFile(path.join(cwd, 'thaizip.config.json'), 'utf8'))
+    expect(config.registryVersion).toBe('0.0.1')
   })
 
   it('gates on thaizip 0.7.0', async () => {

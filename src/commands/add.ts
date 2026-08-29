@@ -4,11 +4,19 @@ import prompts from 'prompts'
 import { installPackage } from '../utils/install.js'
 import { copyTemplate, getTemplatePath } from '../utils/copyTemplate.js'
 import { pathExistsNoFollow } from '../utils/fs.js'
-import { CORE_PACKAGE_NAME, CORE_PACKAGE_VERSION, MINIMUM_THAIZIP_VERSION, configExists, readConfig } from '../utils/config.js'
+import {
+  CORE_PACKAGE_NAME,
+  CORE_PACKAGE_VERSION,
+  MINIMUM_THAIZIP_VERSION,
+  configExists,
+  getRegistryVersion,
+  readConfig,
+  writeConfig,
+} from '../utils/config.js'
 import { detectTailwind } from '../utils/detectTailwind.js'
 import { getInstalledPackageVersion, getPackageDependencyRange, hasPackageDependency } from '../utils/packageJson.js'
 import { confirm } from '../utils/prompt.js'
-import { extractVersionAnchor, isVersionAtLeast } from '../utils/semver.js'
+import { compareVersions, extractVersionAnchor, isVersionAtLeast } from '../utils/semver.js'
 import { rewriteTemplateImports } from '../utils/rewriteImports.js'
 import { assertPathInsideRoot, assertRealPathInsideRoot } from '../utils/pathSafety.js'
 import { registryItems, resolveRegistryItem, resolveWithDependencies, type RegistryItem } from '../registry.js'
@@ -53,6 +61,7 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
     cwd,
     detected ? { tailwind: { version: detected.version, css: detected.cssPath ?? '' } } : undefined,
   )
+  const currentRegistryVersion = await getRegistryVersion()
 
   const selected = await selectComponents(targets, registry)
   if (selected.length === 0) {
@@ -109,6 +118,8 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
     }
   }
 
+  let anyFileWritten = false
+
   for (const item of resolved) {
     let primaryFileCopied = false
 
@@ -121,11 +132,16 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
       await assertRealPathInsideRoot(destination, cwd)
 
       const exists = await pathExistsNoFollow(destination)
+      const isProtected = item.type === 'lib' || item.type === 'hook'
 
       let allowOverwrite = false
       if (exists) {
-        if (item.type === 'lib' || item.type === 'hook') {
-          allowOverwrite = false
+        if (isProtected) {
+          // lib/hook files (e.g. lib/utils.ts, hooks/use-thai-address-index.ts)
+          // are never touched unless the user explicitly opts in via
+          // --overwrite. Users legitimately hand-edit these files, so a
+          // prompt-defaulted-yes or a bare --yes must never overwrite them.
+          allowOverwrite = Boolean(overwrite)
         } else if (overwrite) {
           allowOverwrite = true
         } else {
@@ -140,8 +156,25 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
       })
 
       if (copied === 'skipped') {
-        console.log(`\nSkipped ${path.relative(cwd, destination)} (already exists).`)
+        const relativePath = path.relative(cwd, destination)
+        if (isProtected) {
+          console.log(`\nSkipped ${relativePath} (protected; pass --overwrite to update it).`)
+          if (compareVersions(config.registryVersion, currentRegistryVersion) < 0) {
+            console.log(
+              `${relativePath} predates the current registry (recorded v${config.registryVersion}, current v${currentRegistryVersion}) and may be stale. Run \`npx react-thaizip add ${item.name} --overwrite\` to refresh it.`,
+            )
+          }
+        } else {
+          console.log(`\nSkipped ${relativePath} (already exists).`)
+        }
       } else {
+        anyFileWritten = true
+
+        // Report every file that actually lands on disk. Without this, a
+        // `lib`/`hook`-only run — exactly what the staleness warning above
+        // tells the user to run — would succeed in total silence.
+        console.log(`\n${exists ? 'Updated' : 'Wrote'} ${path.relative(cwd, destination)}.`)
+
         if (index === 0) {
           primaryFileCopied = true
         }
@@ -165,6 +198,13 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
       console.log(`Import it from:`)
       console.log(`  import { ${importSymbol} } from '${importPath}'`)
     }
+  }
+
+  // Keep the recorded registryVersion in sync with the CLI that actually
+  // wrote the files, so a future `add` can tell a genuinely up-to-date
+  // lib/hook file apart from one that predates the current registry.
+  if (anyFileWritten && config.registryVersion !== currentRegistryVersion) {
+    await writeConfig({ ...config, registryVersion: currentRegistryVersion }, cwd)
   }
 }
 
