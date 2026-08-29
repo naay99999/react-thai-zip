@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.4](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.3...react-thaizip-v0.3.4) (2026-08-29)
+
+
+### Features
+
+* **add:** let --overwrite refresh lib/hook files and warn when they are stale ([5bb2932](https://github.com/naay99999/react-thai-zip/commit/5bb29321eb821ff692bd98945101fa918049e586))
+* **init:** summarize detected settings and defer manual steps to the end ([c5762c6](https://github.com/naay99999/react-thai-zip/commit/c5762c675c95b420f9def9411f1793308c5cf65f))
+
 ## [0.3.3](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.2...react-thaizip-v0.3.3) (2026-08-28)
 
 
