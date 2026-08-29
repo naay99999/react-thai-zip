@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `react-thaizip` is a CLI scaffold tool (`npx react-thaizip init` / `npx react-thaizip add <component>`) that detects a user's React/Next.js project layout, installs `thaizip`, and writes ready-to-use Thai address components into the appropriate directory — similar to shadcn/ui.
 
+`AGENTS.md` at the repo root is a symlink to this file — editing this file covers both; don't replace the symlink with a copy.
+
 ## Commands
 
 ```bash
@@ -20,6 +22,8 @@ Run a single test file:
 ```bash
 npx vitest run tests/detectPM.test.ts
 ```
+
+Use Node **22.9+** locally (CI pins Node 24). `engines.node: ">=18"` describes the *published* CLI, not this repo's dev loop — jsdom 30's undici needs `util.markAsUncloneable`, so `npm test` fails on Node 18/20.
 
 ## Architecture
 
@@ -69,7 +73,7 @@ Components are resolved by name or alias in `src/registry.ts` against the `Regis
 - `utils` / `cn` — `lib`; writes `<libDir>/utils.ts` (`cn()` via clsx + tailwind-merge)
 - `use-thai-address-index` / `index-hook` — `hook`; writes `<hooksDir>/use-thai-address-index.ts` (loads the bundled thaizip index)
 
-`resolveWithDependencies` topologically expands `registryDependencies` (cycle-checked) before any files are written, so `add autocomplete` also writes the `utils` and `use-thai-address-index` files without either needing to be named explicitly. `lib`/`hook` files are never overwritten once present — only `component` files respect `--overwrite`/the overwrite prompt. `RegistryItem.exportName` supplies the named export for the post-scaffold "import it from" hint when it can't be derived from the (possibly kebab-case) filename.
+`resolveWithDependencies` topologically expands `registryDependencies` (cycle-checked) before any files are written, so `add autocomplete` also writes the `utils` and `use-thai-address-index` files without either needing to be named explicitly. `lib`/`hook` files are protected by default — neither a bare `add` nor `--yes` touches them once present (users hand-edit `lib/utils.ts`), but an explicit `--overwrite` now refreshes them too; `component` files additionally respect the interactive overwrite prompt. `RegistryItem.exportName` supplies the named export for the post-scaffold "import it from" hint when it can't be derived from the (possibly kebab-case) filename.
 
 Multiple targets can be passed at once: `npx react-thaizip add autocomplete cascade-select`
 
@@ -99,10 +103,21 @@ react-thaizip add --help
 ```
 
 - `--yes` / `-y` — skip confirmation prompts (both `init` and `add`)
-- `--overwrite` — overwrite existing component files without prompting (`add` only)
+- `--overwrite` — overwrite existing files without prompting, including the otherwise-protected `lib`/`hook` files (`add` only)
 - `--help` / `-h` — print usage and the list of `component`-type registry items (the `lib`/`hook` items are internal-only and not listed)
 - `--version` / `-v` — print the CLI's own package version
 - `--help` after a command prints command-scoped usage; `--help` wins over `--version` when both are passed
+
+## CLI output contract
+
+Both commands' console output is asserted by tests, so treat it as an interface, not decoration:
+
+- `init` prints a **detection summary** (component dir, package manager, Tailwind version + CSS file) *before* any prompt — which is why `detectTailwind` runs before the `componentDir` prompt, so a Tailwind-less project aborts without first asking a question. Every manual follow-up (the Tailwind v3 `theme.extend` snippet, the "no CSS file found" token block) is collected in a `manualSteps` array and flushed **once at the very end** under `=== Manual steps required ===`, after the npm install noise, then a closing `Next: run ...` line. Don't move these prints back inline — being buried under install output was the original bug.
+- `add` prints one `Wrote <path>.` / `Updated <path>.` line per file actually written (a `lib`/`hook`-only refresh would otherwise succeed in total silence), and distinguishes its two skip reasons: `(already exists).` for a declined component vs. `(protected; pass --overwrite to update it).` for lib/hook.
+
+## Registry staleness (`registryVersion`)
+
+`thaizip.config.json`'s `registryVersion` is live data, not bookkeeping: `add` compares it against `getRegistryVersion()` and, when a protected `lib`/`hook` file is skipped while the recorded version is older, warns that the file predates the current registry and prints the exact `add <item> --overwrite` command to refresh it. After any `add` that actually writes a file, `registryVersion` is rewritten to the current CLI version via `writeConfig`. Anything that changes a `lib`/`hook` template's contract depends on this — keep the comparison in place.
 
 ## Tailwind prerequisite
 
@@ -124,6 +139,24 @@ Tailwind CSS is a **prerequisite**, not something this CLI installs. `init` dete
 
 - `ThaiAddressAutocomplete` (`thai-address-autocomplete.tsx`) — free-text address autocomplete built on `@base-ui/react`'s `Combobox`. Props: controlled/uncontrolled `value`/`defaultValue`/`onValueChange` (`ResolvedThaiAddress | null`), `name` (renders 4 hidden `${name}-subdistrict|-district|-province|-zipcode` inputs), `locale` (`'th' | 'en'`), `texts` (`Partial<Texts>`), `limit`/`debounce`/`threshold` (passed to `useThaiAddressAutocomplete`), `disabled`/`required`/`onBlur`/`onError`, four className slots (`className`/`inputClassName`/`popupClassName`/`itemClassName`), and a forwarded `ref`. Authored against `@/lib/utils` + `@/hooks/use-thai-address-index`, rewritten to relative imports at scaffold time (see "Template import rewriting" above).
 - `ThaiAddressCascadeSelect` (`thai-address-cascade-select.tsx`) — province > district > sub-district cascade built on `@base-ui/react`'s `Select` (×3). Props: controlled/uncontrolled `value`/`defaultValue`/`onValueChange` (`ResolvedThaiAddress | null`), `name` (renders 4 hidden `${name}-subdistrict|-district|-province|-zipcode` inputs), `locale` (`'th' | 'en'`), `texts` (`Partial<Texts>`), `disabled`/`required`/`onBlur`/`onError`/`aria-invalid` (all three triggers), five className slots (`className`/`labelClassName`/`triggerClassName`/`popupClassName`/`itemClassName`), and a `ref` forwarded to the province trigger. Changing a parent select in a way that invalidates a full selection fires `onValueChange(null)` and resets the downstream selects. Built on core `listProvinces`/`listAmphures`/`listTambons`. Authored against `@/lib/utils` + `@/hooks/use-thai-address-index`, rewritten to relative imports at scaffold time (see "Template import rewriting" above).
+
+## Testing setup
+
+- `vitest.config.ts` runs `environment: 'node'` by default; the three RTL component tests opt in per file with a `// @vitest-environment jsdom` pragma on line 1.
+- The same config aliases `@/lib/utils` and `@/hooks/use-thai-address-index` to the real files under `templates/react/ts/`, so template components are tested exactly as authored (import rewriting happens only at scaffold time). A new `@/`-aliased template import must be added in three places to stay green: `tsconfig.templates.json` (for `typecheck:templates`), `vitest.config.ts` (for tests), and `src/utils/rewriteImports.ts` (for real scaffolds).
+- `tests/docs-site.test.ts` is a structure guard over `apps/docs`: every required slug must exist under both `content/docs/<slug>` (Thai, the root locale) and `content/docs/en/<slug>`. Adding a page in one language without its mirror fails `npm test`, as does changing the docs `build` script away from `next build --webpack`.
+
+## CLI entry point
+
+`src/cli.ts` is both the published bin and an importable module (tests import `parseCliArgs`/`isEntryPoint` directly), so `main()` runs only behind the `isEntryPoint()` guard. That guard resolves `process.argv[1]` through `realpathSync` before comparing it to `import.meta.url`, because npm/npx/yarn/pnpm always invoke a package's `bin` through a symlink — a bare `import.meta.url === pathToFileURL(process.argv[1]).href` check silently makes the installed CLI a no-op. CI's "smoke test packaged bin via symlink" step is the regression guard for exactly this.
+
+## Docs site (`apps/docs`)
+
+Fumadocs on Next.js, deployed as its own Vercel project (Root Directory `apps/docs`). It has its own `package.json` and `package-lock.json`, but imports the component templates from `templates/react/ts/` through the `@` alias — their bare imports (`thaizip`, `clsx`, `tailwind-merge`, `@base-ui/react`) resolve by walking up to this repo's root `node_modules`. So a docs build needs `npm ci` at the repo root *and* in `apps/docs` (`apps/docs/vercel.json` overrides the Install Command to do both). Build is `next build --webpack` for Fumadocs MDX compatibility. Content is bilingual: Thai at the root locale, English under `content/docs/en/`.
+
+## Releasing
+
+release-please (`release-please-config.json` + `.release-please-manifest.json`, single package at `.`) drives versioning from Conventional Commits, with `bump-minor-pre-major` while pre-1.0. `package.json`'s `version` and `CHANGELOG.md` are bot-managed — never bump them by hand; land `feat:`/`fix:` commits on `main` and merge the release PR to publish.
 
 ## Key constants (`src/utils/config.ts`)
 

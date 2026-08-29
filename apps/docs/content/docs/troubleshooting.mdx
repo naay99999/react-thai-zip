@@ -77,11 +77,31 @@ npx react-thaizip add autocomplete --overwrite
 
 ## มีไฟล์ hook หรือ `lib` อยู่แล้ว
 
-**ปัญหา:** `add` ข้าม `lib/utils.ts` หรือ `hooks/use-thai-address-index.ts` แม้ส่ง `--overwrite`
+**ปัญหา:** `add` แสดง `Skipped lib/utils.ts (protected; pass --overwrite to update it).` หรือข้อความเดียวกันสำหรับ `hooks/use-thai-address-index.ts` แม้ส่ง `--yes`
 
-**สาเหตุ:** เป็นพฤติกรรมตั้งใจเพื่อรักษา shared files ที่คุณอาจแก้ไขเอง `--overwrite` ใช้กับไฟล์คอมโพเนนต์เท่านั้น
+**สาเหตุ:** เป็นพฤติกรรมตั้งใจเพื่อรักษา shared files ที่คุณอาจแก้ไขเอง ไฟล์เหล่านี้ได้รับการป้องกันตามค่าเริ่มต้นเสมอ แม้ใช้ `--yes` และต่างจากไฟล์คอมโพเนนต์ตรงที่ไม่มี prompt ให้ยืนยัน ต้องส่ง `--overwrite` อย่างชัดเจนเท่านั้นจึงจะเขียนทับได้
 
-**วิธีแก้:** ถ้าไฟล์ที่มีอยู่ทำงานถูกต้อง ไม่ต้องทำอะไร ถ้าต้องการสำเนาใหม่ ให้ย้ายหรือเปลี่ยนชื่อไฟล์นั้นด้วยตนเองก่อน แล้วรัน `add` เดิมอีกครั้ง ตรวจสอบการแก้ไขของคุณก่อนแทนที่ไฟล์เสมอ
+**วิธีแก้:** ถ้าไฟล์ที่มีอยู่ทำงานถูกต้อง ไม่ต้องทำอะไร ถ้าต้องการสำเนาใหม่ ให้สำรองการแก้ไขของคุณไว้ก่อน (เพราะจะถูกเขียนทับโดยไม่มีการถาม) แล้วรันคำสั่งเดิมพร้อม `--overwrite`:
+
+```bash
+npx react-thaizip add utils --overwrite
+```
+
+เปลี่ยน `utils` เป็น `use-thai-address-index` หรือชื่อคอมโพเนนต์ที่ดึงไฟล์นั้นมาเป็น dependency ตามไฟล์ที่ต้องการ refresh
+
+## hook หรือไฟล์ `lib` ที่ scaffold ไว้ดูล้าสมัยหลังอัปเกรด CLI
+
+**ปัญหา:** หลังอัปเกรด `react-thaizip` แล้วรัน `add` อีกครั้ง คำสั่งข้ามไฟล์ `lib/utils.ts` หรือ hook พร้อมข้อความเพิ่มเติมทำนอง `lib/utils.ts predates the current registry (recorded v0.0.1, current v0.3.1) and may be stale. Run \`npx react-thaizip add utils --overwrite\` to refresh it.`
+
+**สาเหตุ:** `thaizip.config.json` เก็บ `registryVersion` ไว้จากครั้งล่าสุดที่ `add` เขียนไฟล์จริง เมื่อ CLI เวอร์ชันใหม่กว่ามาเจอไฟล์ `lib`/hook ที่ถูกป้องกันไว้และ `registryVersion` เก่ากว่าเวอร์ชันที่กำลังรัน จะเตือนว่าไฟล์อาจล้าสมัยเทียบกับ template รุ่นปัจจุบัน ดูรายละเอียดฟิลด์นี้ได้ที่ [ข้อมูลอ้างอิงการตั้งค่า](/docs/reference/config)
+
+**วิธีแก้:** ตรวจ diff ของไฟล์นั้นกับ template เวอร์ชันล่าสุดก่อนถ้าต้องการ แล้วรันคำสั่งที่ข้อความแนะนำไว้ตรง ๆ เพื่อ refresh:
+
+```bash
+npx react-thaizip add utils --overwrite
+```
+
+หลังจากไฟล์ถูกเขียนใหม่สำเร็จ `registryVersion` จะถูกอัปเดตให้ตรงกับเวอร์ชัน CLI ปัจจุบันโดยอัตโนมัติ คำเตือนนี้จะไม่ปรากฏอีกจนกว่าจะอัปเกรด CLI รอบถัดไป
 
 ## Import paths ไม่ตรงที่คาด
 
@@ -95,7 +115,7 @@ npx react-thaizip add autocomplete --overwrite
 npx react-thaizip add autocomplete --overwrite
 ```
 
-ไฟล์ hook และ `lib` ที่มีอยู่จะยังไม่ถูกเขียนทับ
+เนื่องจาก `utils` และ hook ถูกดึงมาเป็น registry dependency ของคอมโพเนนต์โดยอัตโนมัติ คำสั่งข้างต้นจะเขียนทับไฟล์ `lib`/hook ที่มีอยู่ด้วยเช่นกัน ไม่ใช่แค่ไฟล์คอมโพเนนต์ ไฟล์เหล่านี้ไม่มีเนื้อหาที่อ้างอิง path จาก config จึงไม่เกี่ยวกับปัญหา import path แต่จะถูกรีเฟรชไปพร้อมกัน
 
 ## ไม่มี `thaizip.config.json`
 

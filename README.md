@@ -34,7 +34,7 @@ npx react-thaizip --version
 ```
 
 - `--yes`, `-y` — skip confirmation prompts (`init` and `add`)
-- `--overwrite` — overwrite existing component files without prompting (`add` only)
+- `--overwrite` — overwrite existing files without prompting (`add` only), including `<libDir>/utils.ts` and `<hooksDir>/use-thai-address-index.ts`, which are otherwise never touched once they exist
 - `--help`, `-h` — print usage and the list of available components
 - `--version`, `-v` — print the CLI's own version
 - `init --help` / `add --help` — print command-scoped usage (`add --help` includes the component list)

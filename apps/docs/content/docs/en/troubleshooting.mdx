@@ -77,11 +77,31 @@ npx react-thaizip add autocomplete --overwrite
 
 ## A hook or `lib` file already exists
 
-**Problem:** `add` skips `lib/utils.ts` or `hooks/use-thai-address-index.ts`, even with `--overwrite`.
+**Problem:** `add` prints `Skipped lib/utils.ts (protected; pass --overwrite to update it).`, or the equivalent for `hooks/use-thai-address-index.ts`, even with `--yes`.
 
-**Cause:** This is intentional: shared files may contain your edits, and `--overwrite` applies only to component files.
+**Cause:** This is intentional: shared files may contain your edits. These files stay protected by default, even with `--yes`, and unlike component files there is no confirmation prompt for them — only an explicit `--overwrite` replaces them.
 
-**Recovery:** If the existing file is correct, do nothing. If you need a fresh copy, manually move or rename that individual file before rerunning the original `add` command. Always review your changes before replacing it.
+**Recovery:** If the existing file is correct, do nothing. If you need a fresh copy, back up your changes first (it will be replaced without asking), then rerun the original command with `--overwrite`:
+
+```bash
+npx react-thaizip add utils --overwrite
+```
+
+Swap `utils` for `use-thai-address-index`, or for the name of the component that pulls in that file as a dependency, depending on which file you need to refresh.
+
+## A scaffolded hook or `lib` file looks outdated after upgrading the CLI
+
+**Problem:** After upgrading `react-thaizip` and rerunning `add`, the command skips `lib/utils.ts` or the hook and prints an extra line such as `lib/utils.ts predates the current registry (recorded v0.0.1, current v0.3.1) and may be stale. Run \`npx react-thaizip add utils --overwrite\` to refresh it.`
+
+**Cause:** `thaizip.config.json` stores `registryVersion`, recorded the last time `add` actually wrote files. When a newer CLI encounters a protected `lib`/hook file and the recorded `registryVersion` is older than the version currently running, it warns that the file may be stale relative to the current templates. See [Configuration reference](/en/docs/reference/config) for details on this field.
+
+**Recovery:** Diff the file against the latest template if you want to check first, then run the exact command the message suggests to refresh it:
+
+```bash
+npx react-thaizip add utils --overwrite
+```
+
+Once the file is rewritten, `registryVersion` is automatically bumped to match the current CLI version, and the warning will not appear again until the next CLI upgrade.
 
 ## Import paths are unexpected
 
@@ -95,7 +115,7 @@ npx react-thaizip add autocomplete --overwrite
 npx react-thaizip add autocomplete --overwrite
 ```
 
-Existing hook and `lib` files remain untouched.
+Since `utils` and the hook are automatically pulled in as registry dependencies of the component, the command above also replaces any existing `lib`/hook files, not just the component file. Those files contain no config-relative paths, so they are unrelated to the import-path problem, but they get refreshed along the way.
 
 ## `thaizip.config.json` is missing
 

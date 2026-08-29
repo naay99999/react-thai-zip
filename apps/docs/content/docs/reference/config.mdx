@@ -33,9 +33,11 @@ description: รูปแบบ thaizip.config.json v2 และกฎการ�
 | `packageManager` | `npm`, `yarn`, `pnpm`, `bun` | package manager ที่ `add` ใช้ติดตั้ง dependencies |
 | `tailwind.version` | `3` หรือ `4` | major version ของ Tailwind ที่ตรวจพบ |
 | `tailwind.css` | string | path ของ global CSS เทียบจากรากโปรเจกต์ หรือ `""` เมื่อหาไฟล์ไม่พบ |
-| `registryVersion` | string ที่ไม่ว่าง | เวอร์ชัน CLI ที่บันทึกตอน `init`; เป็น metadata ของ registry ไม่ใช่เวอร์ชัน `thaizip` |
+| `registryVersion` | string ที่ไม่ว่าง | เวอร์ชัน CLI ที่บันทึกตอนเขียนไฟล์ครั้งล่าสุด; เป็น metadata ของ registry ไม่ใช่เวอร์ชัน `thaizip` |
 
 Path ทุกค่าถูกตีความจาก working directory ที่เรียก CLI จึงควรรัน `init` และ `add` ที่รากโปรเจกต์เดียวกับไฟล์ config
+
+`registryVersion` ไม่ใช่แค่ metadata เฉย ๆ: `add` ใช้ค่านี้ตรวจความเก่าของไฟล์ `lib`/hook ที่ถูกป้องกันไว้ ถ้า `add` ข้ามไฟล์เหล่านั้นเพราะมีอยู่แล้ว (protected) และ `registryVersion` ที่บันทึกไว้เก่ากว่าเวอร์ชันของ CLI ที่กำลังรัน จะพิมพ์คำเตือนว่าไฟล์นั้นอาจล้าสมัย พร้อมคำสั่งสำหรับ refresh เช่น `npx react-thaizip add utils --overwrite` ทุกครั้งที่ `add` เขียนไฟล์จริงอย่างน้อยหนึ่งไฟล์ (ไม่ว่าจะเป็น component, `lib` หรือ hook) `registryVersion` ใน `thaizip.config.json` จะถูกอัปเดตเป็นเวอร์ชันของ CLI ที่รันอยู่โดยอัตโนมัติ
 
 ## การตรวจหาโครงสร้างโปรเจกต์
 
@@ -77,7 +79,7 @@ Template คอมโพเนนต์ถูกเขียนต้นฉบ�
 
 ตัวอย่าง เมื่อ `componentDir` เป็น `app/components`, `libDir` เป็น `lib` และ `hooksDir` เป็น `hooks` imports จะชี้ออกจาก `app/components` ไปยัง directory สองแห่งนั้น ไม่จำเป็นต้องตั้ง alias `@` ในโปรเจกต์ปลายทาง
 
-ไฟล์ `lib` และ hook ที่มีอยู่จะถูกเก็บไว้เสมอ แม้ใช้ `--overwrite` ส่วนไฟล์คอมโพเนนต์ที่มีอยู่จะถูกข้ามตามค่าเริ่มต้นและจะเขียนทับเฉพาะเมื่อยืนยันหรือส่ง `--overwrite` การ rewrite imports จึงเกิดเฉพาะเมื่อคัดลอกคอมโพเนนต์จริง
+ไฟล์ `lib` และ hook ที่มีอยู่ได้รับการป้องกันตามค่าเริ่มต้นเสมอ แม้ส่ง `--yes` และจะถูกเขียนทับเฉพาะเมื่อส่ง `--overwrite` อย่างชัดเจนเท่านั้น ส่วนไฟล์คอมโพเนนต์ที่มีอยู่จะถูกข้ามตามค่าเริ่มต้นและจะเขียนทับเฉพาะเมื่อยืนยันหรือส่ง `--overwrite` การ rewrite imports จึงเกิดเฉพาะเมื่อคัดลอกคอมโพเนนต์จริง
 
 ## Config รุ่นเก่า
 

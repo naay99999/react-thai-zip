@@ -33,9 +33,11 @@ This example shows every v2 field. Actual values depend on the project and the C
 | `packageManager` | `npm`, `yarn`, `pnpm`, `bun` | Package manager used by `add` for dependency installation. |
 | `tailwind.version` | `3` or `4` | Detected Tailwind major version. |
 | `tailwind.css` | string | Project-relative global CSS path, or `""` when no file was found. |
-| `registryVersion` | non-empty string | CLI version recorded by `init`; registry metadata, not the `thaizip` dependency version. |
+| `registryVersion` | non-empty string | CLI version recorded the last time files were written; registry metadata, not the `thaizip` dependency version. |
 
 Every path is resolved from the working directory where the CLI runs. Run `init` and `add` from the same project root that contains the config file.
+
+`registryVersion` is more than bookkeeping: `add` uses it to detect stale protected `lib`/hook files. When `add` skips one of those files because it already exists (protected), and the recorded `registryVersion` is older than the running CLI's own version, it prints a warning that the file may be stale along with the exact command to refresh it, for example `npx react-thaizip add utils --overwrite`. Whenever `add` actually writes at least one file — component, `lib`, or hook — it automatically bumps `registryVersion` in `thaizip.config.json` to the running CLI's version.
 
 ## Project-structure detection
 
@@ -77,7 +79,7 @@ Component templates are authored with `@/lib/*` and `@/hooks/*` imports so they 
 
 For example, with `componentDir` set to `app/components`, `libDir` to `lib`, and `hooksDir` to `hooks`, imports point out of `app/components` to those two directories. The target project does not need an `@` alias for generated component imports.
 
-Existing `lib` and hook files are always preserved, even with `--overwrite`. Existing component files are skipped by default and replaced only after confirmation or with `--overwrite`. Import rewriting therefore runs only when a component is actually copied.
+Existing `lib` and hook files are protected by default, even with `--yes`, and are replaced only with an explicit `--overwrite`. Existing component files are skipped by default and replaced only after confirmation or with `--overwrite`. Import rewriting therefore runs only when a component is actually copied.
 
 ## Legacy configuration
 

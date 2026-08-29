@@ -26,13 +26,24 @@ npx react-thaizip init
 
 `init` performs these steps in order:
 
-1. Detects the package manager and project structure.
+1. Detects the package manager, project structure, and Tailwind CSS v3 or v4 (which must already be installed), then prints a detection summary before asking anything.
 2. Lets you confirm or change `componentDir` unless `--yes` is present.
-3. Detects Tailwind CSS v3 or v4, which must already be installed.
-4. Adds design tokens to a global stylesheet or prints a block for manual copying.
-5. For Tailwind v3, prints a `theme.extend` snippet for you to add manually.
-6. Offers to install `thaizip` when it is missing.
-7. Writes `thaizip.config.json`.
+3. Adds design tokens to a global stylesheet, if one was found.
+4. Offers to install `thaizip` when it is missing.
+5. Writes `thaizip.config.json`.
+6. If any manual follow-up steps are needed (the Tailwind v3 `theme.extend` snippet, or the design-token block when no global CSS was found), prints all of them together at the very end, under `=== Manual steps required ===`.
+7. Prints the next step: `Next: run \`npx react-thaizip add autocomplete\` to add your first component.`
+
+Sample output at the start of a run:
+
+```text
+Detected project settings:
+  Components directory: app/components
+  Package manager: npm
+  Tailwind: v4 (app/globals.css)
+```
+
+Tailwind is always detected before the `componentDir` prompt, so a project without Tailwind installed stops immediately, before any question is asked.
 
 See the [configuration reference](/en/docs/reference/config) for the file shape and detection rules.
 
@@ -74,12 +85,12 @@ Before writing files, `add` checks that an existing `thaizip` is at least `0.7.0
 | Flag | Effect |
 | --- | --- |
 | `--yes`, `-y` | Skips confirmation prompts and uses each prompt's default answer. |
-| `--overwrite` | Replaces existing component files without asking; applies only to `add`. |
+| `--overwrite` | Replaces existing component files without asking, and unlocks replacing `lib`/hook files that are otherwise protected. Applies only to `add`. |
 | `--help`, `-h` | Prints help; place it after `init` or `add` for command-scoped help. |
 | `--version`, `-v` | Prints the CLI version. |
 
 Recognized flags can appear anywhere in the argument list. If help and version are both present, **help always wins**, and neither `init` nor `add` runs.
 
-`--yes` does not mean “overwrite everything.” The default answer to component and config overwrite prompts is no, so existing files remain skipped. Use `--overwrite` separately when you intentionally want to replace a component. Existing hook and `lib` files are never overwritten, even with `--overwrite`.
+`--yes` does not mean “overwrite everything.” The default answer to component and config overwrite prompts is no, so existing files remain skipped. Use `--overwrite` separately when you intentionally want to replace a component. Existing hook and `lib` files stay protected by default even with `--yes`, since you're expected to hand-edit them; only an explicit `--overwrite` replaces them.
 
 An unknown flag exits with an error before the command runs. See [Troubleshooting](/en/docs/troubleshooting) for installation and existing-file recovery.
