@@ -4,76 +4,61 @@
 [![npm downloads](https://img.shields.io/npm/dm/react-thaizip.svg)](https://www.npmjs.com/package/react-thaizip)
 [![license](https://img.shields.io/npm/l/react-thaizip.svg)](https://github.com/naay99999/react-thai-zip/blob/main/LICENSE)
 
-CLI scaffold tool for adding Thai address React components powered by [`thaizip`](https://www.npmjs.com/package/thaizip).
+A CLI that scaffolds ready-to-use Thai address React components — powered by [`thaizip`](https://www.npmjs.com/package/thaizip) — directly into your project, shadcn/ui-style.
 
-📚 [Documentation and live component demos](https://react-thai-zip-docs.vercel.app)
+📚 **[Documentation and live component demos](https://react-thai-zip.vercel.app)**
 
 | Thai input | English input (romanization alias) |
 |---|---|
 | ![react-thaizip demo — typing "ลาดพร้าว" in the scaffolded ThaiAddressAutocomplete component](.github/assets/demo.png) | ![react-thaizip demo — typing "ladprao" and matching the same Thai suggestions](.github/assets/demo-en.png) |
 
-## Deploy the documentation site
-
-Deploy `apps/docs` as a separate Vercel project. Set its **Root Directory** to `apps/docs` and use Node.js 22 or newer. The docs app imports the component templates from `templates/react/ts/` directly, and those imports (`thaizip`, `clsx`, `tailwind-merge`, `@base-ui/react`) resolve against this repo's own `node_modules`, not just `apps/docs/node_modules` — `apps/docs/vercel.json` overrides the Install Command to install both. Keep Vercel's default `npm run build` command. The docs app owns its own `package-lock.json` and its build uses Webpack for compatibility with the Fumadocs MDX pipeline.
+## Quick start
 
 ```bash
 npx react-thaizip init
 npx react-thaizip add autocomplete
 ```
 
-`add autocomplete` installs `thaizip`, `@base-ui/react`, `clsx`, and `tailwind-merge`, then scaffolds 3 files: the component plus its two shared dependencies (`lib/utils.ts` and `hooks/use-thai-address-index.ts`).
+- `init` detects your project structure, package manager, and Tailwind version, then writes a `thaizip.config.json` used by `add`.
+- `add autocomplete` installs `thaizip`, `@base-ui/react`, `clsx`, and `tailwind-merge`, then scaffolds 3 files into your project: the component plus its two shared dependencies (`lib/utils.ts` and `hooks/use-thai-address-index.ts`).
 
-## Prerequisite: Tailwind CSS
+```tsx
+import { ThaiAddressAutocomplete } from '@/components/thai-address-autocomplete'
 
-Your project must already have Tailwind CSS (v3 or v4) installed — `init` detects it but does not install it for you. If no Tailwind setup is found, `init` prints a pointer to https://tailwindcss.com/docs/installation and exits; install Tailwind first, then re-run `init`.
-
-`init` detects your React or Next.js project structure, package manager, and Tailwind version, then:
-- writes `thaizip.config.json`, which `add` uses when generating components
-- appends the shadcn-style design tokens (CSS custom properties) to your global CSS file — or prints them for manual copy if no global CSS file is found
-- on Tailwind v3, also prints a `theme.extend` config snippet to add to `tailwind.config.{js,ts}` by hand (v3 has no `@theme inline`)
-
-## CLI flags
-
-```
-npx react-thaizip init [--yes]
-npx react-thaizip add [component...] [--yes] [--overwrite]
-npx react-thaizip --help
-npx react-thaizip --version
+<ThaiAddressAutocomplete
+  name="address"
+  onValueChange={(address) => console.log(address)}
+/>
 ```
 
-- `--yes`, `-y` — skip confirmation prompts (`init` and `add`)
-- `--overwrite` — overwrite existing files without prompting (`add` only), including `<libDir>/utils.ts` and `<hooksDir>/use-thai-address-index.ts`, which are otherwise never touched once they exist
-- `--help`, `-h` — print usage and the list of available components
-- `--version`, `-v` — print the CLI's own version
-- `init --help` / `add --help` — print command-scoped usage (`add --help` includes the component list)
+> **Prerequisite:** your project needs Tailwind CSS (v3 or v4) already installed. `init` detects it but doesn't install it for you — if none is found, it prints a pointer to the [Tailwind install docs](https://tailwindcss.com/docs/installation) and exits.
 
 ## Components
 
-```bash
-npx react-thaizip add
-npx react-thaizip add ThaiAddressAutocomplete
-npx react-thaizip add ThaiAddressCascadeSelect
-```
-
-Shorter aliases also resolve to the same components:
+- **`autocomplete`** (`ThaiAddressAutocomplete`) — free-text address search built on [Base UI](https://base-ui.com/react/components/combobox)'s `Combobox`.
+- **`cascade-select`** (`ThaiAddressCascadeSelect`) — province > district > sub-district cascade built on [Base UI](https://base-ui.com/react/components/select)'s `Select` (×3).
 
 ```bash
-npx react-thaizip add autocomplete
-npx react-thaizip add cascade-select
+npx react-thaizip add                         # interactive multiselect
+npx react-thaizip add autocomplete            # or: ThaiAddressAutocomplete
+npx react-thaizip add cascade-select          # or: ThaiAddressCascadeSelect
+npx react-thaizip add autocomplete cascade-select  # multiple at once
 ```
 
-Multiple targets can be passed at once:
+Each `add` also requires `thaizip` >= 0.7.0 (the version that added the cascade/enumeration API and bilingual labels the templates rely on) — an older installed version makes `add` exit without writing files.
 
-```bash
-npx react-thaizip add autocomplete cascade-select
-```
+Both components share the same shape:
 
-Running `add` with no targets prompts an interactive multiselect (only these two components are listed — `--help` shows the same list). `add` also requires `thaizip` >= 0.7.0 (the version that added the cascade/enumeration API and bilingual labels the templates rely on) — if an older version is already installed, `add` reports the version it found and exits without writing files.
+- Controlled or uncontrolled `value` / `defaultValue` / `onValueChange` (`ResolvedThaiAddress | null`)
+- `name` — renders 4 hidden inputs for plain `<form>` submission: `${name}-subdistrict`, `-district`, `-province`, `-zipcode`
+- `locale` (`'th'` default or `'en'`) and a `texts` prop to override any label/status message
+- `disabled` / `required` / `onBlur` / `onError`, plus per-part `className` slots
+- A forwarded `ref`
 
-- **`autocomplete`** (`ThaiAddressAutocomplete`) — free-text address search built on [Base UI](https://base-ui.com/react/components/combobox)'s `Combobox`. Scaffolds 3 files: the component (`<componentDir>/thai-address-autocomplete.tsx`) plus its two shared dependencies, `<libDir>/utils.ts` (`cn()` helper) and `<hooksDir>/use-thai-address-index.ts` (loads the bundled thaizip index) — pulled in automatically, no need to `add` them by name. Installs `thaizip`, `@base-ui/react`, `clsx`, and `tailwind-merge`.
-- **`cascade-select`** (`ThaiAddressCascadeSelect`) — province > district > sub-district cascade built on [Base UI](https://base-ui.com/react/components/select)'s `Select` (×3). Scaffolds 3 files: the component (`<componentDir>/thai-address-cascade-select.tsx`) plus its two shared dependencies, `<libDir>/utils.ts` and `<hooksDir>/use-thai-address-index.ts` — pulled in automatically, no need to `add` them by name. Installs `thaizip`, `@base-ui/react`, `clsx`, and `tailwind-merge`.
+<details>
+<summary><strong>Full prop reference</strong></summary>
 
-### `ThaiAddressAutocomplete` props
+### `ThaiAddressAutocomplete`
 
 | Prop | Purpose |
 |---|---|
@@ -86,7 +71,7 @@ Running `add` with no targets prompts an interactive multiselect (only these two
 | `className` / `inputClassName` / `popupClassName` / `itemClassName` | Class-name slots for the wrapper, input, popup, and each suggestion item |
 | `ref` | Forwarded to the underlying `<input>` |
 
-### `ThaiAddressCascadeSelect` props
+### `ThaiAddressCascadeSelect`
 
 | Prop | Purpose |
 |---|---|
@@ -97,6 +82,8 @@ Running `add` with no targets prompts an interactive multiselect (only these two
 | `disabled` / `required` / `onBlur` / `onError` / `aria-invalid` | Standard field wiring; `onError` fires if the bundled address index fails to load |
 | `className` / `labelClassName` / `triggerClassName` / `popupClassName` / `itemClassName` | Class-name slots for the wrapper, labels, each select trigger, popup, and each option item |
 | `ref` | Forwarded to the province select's trigger button |
+
+</details>
 
 ## Customizing labels (`texts` prop)
 
@@ -115,3 +102,22 @@ Every generated component ships with Thai default labels (`locale` defaults to `
 ```
 
 `texts` is `Partial<Texts>`, so you only need to supply the keys you want to change — anything you omit falls back to the locale's default. Each component exports its own `Texts` type covering its labels, placeholders, and status messages (e.g. `loadingText`, `errorText`).
+
+## CLI flags
+
+```
+npx react-thaizip init [--yes]
+npx react-thaizip add [component...] [--yes] [--overwrite]
+npx react-thaizip --help
+npx react-thaizip --version
+```
+
+- `--yes`, `-y` — skip confirmation prompts (`init` and `add`)
+- `--overwrite` — overwrite existing files without prompting (`add` only), including `<libDir>/utils.ts` and `<hooksDir>/use-thai-address-index.ts`, which are otherwise never touched once they exist
+- `--help`, `-h` — print usage and the list of available components
+- `--version`, `-v` — print the CLI's own version
+- `init --help` / `add --help` — print command-scoped usage (`add --help` includes the component list)
+
+## Contributing: deploying the documentation site
+
+Deploy `apps/docs` as a separate Vercel project. Set its **Root Directory** to `apps/docs` and use Node.js 22 or newer. The docs app imports the component templates from `templates/react/ts/` directly, and those imports (`thaizip`, `clsx`, `tailwind-merge`, `@base-ui/react`) resolve against this repo's own `node_modules`, not just `apps/docs/node_modules` — `apps/docs/vercel.json` overrides the Install Command to install both. Keep Vercel's default `npm run build` command. The docs app owns its own `package-lock.json` and its build uses Webpack for compatibility with the Fumadocs MDX pipeline.
