@@ -11,6 +11,8 @@ import { cn } from '@/lib/utils'
 import { ThaiAddressCascadeSelect } from './thai-address-cascade-select'
 import type { ThaiAddressCascadeSelectTexts } from './thai-address-cascade-select'
 
+type AddressLocale = 'th' | 'en'
+
 export type ThaiAddressFormFieldProps<TFieldValues extends FieldValues = FieldValues> = {
   control: Control<TFieldValues>
   name: FieldPath<TFieldValues>
@@ -25,7 +27,7 @@ export type ThaiAddressFormFieldProps<TFieldValues extends FieldValues = FieldVa
     'valueAsNumber' | 'valueAsDate' | 'setValueAs' | 'disabled'
   >
   /** Drives the embedded cascade's option labels and default texts. Defaults to `'th'`. */
-  locale?: 'th' | 'en'
+  locale?: AddressLocale
   texts?: Partial<ThaiAddressCascadeSelectTexts>
   disabled?: boolean
   /** Applied to the wrapper `<div>` around the cascade and its validation message. */

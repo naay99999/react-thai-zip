@@ -102,6 +102,21 @@ function buildFullAddress(): FullThaiAddress {
   return { ...expectedAddress, houseNo: '99/1', moo: '2', soi: 'สุขใจ', street: 'สุขุมวิท' }
 }
 
+// Minimal controlled harness: mirrors how a real consumer would wire `value`/`onValueChange`
+// back together (parent state echoes whatever the form emits, including `null`).
+function ControlledHarness({ onChange }: { onChange: (next: FullThaiAddress | null) => void }) {
+  const [value, setValue] = React.useState<FullThaiAddress | null>(null)
+  return (
+    <ThaiAddressForm
+      value={value}
+      onValueChange={(next) => {
+        onChange(next)
+        setValue(next)
+      }}
+    />
+  )
+}
+
 describe('ThaiAddressForm', () => {
   it('fires onValueChange with a FullThaiAddress once house number is typed and the cascade is fully completed', async () => {
     const onValueChange = vi.fn()
@@ -238,5 +253,62 @@ describe('ThaiAddressForm', () => {
     await waitFor(() => expect(ref.current).not.toBeNull())
     ref.current?.focus()
     expect(document.activeElement).toBe(ref.current)
+  })
+
+  it('wires required only to the house-number field and the embedded cascade, not moo/soi/street', async () => {
+    render(<ThaiAddressForm required />)
+
+    const houseNoInput = screen.getByLabelText('บ้านเลขที่') as HTMLInputElement
+    expect(houseNoInput.required).toBe(true)
+    expect((screen.getByLabelText('หมู่') as HTMLInputElement).required).toBe(false)
+    expect((screen.getByLabelText('ซอย') as HTMLInputElement).required).toBe(false)
+    expect((screen.getByLabelText('ถนน') as HTMLInputElement).required).toBe(false)
+
+    const triggers = await screen.findAllByRole('combobox')
+    await waitFor(() => expect(triggers[0].getAttribute('aria-required')).toBe('true'))
+  })
+
+  describe('controlled mode: cascade-resolution/houseNo interaction order', () => {
+    it('completing the cascade before typing the house number still eventually emits the full value', async () => {
+      const onChange = vi.fn()
+      const user = userEvent.setup()
+      render(<ControlledHarness onChange={onChange} />)
+
+      await completeCascade(user)
+      const houseNoInput = screen.getByLabelText('บ้านเลขที่')
+      await user.type(houseNoInput, '123')
+
+      await waitFor(() =>
+        expect(onChange).toHaveBeenLastCalledWith({ ...expectedAddress, houseNo: '123' }),
+      )
+    })
+
+    it('clearing the house number after a full controlled selection, then retyping it, recovers the full value without losing the cascade selection visually', async () => {
+      const onChange = vi.fn()
+      const user = userEvent.setup()
+      render(<ControlledHarness onChange={onChange} />)
+
+      await completeCascade(user)
+      const houseNoInput = screen.getByLabelText('บ้านเลขที่')
+      await user.type(houseNoInput, '123')
+      await waitFor(() =>
+        expect(onChange).toHaveBeenLastCalledWith({ ...expectedAddress, houseNo: '123' }),
+      )
+
+      await user.clear(houseNoInput)
+      await waitFor(() => expect(onChange).toHaveBeenLastCalledWith(null))
+
+      // The cascade's visible selection must survive the parent echoing `value = null` back —
+      // it must not have been wiped just because the combined form value is currently null.
+      const triggers = await screen.findAllByRole('combobox')
+      expect(triggers[0].textContent).toContain(province.nameTh)
+      expect(triggers[1].textContent).toContain(amphure.nameTh)
+      expect(triggers[2].textContent).toContain(tambon.nameTh)
+
+      await user.type(houseNoInput, '123')
+      await waitFor(() =>
+        expect(onChange).toHaveBeenLastCalledWith({ ...expectedAddress, houseNo: '123' }),
+      )
+    })
   })
 })

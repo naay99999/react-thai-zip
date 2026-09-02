@@ -55,8 +55,8 @@ Each `add` also requires `thaizip` >= 0.7.0 (the version that added the cascade/
 
 `autocomplete`, `cascade-select`, and `address-form` share the same shape:
 
-- Controlled or uncontrolled `value` / `defaultValue` / `onValueChange` (`ResolvedThaiAddress | null`)
-- `name` — renders 4 hidden inputs for plain `<form>` submission: `${name}-subdistrict`, `-district`, `-province`, `-zipcode`
+- Controlled or uncontrolled `value` / `defaultValue` / `onValueChange` (`ResolvedThaiAddress | null` — `FullThaiAddress | null` for `address-form`)
+- `name` — renders 4 hidden inputs for plain `<form>` submission: `${name}-subdistrict`, `-district`, `-province`, `-zipcode` (`address-form` renders 4 more of its own on top of the cascade's 4)
 - `locale` (`'th'` default or `'en'`) and a `texts` prop to override any label/status message
 - `disabled` / `required` / `onBlur` / `onError`, plus per-part `className` slots
 - A forwarded `ref`
@@ -102,7 +102,7 @@ Each `add` also requires `thaizip` >= 0.7.0 (the version that added the cascade/
 | `locale` | `'th'` (default) or `'en'` — drives this component's own labels and the embedded cascade's |
 | `texts` | `Partial<ThaiAddressFormTexts>` — override the house-number/moo/soi/street labels and placeholders |
 | `cascadeTexts` | `Partial<Texts>` forwarded to the embedded `ThaiAddressCascadeSelect`'s own `texts` prop |
-| `disabled` / `required` / `onBlur` / `onError` | Standard field wiring; `onBlur` fires on the house-number input specifically; `onError` fires if the bundled address index fails to load (delegated to the embedded cascade) |
+| `disabled` / `required` / `onBlur` / `onError` / `aria-invalid` | Standard field wiring; `onBlur` fires on the house-number input specifically; `onError` fires if the bundled address index fails to load (delegated to the embedded cascade); `aria-invalid` marks the 4 text inputs and the embedded cascade's triggers invalid |
 | `className` / `labelClassName` / `inputClassName` / `triggerClassName` / `popupClassName` / `itemClassName` | Class-name slots for the wrapper, labels, the 4 text inputs, and the embedded cascade's own trigger/popup/item slots |
 | `ref` | Forwarded to the house-number `<input>` |
 

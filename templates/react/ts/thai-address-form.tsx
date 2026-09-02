@@ -100,13 +100,14 @@ type TextFields = { houseNo: string; moo: string; soi: string; street: string }
  * usably complete" condition this component's own `onValueChange` is gated on.
  */
 function computeFull(fields: TextFields, cascade: ResolvedThaiAddress | null): FullThaiAddress | null {
-  if (fields.houseNo.trim() === '' || !cascade) return null
+  const houseNo = fields.houseNo.trim()
+  if (houseNo === '' || !cascade) return null
   return {
     ...cascade,
-    houseNo: fields.houseNo,
-    moo: fields.moo || undefined,
-    soi: fields.soi || undefined,
-    street: fields.street || undefined,
+    houseNo,
+    moo: fields.moo.trim() || undefined,
+    soi: fields.soi.trim() || undefined,
+    street: fields.street.trim() || undefined,
   }
 }
 
@@ -141,20 +142,24 @@ export function ThaiAddressForm({
   // The text fields' transient typing state is always local (in both controlled and
   // uncontrolled mode) — only the *combined* FullThaiAddress is controlled/uncontrolled.
   // Seeded once from whichever value is present on first render; deliberately not
-  // re-synced from a later external `value` change (see `ThaiAddressFormTexts`/composition
-  // notes in the registry brief this file implements).
+  // re-synced from a later external `value` change (matches `ThaiAddressAutocomplete`'s
+  // seed-once-then-local discipline for its own transient input state).
   const [houseNo, setHouseNo] = React.useState(() => (isControlled ? (value?.houseNo ?? '') : (defaultValue?.houseNo ?? '')))
   const [moo, setMoo] = React.useState(() => (isControlled ? (value?.moo ?? '') : (defaultValue?.moo ?? '')))
   const [soi, setSoi] = React.useState(() => (isControlled ? (value?.soi ?? '') : (defaultValue?.soi ?? '')))
   const [street, setStreet] = React.useState(() => (isControlled ? (value?.street ?? '') : (defaultValue?.street ?? '')))
 
-  // Uncontrolled bookkeeping only, mirroring `ThaiAddressAutocomplete`'s `internalResolved` —
-  // stays unused in controlled mode, where `cascadeAddress` below is derived straight from
-  // `value` instead.
+  // The cascade's own resolution is always tracked locally, in both controlled and
+  // uncontrolled mode — it's the only place this component remembers "what the cascade is
+  // currently showing as selected". In controlled mode the combined FullThaiAddress may
+  // legitimately be `null` while houseNo is still empty or the parent hasn't echoed a value
+  // back yet; if `cascadeAddress` were derived from `value` alone, that `null` would erase a
+  // cascade selection the user already made. `value` still wins whenever the parent has it
+  // (so a deliberate external reset/replace is honored); it's only the fallback that changes.
   const [internalCascadeAddress, setInternalCascadeAddress] = React.useState<ResolvedThaiAddress | null>(() =>
-    isControlled ? null : (defaultValue ?? null),
+    (isControlled ? value : defaultValue) ?? null,
   )
-  const cascadeAddress: ResolvedThaiAddress | null = isControlled ? (value ?? null) : internalCascadeAddress
+  const cascadeAddress: ResolvedThaiAddress | null = isControlled ? (value ?? internalCascadeAddress) : internalCascadeAddress
 
   const currentFields: TextFields = { houseNo, moo, soi, street }
 
@@ -188,7 +193,7 @@ export function ThaiAddressForm({
   }
 
   function handleCascadeChange(address: ResolvedThaiAddress | null) {
-    if (!isControlled) setInternalCascadeAddress(address)
+    setInternalCascadeAddress(address)
     emitChange(currentFields, address)
   }
 
@@ -204,6 +209,7 @@ export function ThaiAddressForm({
         locale={locale}
         texts={cascadeTexts}
         disabled={disabled}
+        required={required}
         onError={onError}
         aria-invalid={ariaInvalid}
         labelClassName={labelClassName}
@@ -234,7 +240,7 @@ export function ThaiAddressForm({
           value={moo}
           onChange={handleMooChange}
           disabled={disabled}
-          required={required}
+          required={false}
           ariaInvalid={ariaInvalid}
           labelClassName={labelClassName}
           inputClassName={inputClassName}
@@ -246,7 +252,7 @@ export function ThaiAddressForm({
           value={soi}
           onChange={handleSoiChange}
           disabled={disabled}
-          required={required}
+          required={false}
           ariaInvalid={ariaInvalid}
           labelClassName={labelClassName}
           inputClassName={inputClassName}
@@ -258,7 +264,7 @@ export function ThaiAddressForm({
           value={street}
           onChange={handleStreetChange}
           disabled={disabled}
-          required={required}
+          required={false}
           ariaInvalid={ariaInvalid}
           labelClassName={labelClassName}
           inputClassName={inputClassName}
