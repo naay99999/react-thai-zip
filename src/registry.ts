@@ -40,6 +40,16 @@ export const registryItems: RegistryItem[] = [
     exportName: 'ThaiAddressCascadeSelect',
   },
   {
+    name: 'address-form',
+    description: 'House number + moo/soi/street free text, layered on the cascade select',
+    aliases: ['address-form', 'thai-address-form', 'ThaiAddressForm'],
+    type: 'component',
+    files: [{ source: 'react/ts/thai-address-form.tsx', target: { dir: 'componentDir', file: 'thai-address-form.tsx' } }],
+    dependencies: ['thaizip', '@base-ui/react'],
+    registryDependencies: ['utils', 'use-thai-address-index', 'cascade-select'],
+    exportName: 'ThaiAddressForm',
+  },
+  {
     name: 'address-display',
     description: 'Read-only <address> renderer for a resolved (optionally full) Thai address',
     aliases: ['address-display', 'thai-address-display', 'ThaiAddressDisplay'],

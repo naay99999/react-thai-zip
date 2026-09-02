@@ -7,6 +7,9 @@ describe('registry', () => {
     ['ThaiAddressAutocomplete', 'autocomplete'],
     ['cascade', 'cascade-select'],
     ['cascade-select', 'cascade-select'],
+    ['address-form', 'address-form'],
+    ['thai-address-form', 'address-form'],
+    ['ThaiAddressForm', 'address-form'],
     ['address-display', 'address-display'],
     ['ThaiAddressDisplay', 'address-display'],
     ['thai-address-display', 'address-display'],
@@ -14,14 +17,21 @@ describe('registry', () => {
     expect(resolveRegistryItem(alias)?.name).toBe(expected)
   })
 
-  it('exposes the five supported registry items', () => {
+  it('exposes the six supported registry items', () => {
     expect(registryItems.map((item) => item.name)).toEqual([
       'autocomplete',
       'cascade-select',
+      'address-form',
       'address-display',
       'utils',
       'use-thai-address-index',
     ])
+  })
+
+  it('address-form depends on thaizip + Base UI and pulls in utils, use-thai-address-index, and cascade-select', () => {
+    const item = resolveRegistryItem('address-form')
+    expect(item?.dependencies).toEqual(['thaizip', '@base-ui/react'])
+    expect(item?.registryDependencies).toEqual(['utils', 'use-thai-address-index', 'cascade-select'])
   })
 
   it('address-display depends on thaizip only and pulls in just utils', () => {
@@ -98,5 +108,12 @@ describe('registryItems data', () => {
     expect(item?.dependencies).toEqual(['thaizip', '@base-ui/react'])
     expect(item?.registryDependencies).toEqual(['utils', 'use-thai-address-index'])
     expect(item?.exportName).toBe('ThaiAddressCascadeSelect')
+  })
+
+  it('address-form resolves against the real registry and pulls in cascade-select transitively', () => {
+    const item = resolveRegistryItem('address-form')!
+    expect(() => resolveWithDependencies([item])).not.toThrow()
+    const resolved = resolveWithDependencies([item])
+    expect(resolved.map((i) => i.name)).toContain('cascade-select')
   })
 })

@@ -37,12 +37,14 @@ import { ThaiAddressAutocomplete } from '@/components/thai-address-autocomplete'
 
 - **`autocomplete`** (`ThaiAddressAutocomplete`) — free-text address search built on [Base UI](https://base-ui.com/react/components/combobox)'s `Combobox`.
 - **`cascade-select`** (`ThaiAddressCascadeSelect`) — province > district > sub-district cascade built on [Base UI](https://base-ui.com/react/components/select)'s `Select` (×3).
+- **`address-form`** (`ThaiAddressForm`) — house number + optional moo/soi/street free text, layered directly on top of `ThaiAddressCascadeSelect` (embedded by file, not by npm import).
 - **`address-display`** (`ThaiAddressDisplay`) — read-only address renderer; no `onValueChange`/`name`/hidden inputs, just formats a `ThaiAddressDisplayValue` you hand it.
 
 ```bash
 npx react-thaizip add                         # interactive multiselect
 npx react-thaizip add autocomplete            # or: ThaiAddressAutocomplete
 npx react-thaizip add cascade-select          # or: ThaiAddressCascadeSelect
+npx react-thaizip add address-form            # or: ThaiAddressForm
 npx react-thaizip add address-display         # or: ThaiAddressDisplay
 npx react-thaizip add autocomplete cascade-select  # multiple at once
 ```
@@ -84,6 +86,19 @@ Both components share the same shape:
 | `disabled` / `required` / `onBlur` / `onError` / `aria-invalid` | Standard field wiring; `onError` fires if the bundled address index fails to load |
 | `className` / `labelClassName` / `triggerClassName` / `popupClassName` / `itemClassName` | Class-name slots for the wrapper, labels, each select trigger, popup, and each option item |
 | `ref` | Forwarded to the province select's trigger button |
+
+### `ThaiAddressForm`
+
+| Prop | Purpose |
+|---|---|
+| `value` / `defaultValue` / `onValueChange` | Controlled or uncontrolled `FullThaiAddress \| null` — a `ResolvedThaiAddress` plus `houseNo` (required) and optional `moo`/`soi`/`street`. Fires only when `houseNo` is non-blank and the embedded cascade has a full resolution; otherwise the value is `null` |
+| `name` | When set, forwarded to the embedded `ThaiAddressCascadeSelect` (its own 4 hidden inputs) plus renders 4 more of its own: `${name}-houseno`, `-moo`, `-soi`, `-street` |
+| `locale` | `'th'` (default) or `'en'` — drives this component's own labels and the embedded cascade's |
+| `texts` | `Partial<ThaiAddressFormTexts>` — override the house-number/moo/soi/street labels and placeholders |
+| `cascadeTexts` | `Partial<Texts>` forwarded to the embedded `ThaiAddressCascadeSelect`'s own `texts` prop |
+| `disabled` / `required` / `onBlur` / `onError` | Standard field wiring; `onBlur` fires on the house-number input specifically; `onError` fires if the bundled address index fails to load (delegated to the embedded cascade) |
+| `className` / `labelClassName` / `inputClassName` / `triggerClassName` / `popupClassName` / `itemClassName` | Class-name slots for the wrapper, labels, the 4 text inputs, and the embedded cascade's own trigger/popup/item slots |
+| `ref` | Forwarded to the house-number `<input>` |
 
 ### `ThaiAddressDisplay`
 
