@@ -78,7 +78,12 @@ export function ThaiAddressFormField<TFieldValues extends FieldValues = FieldVal
             value={field.value as ResolvedThaiAddress | null}
             onValueChange={field.onChange}
             onBlur={field.onBlur}
-            name={field.name}
+            // Deliberately not forwarding `field.name` here: `ThaiAddressCascadeSelect` renders 4
+            // hidden `<input>` elements whenever its own `name` prop is truthy, which would
+            // contradict this component's "no hidden inputs" contract (see the doc comment
+            // above). RHF's `Controller` tracks this field by the `name` passed to `Controller`
+            // itself, not by a DOM `name` attribute on the underlying control, so omitting it here
+            // doesn't affect RHF's `handleSubmit`/`control` behavior.
             locale={locale}
             texts={texts}
             disabled={disabled}

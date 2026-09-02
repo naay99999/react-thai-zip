@@ -147,4 +147,11 @@ describe('ThaiAddressFormField — react-hook-form Controller wrapper', () => {
       expect(isDisabled(trigger)).toBe(true)
     }
   })
+
+  it('never renders hidden inputs — RHF submission goes through handleSubmit, not FormData', async () => {
+    const { container } = render(<Harness onSubmit={vi.fn()} />)
+
+    await getTriggers()
+    expect(container.querySelectorAll('input[type="hidden"]')).toHaveLength(0)
+  })
 })
