@@ -8,6 +8,8 @@ import { fileURLToPath } from 'node:url'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const sandboxDir = path.join(root, 'apps/sandbox')
 const force = process.argv.includes('--force')
+const npmArg = process.argv.find((a) => a === '--npm' || a.startsWith('--npm='))
+const npmTag = npmArg ? (npmArg.includes('=') ? npmArg.split('=')[1] : 'latest') : null
 
 const docsPkg = JSON.parse(await readFile(path.join(root, 'apps/docs/package.json'), 'utf8'))
 const pick = (name) => docsPkg.dependencies?.[name] ?? docsPkg.devDependencies?.[name]
@@ -124,7 +126,20 @@ console.log(`Sandbox created at apps/sandbox (next ${versions.next}).`)
 console.log('Installing dependencies...')
 execSync('npm install', { cwd: sandboxDir, stdio: 'inherit' })
 
-console.log(`
+if (npmTag) {
+  console.log(`
+Next steps — exercise the published npm package end to end:
+
+  1. cd apps/sandbox
+  2. npx react-thaizip@${npmTag} init --yes
+  3. npx react-thaizip@${npmTag} add autocomplete cascade-select --yes
+  4. npm run dev                        # http://localhost:3000
+
+Note: this pulls react-thaizip@${npmTag} from the npm registry, not your local src/ changes.
+apps/sandbox is gitignored — wipe and regenerate any time with \`npm run sandbox\`.
+`)
+} else {
+  console.log(`
 Next steps — exercise the CLI end to end:
 
   1. npm run build                      # repo root — builds dist/cli.js
@@ -133,5 +148,7 @@ Next steps — exercise the CLI end to end:
   4. node ../../dist/cli.js add autocomplete cascade-select --yes
   5. npm run dev                        # http://localhost:3000
 
+Tip: run \`npm run sandbox -- --npm\` instead to test the published npm package via npx.
 apps/sandbox is gitignored — wipe and regenerate any time with \`npm run sandbox\`.
 `)
+}

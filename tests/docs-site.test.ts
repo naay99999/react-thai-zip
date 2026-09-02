@@ -168,5 +168,6 @@ describe('documentation site structure', () => {
     const generator = await read('scripts/sandbox.mjs')
     expect(generator).toContain("path.join(root, 'apps/docs/package.json')")
     expect(generator).toContain("'@tailwindcss/postcss'")
+    expect(generator).toContain("'--npm'")
   })
 })
