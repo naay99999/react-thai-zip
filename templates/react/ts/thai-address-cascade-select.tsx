@@ -15,7 +15,11 @@ import { useThaiAddressIndex } from '@/hooks/use-thai-address-index'
 
 type AddressLocale = 'th' | 'en'
 
-type ThaiAddressCascadeSelectTexts = {
+// This file's filename and its `ThaiAddressCascadeSelect`/`ThaiAddressCascadeSelectTexts`
+// export names are relied on by sibling templates (thai-address-form.tsx,
+// thai-address-form-field.tsx) via plain relative imports that no tooling validates at
+// scaffold time — renaming either requires updating those files too.
+export type ThaiAddressCascadeSelectTexts = {
   provinceLabel: string
   districtLabel: string
   subdistrictLabel: string

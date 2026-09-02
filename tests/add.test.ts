@@ -27,9 +27,10 @@ async function tempProjectWithConfigV2(options: { thaizipRange?: string; registr
   const cwd = await tempDir()
   const thaizipRange = options.thaizipRange ?? '^0.7.0'
   // Pre-declare every npm dependency the registry items can pull in (thaizip,
-  // Base UI, and utils' clsx/tailwind-merge) so getMissingDependencies finds
-  // nothing to install — scaffolding tests would otherwise trigger a real
-  // `npm install` into the temp project, which is slow and network-dependent.
+  // Base UI, utils' clsx/tailwind-merge, and address-form-field's
+  // react-hook-form) so getMissingDependencies finds nothing to install —
+  // scaffolding tests would otherwise trigger a real `npm install` into the
+  // temp project, which is slow and network-dependent.
   await writeFile(
     path.join(cwd, 'package.json'),
     JSON.stringify({
@@ -38,6 +39,7 @@ async function tempProjectWithConfigV2(options: { thaizipRange?: string; registr
         '@base-ui/react': '^1.0.0',
         clsx: '^2.0.0',
         'tailwind-merge': '^2.0.0',
+        'react-hook-form': '^7.0.0',
       },
     }),
   )
@@ -443,6 +445,85 @@ describe('addComponents', () => {
     expect(component).toContain("from '../../lib/utils'")
     expect(component).toContain("from '../../hooks/use-thai-address-index'")
     expect(component).not.toContain("'@/")
+    expect(await pathExists(path.join(cwd, 'lib/utils.ts'))).toBe(true)
+    expect(await pathExists(path.join(cwd, 'hooks/use-thai-address-index.ts'))).toBe(true)
+  })
+
+  it('address-form writes itself plus its transitive registryDependencies (cascade-select, lib/utils, the index hook) from an empty project', async () => {
+    const cwd = await tempProjectWithConfigV2()
+    await addComponents({ cwd, targets: ['address-form'], yes: true })
+
+    const written = [
+      'app/components/thai-address-form.tsx',
+      'app/components/thai-address-cascade-select.tsx',
+      'lib/utils.ts',
+      'hooks/use-thai-address-index.ts',
+    ]
+    for (const relativePath of written) {
+      expect(await pathExists(path.join(cwd, relativePath))).toBe(true)
+    }
+
+    const logged = (console.log as ReturnType<typeof vi.fn>).mock.calls.map((call) => call.join(' ')).join('\n')
+    const wroteCount = written.filter((relativePath) => logged.includes(`Wrote ${relativePath}.`)).length
+    expect(wroteCount).toBe(written.length)
+  })
+
+  it("address-form's scaffolded ./thai-address-cascade-select import survives rewriteTemplateImports byte-for-byte, while its @/lib import is rewritten to a relative path", async () => {
+    const cwd = await tempProjectWithConfigV2() // componentDir 'app/components', libDir 'lib', hooksDir 'hooks'
+    await addComponents({ cwd, targets: ['address-form'], yes: true })
+
+    const content = await readFile(path.join(cwd, 'app/components/thai-address-form.tsx'), 'utf8')
+    // The same-directory shadcn-style file reuse import is not an alias import and must be
+    // left completely untouched by the @/lib and @/hooks rewrite passes.
+    expect(content).toContain("from './thai-address-cascade-select'")
+    // The @/lib/utils alias import, by contrast, must be rewritten to a relative path pointing
+    // at this project's configured libDir.
+    expect(content).toContain("from '../../lib/utils'")
+    expect(content).not.toContain("'@/")
+  })
+
+  it('address-display alone writes only itself plus lib/utils — not the cascade select or the index hook', async () => {
+    const cwd = await tempProjectWithConfigV2()
+    await addComponents({ cwd, targets: ['address-display'], yes: true })
+
+    expect(await pathExists(path.join(cwd, 'app/components/thai-address-display.tsx'))).toBe(true)
+    expect(await pathExists(path.join(cwd, 'lib/utils.ts'))).toBe(true)
+    expect(await pathExists(path.join(cwd, 'app/components/thai-address-cascade-select.tsx'))).toBe(false)
+    expect(await pathExists(path.join(cwd, 'hooks/use-thai-address-index.ts'))).toBe(false)
+  })
+
+  it('address-form-field prompts to install its missing react-hook-form dependency alongside the other missing packages', async () => {
+    const cwd = await tempDir()
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: {} }))
+    await writeConfig(
+      {
+        typescript: true,
+        componentDir: 'app/components',
+        libDir: 'lib',
+        hooksDir: 'hooks',
+        packageManager: 'npm',
+        tailwind: { version: 4, css: 'app/globals.css' },
+        registryVersion: '0.1.0',
+      },
+      cwd,
+    )
+
+    await addComponents({ cwd, targets: ['address-form-field'], yes: true })
+
+    expect(mockedInstallPackage).toHaveBeenCalledTimes(1)
+    const [specs, options] = mockedInstallPackage.mock.calls[0]
+    expect(specs).toEqual(
+      expect.arrayContaining(['thaizip@>=0.7.0', '@base-ui/react', 'clsx', 'tailwind-merge', 'react-hook-form']),
+    )
+    expect(options).toEqual({ cwd, pm: 'npm' })
+  })
+
+  it('address-form-field scaffolds the cascade select and its shared files alongside itself', async () => {
+    const cwd = await tempProjectWithConfigV2()
+    await addComponents({ cwd, targets: ['address-form-field'], yes: true })
+
+    expect(await pathExists(path.join(cwd, 'app/components/thai-address-form-field.tsx'))).toBe(true)
+    expect(await pathExists(path.join(cwd, 'app/components/thai-address-cascade-select.tsx'))).toBe(true)
     expect(await pathExists(path.join(cwd, 'lib/utils.ts'))).toBe(true)
     expect(await pathExists(path.join(cwd, 'hooks/use-thai-address-index.ts'))).toBe(true)
   })

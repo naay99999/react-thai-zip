@@ -68,12 +68,17 @@ superpowers/                     # SDD specs, plans, and verification reports (t
 
 ## Component registry
 
-Components are resolved by name or alias in `src/registry.ts` against the `RegistryItem` model (multi-file: each item lists one or more `TemplateFile`s with their own target directory, plus `dependencies` and `registryDependencies`). Four registry items exist; only the two `component`-type ones are directly selectable (via `add [target]` or the interactive multiselect / `--help` listing) — the `lib` and `hook` items are pulled in transitively:
+Components are resolved by name or alias in `src/registry.ts` against the `RegistryItem` model (multi-file: each item lists one or more `TemplateFile`s with their own target directory, plus `dependencies` and `registryDependencies`). Seven registry items exist; only the five `component`-type ones are directly selectable (via `add [target]` or the interactive multiselect / `--help` listing) — the `lib` and `hook` items are pulled in transitively:
 
 - `autocomplete` / `thai-address-autocomplete` / `ThaiAddressAutocomplete` — `component`; `registryDependencies: ['utils', 'use-thai-address-index']`
 - `cascade` / `cascade-select` / `thai-address-cascade-select` / `ThaiAddressCascadeSelect` — `component`; `registryDependencies: ['utils', 'use-thai-address-index']`
+- `address-form` / `thai-address-form` / `ThaiAddressForm` — `component`; embeds `ThaiAddressCascadeSelect` by direct relative import (shadcn-style file reuse, not an npm import — both land in `componentDir`) and layers house-number/moo/soi/street free text on top; `registryDependencies: ['utils', 'use-thai-address-index', 'cascade-select']` (the hook is pulled in transitively for the embedded cascade's own use — this file doesn't call it directly)
+- `address-display` / `thai-address-display` / `ThaiAddressDisplay` — `component`; read-only, purely presentational; `registryDependencies: ['utils']` (no hook)
+- `address-form-field` / `thai-address-form-field` / `ThaiAddressFormField` — `component`; a react-hook-form `Controller` wrapper embedding `ThaiAddressCascadeSelect` by the same direct relative import as `address-form`; `registryDependencies: ['utils', 'use-thai-address-index', 'cascade-select']` (same transitive-hook rationale as `address-form`); `dependencies` additionally includes `react-hook-form`
 - `utils` / `cn` — `lib`; writes `<libDir>/utils.ts` (`cn()` via clsx + tailwind-merge)
 - `use-thai-address-index` / `index-hook` — `hook`; writes `<hooksDir>/use-thai-address-index.ts` (loads the bundled thaizip index)
+
+Both `address-form.tsx` and `address-form-field.tsx` import `thai-address-cascade-select.tsx` by plain relative path rather than through the registry/npm system, so nothing validates that coupling at scaffold time: renaming the file, or renaming its `ThaiAddressCascadeSelect`/`ThaiAddressCascadeSelectTexts` exports, must be updated in both `thai-address-form.tsx` and `thai-address-form-field.tsx` in lockstep (each file carries a comment noting this).
 
 `resolveWithDependencies` topologically expands `registryDependencies` (cycle-checked) before any files are written, so `add autocomplete` also writes the `utils` and `use-thai-address-index` files without either needing to be named explicitly. `lib`/`hook` files are protected by default — neither a bare `add` nor `--yes` touches them once present (users hand-edit `lib/utils.ts`), but an explicit `--overwrite` now refreshes them too; `component` files additionally respect the interactive overwrite prompt. `RegistryItem.exportName` supplies the named export for the post-scaffold "import it from" hint when it can't be derived from the (possibly kebab-case) filename.
 
