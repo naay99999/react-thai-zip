@@ -13,19 +13,29 @@ describe('registry', () => {
     ['address-display', 'address-display'],
     ['ThaiAddressDisplay', 'address-display'],
     ['thai-address-display', 'address-display'],
+    ['address-form-field', 'address-form-field'],
+    ['thai-address-form-field', 'address-form-field'],
+    ['ThaiAddressFormField', 'address-form-field'],
   ])('resolves %s to %s', (alias, expected) => {
     expect(resolveRegistryItem(alias)?.name).toBe(expected)
   })
 
-  it('exposes the six supported registry items', () => {
+  it('exposes the seven supported registry items', () => {
     expect(registryItems.map((item) => item.name)).toEqual([
       'autocomplete',
       'cascade-select',
       'address-form',
       'address-display',
+      'address-form-field',
       'utils',
       'use-thai-address-index',
     ])
+  })
+
+  it('address-form-field depends on thaizip + Base UI + react-hook-form and pulls in utils, use-thai-address-index, and cascade-select', () => {
+    const item = resolveRegistryItem('address-form-field')
+    expect(item?.dependencies).toContain('react-hook-form')
+    expect(item?.registryDependencies).toEqual(['utils', 'use-thai-address-index', 'cascade-select'])
   })
 
   it('address-form depends on thaizip + Base UI and pulls in utils, use-thai-address-index, and cascade-select', () => {

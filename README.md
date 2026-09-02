@@ -20,7 +20,7 @@ npx react-thaizip add autocomplete
 ```
 
 - `init` detects your project structure, package manager, and Tailwind version, then writes a `thaizip.config.json` used by `add`.
-- `add autocomplete` installs `thaizip`, `@base-ui/react`, `clsx`, and `tailwind-merge`, then scaffolds 3 files into your project: the component plus its two shared dependencies (`lib/utils.ts` and `hooks/use-thai-address-index.ts`).
+- `add autocomplete` installs `thaizip`, `@base-ui/react`, `clsx`, and `tailwind-merge`, then scaffolds 3 files into your project: the component plus its two shared dependencies (`lib/utils.ts` and `hooks/use-thai-address-index.ts`). `add address-form-field` additionally installs `react-hook-form`.
 
 ```tsx
 import { ThaiAddressAutocomplete } from '@/components/thai-address-autocomplete'
@@ -39,6 +39,7 @@ import { ThaiAddressAutocomplete } from '@/components/thai-address-autocomplete'
 - **`cascade-select`** (`ThaiAddressCascadeSelect`) — province > district > sub-district cascade built on [Base UI](https://base-ui.com/react/components/select)'s `Select` (×3).
 - **`address-form`** (`ThaiAddressForm`) — house number + optional moo/soi/street free text, layered directly on top of `ThaiAddressCascadeSelect` (embedded by file, not by npm import).
 - **`address-display`** (`ThaiAddressDisplay`) — read-only address renderer; no `onValueChange`/`name`/hidden inputs, just formats a `ThaiAddressDisplayValue` you hand it.
+- **`address-form-field`** (`ThaiAddressFormField`) — [react-hook-form](https://react-hook-form.com/) `Controller` wrapper around `ThaiAddressCascadeSelect`.
 
 ```bash
 npx react-thaizip add                         # interactive multiselect
@@ -46,18 +47,23 @@ npx react-thaizip add autocomplete            # or: ThaiAddressAutocomplete
 npx react-thaizip add cascade-select          # or: ThaiAddressCascadeSelect
 npx react-thaizip add address-form            # or: ThaiAddressForm
 npx react-thaizip add address-display         # or: ThaiAddressDisplay
+npx react-thaizip add address-form-field      # or: ThaiAddressFormField
 npx react-thaizip add autocomplete cascade-select  # multiple at once
 ```
 
 Each `add` also requires `thaizip` >= 0.7.0 (the version that added the cascade/enumeration API and bilingual labels the templates rely on) — an older installed version makes `add` exit without writing files.
 
-Both components share the same shape:
+`autocomplete`, `cascade-select`, and `address-form` share the same shape:
 
 - Controlled or uncontrolled `value` / `defaultValue` / `onValueChange` (`ResolvedThaiAddress | null`)
 - `name` — renders 4 hidden inputs for plain `<form>` submission: `${name}-subdistrict`, `-district`, `-province`, `-zipcode`
 - `locale` (`'th'` default or `'en'`) and a `texts` prop to override any label/status message
 - `disabled` / `required` / `onBlur` / `onError`, plus per-part `className` slots
 - A forwarded `ref`
+
+`address-display` is read-only: it takes `value` / `locale` / `mode`, with no `onValueChange`, `name`, or hidden inputs.
+
+`address-form-field` takes react-hook-form's own `control` / `name` / `rules` instead of `value` / `onValueChange`, and renders no hidden inputs — submission goes through react-hook-form's own `handleSubmit`, which reads the form state directly.
 
 <details>
 <summary><strong>Full prop reference</strong></summary>
@@ -111,6 +117,19 @@ Both components share the same shape:
 | `className` | Class name for the root `<address>` element |
 | `lineClassName` | Class name for each row's `<span>` in `'multi-line'` mode |
 | `ref` | Forwarded to the root `<address>` element |
+
+### `ThaiAddressFormField`
+
+| Prop | Purpose |
+|---|---|
+| `control` | react-hook-form's `Control` object, from `useForm()` |
+| `name` | The field path in your form values, e.g. `"address"` |
+| `rules` | react-hook-form validation rules, e.g. `{ required: 'Please select an address' }` — forwarded to `Controller` |
+| `locale` | `'th'` (default) or `'en'` — drives the embedded cascade's option labels and default `texts` |
+| `texts` | `Partial<Texts>` forwarded to the embedded `ThaiAddressCascadeSelect`'s own `texts` prop |
+| `disabled` | Forwarded to the embedded cascade's triggers |
+| `className` / `labelClassName` / `triggerClassName` / `popupClassName` / `itemClassName` | Class-name slots for the wrapper, and the embedded cascade's own label/trigger/popup/item slots |
+| `errorClassName` | Class name for the `role="alert"` validation message shown when `rules` fails |
 
 </details>
 

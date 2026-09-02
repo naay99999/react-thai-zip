@@ -60,6 +60,16 @@ export const registryItems: RegistryItem[] = [
     exportName: 'ThaiAddressDisplay',
   },
   {
+    name: 'address-form-field',
+    description: 'react-hook-form Controller wrapper around the cascade select',
+    aliases: ['address-form-field', 'thai-address-form-field', 'ThaiAddressFormField'],
+    type: 'component',
+    files: [{ source: 'react/ts/thai-address-form-field.tsx', target: { dir: 'componentDir', file: 'thai-address-form-field.tsx' } }],
+    dependencies: ['thaizip', '@base-ui/react', 'react-hook-form'],
+    registryDependencies: ['utils', 'use-thai-address-index', 'cascade-select'],
+    exportName: 'ThaiAddressFormField',
+  },
+  {
     name: 'utils',
     description: 'cn() class-name helper (clsx + tailwind-merge)',
     aliases: ['utils', 'cn'],
