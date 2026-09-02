@@ -40,6 +40,16 @@ export const registryItems: RegistryItem[] = [
     exportName: 'ThaiAddressCascadeSelect',
   },
   {
+    name: 'address-display',
+    description: 'Read-only <address> renderer for a resolved (optionally full) Thai address',
+    aliases: ['address-display', 'thai-address-display', 'ThaiAddressDisplay'],
+    type: 'component',
+    files: [{ source: 'react/ts/thai-address-display.tsx', target: { dir: 'componentDir', file: 'thai-address-display.tsx' } }],
+    dependencies: ['thaizip'],
+    registryDependencies: ['utils'],
+    exportName: 'ThaiAddressDisplay',
+  },
+  {
     name: 'utils',
     description: 'cn() class-name helper (clsx + tailwind-merge)',
     aliases: ['utils', 'cn'],

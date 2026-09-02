@@ -66,10 +66,11 @@ superpowers/                     # SDD specs, plans, and verification reports (t
 
 ## Component registry
 
-Components are resolved by name or alias in `src/registry.ts` against the `RegistryItem` model (multi-file: each item lists one or more `TemplateFile`s with their own target directory, plus `dependencies` and `registryDependencies`). Four registry items exist; only the two `component`-type ones are directly selectable (via `add [target]` or the interactive multiselect / `--help` listing) — the `lib` and `hook` items are pulled in transitively:
+Components are resolved by name or alias in `src/registry.ts` against the `RegistryItem` model (multi-file: each item lists one or more `TemplateFile`s with their own target directory, plus `dependencies` and `registryDependencies`). Five registry items exist; only the three `component`-type ones are directly selectable (via `add [target]` or the interactive multiselect / `--help` listing) — the `lib` and `hook` items are pulled in transitively:
 
 - `autocomplete` / `thai-address-autocomplete` / `ThaiAddressAutocomplete` — `component`; `registryDependencies: ['utils', 'use-thai-address-index']`
 - `cascade` / `cascade-select` / `thai-address-cascade-select` / `ThaiAddressCascadeSelect` — `component`; `registryDependencies: ['utils', 'use-thai-address-index']`
+- `address-display` / `thai-address-display` / `ThaiAddressDisplay` — `component`; read-only, purely presentational; `registryDependencies: ['utils']` (no hook)
 - `utils` / `cn` — `lib`; writes `<libDir>/utils.ts` (`cn()` via clsx + tailwind-merge)
 - `use-thai-address-index` / `index-hook` — `hook`; writes `<hooksDir>/use-thai-address-index.ts` (loads the bundled thaizip index)
 

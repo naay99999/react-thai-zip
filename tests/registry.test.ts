@@ -7,12 +7,27 @@ describe('registry', () => {
     ['ThaiAddressAutocomplete', 'autocomplete'],
     ['cascade', 'cascade-select'],
     ['cascade-select', 'cascade-select'],
+    ['address-display', 'address-display'],
+    ['ThaiAddressDisplay', 'address-display'],
+    ['thai-address-display', 'address-display'],
   ])('resolves %s to %s', (alias, expected) => {
     expect(resolveRegistryItem(alias)?.name).toBe(expected)
   })
 
-  it('exposes the four supported registry items', () => {
-    expect(registryItems.map((item) => item.name)).toEqual(['autocomplete', 'cascade-select', 'utils', 'use-thai-address-index'])
+  it('exposes the five supported registry items', () => {
+    expect(registryItems.map((item) => item.name)).toEqual([
+      'autocomplete',
+      'cascade-select',
+      'address-display',
+      'utils',
+      'use-thai-address-index',
+    ])
+  })
+
+  it('address-display depends on thaizip only and pulls in just utils', () => {
+    const item = resolveRegistryItem('address-display')
+    expect(item?.dependencies).toEqual(['thaizip'])
+    expect(item?.registryDependencies).toEqual(['utils'])
   })
 
   it('returns the .tsx template filename for a component', () => {

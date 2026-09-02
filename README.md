@@ -37,11 +37,13 @@ import { ThaiAddressAutocomplete } from '@/components/thai-address-autocomplete'
 
 - **`autocomplete`** (`ThaiAddressAutocomplete`) — free-text address search built on [Base UI](https://base-ui.com/react/components/combobox)'s `Combobox`.
 - **`cascade-select`** (`ThaiAddressCascadeSelect`) — province > district > sub-district cascade built on [Base UI](https://base-ui.com/react/components/select)'s `Select` (×3).
+- **`address-display`** (`ThaiAddressDisplay`) — read-only address renderer; no `onValueChange`/`name`/hidden inputs, just formats a `ThaiAddressDisplayValue` you hand it.
 
 ```bash
 npx react-thaizip add                         # interactive multiselect
 npx react-thaizip add autocomplete            # or: ThaiAddressAutocomplete
 npx react-thaizip add cascade-select          # or: ThaiAddressCascadeSelect
+npx react-thaizip add address-display         # or: ThaiAddressDisplay
 npx react-thaizip add autocomplete cascade-select  # multiple at once
 ```
 
@@ -82,6 +84,18 @@ Both components share the same shape:
 | `disabled` / `required` / `onBlur` / `onError` / `aria-invalid` | Standard field wiring; `onError` fires if the bundled address index fails to load |
 | `className` / `labelClassName` / `triggerClassName` / `popupClassName` / `itemClassName` | Class-name slots for the wrapper, labels, each select trigger, popup, and each option item |
 | `ref` | Forwarded to the province select's trigger button |
+
+### `ThaiAddressDisplay`
+
+| Prop | Purpose |
+|---|---|
+| `value` | `ThaiAddressDisplayValue \| null` — a `ResolvedThaiAddress` plus optional `houseNo`/`moo`/`soi`/`street`. `null` renders `emptyText` |
+| `locale` | `'th'` (default) or `'en'` — drives the locality label and the default `emptyText` |
+| `mode` | `'single-line'` (default, street + locality joined with `', '`) or `'multi-line'` (two `<span>` rows) |
+| `emptyText` | Overrides the default "no address" text shown when `value` is `null` |
+| `className` | Class name for the root `<address>` element |
+| `lineClassName` | Class name for each row's `<span>` in `'multi-line'` mode |
+| `ref` | Forwarded to the root `<address>` element |
 
 </details>
 
