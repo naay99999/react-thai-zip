@@ -26,7 +26,7 @@ description: รูปแบบ thaizip.config.json v2 และกฎการ�
 
 | ฟิลด์ | ค่าที่ใช้ได้ | ความหมาย |
 | --- | --- | --- |
-| `typescript` | `true` | มีเฉพาะ template TypeScript; `false` ใช้ไม่ได้ |
+| `typescript` | `true` หรือ `false` | ตรวจพบอัตโนมัติตอน `init` จากการมีไฟล์ `tsconfig.json` (ไม่มีการถามผู้ใช้) กำหนดว่า `add` จะเขียนไฟล์เป็น `.tsx`/`.ts` ตามต้นฉบับ (`true`) หรือตัด syntax ของ TypeScript ออกแล้วเขียนเป็น `.jsx`/`.js` แทน (`false`) |
 | `componentDir` | string ที่ไม่ว่าง | ตำแหน่งเขียนไฟล์คอมโพเนนต์ เทียบจากรากโปรเจกต์ |
 | `libDir` | string ที่ไม่ว่าง | ตำแหน่งเขียน `utils.ts`; ค่าเริ่มต้นจาก `init` คือ `lib` |
 | `hooksDir` | string ที่ไม่ว่าง | ตำแหน่งเขียน `use-thai-address-index.ts`; ค่าเริ่มต้นคือ `hooks` |
@@ -83,6 +83,6 @@ Template คอมโพเนนต์ถูกเขียนต้นฉบ�
 
 ## Config รุ่นเก่า
 
-เมื่อ `add` อ่าน config v1 ที่รองรับได้ จะย้ายไฟล์เป็น v2 ในตำแหน่งเดิม โดยเติม `libDir`, `hooksDir` และ Tailwind metadata ที่ตรวจพบ หากตรวจ Tailwind ไม่ได้ migration จะใช้ version `4` และ CSS path ว่าง Config JavaScript (`typescript: false`) และ config ที่มีค่าไม่ถูกต้องจะไม่ถูกย้าย ให้รัน `npx react-thaizip init` ใหม่เพื่อสร้างไฟล์ที่ถูกต้อง
+เมื่อ `add` อ่าน config v1 ที่รองรับได้ จะย้ายไฟล์เป็น v2 ในตำแหน่งเดิม โดยเติม `libDir`, `hooksDir` และ Tailwind metadata ที่ตรวจพบ หากตรวจ Tailwind ไม่ได้ migration จะใช้ version `4` และ CSS path ว่าง config v1 ที่มี `typescript: false` ก็ถูกย้ายได้ตามปกติเช่นกัน (ค่า `typescript` จะถูกเก็บไว้ตามที่มีอยู่ หรือใช้ `true` เป็นค่าเริ่มต้นถ้าไม่มีฟิลด์นี้) มีเพียง config ที่มีรูปแบบไม่ถูกต้องเท่านั้นที่จะไม่ถูกย้าย ให้รัน `npx react-thaizip init` ใหม่เพื่อสร้างไฟล์ที่ถูกต้อง
 
 หาก path หรือ metadata ไม่ตรงกับโปรเจกต์ ดูขั้นตอนกู้คืนที่ [การแก้ปัญหา](/docs/troubleshooting)

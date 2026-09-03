@@ -4,6 +4,7 @@ import { CORE_PACKAGE_NAME, CORE_PACKAGE_VERSION, configExists, getRegistryVersi
 import { detectPM } from '../utils/detectPM.js'
 import { detectProjectStructure } from '../utils/detectProjectStructure.js'
 import { detectTailwind } from '../utils/detectTailwind.js'
+import { detectTypeScript } from '../utils/detectTypeScript.js'
 import { installPackage } from '../utils/install.js'
 import { hasPackageDependency } from '../utils/packageJson.js'
 import { confirm } from '../utils/prompt.js'
@@ -20,8 +21,7 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
   const pm = await detectPM(cwd)
   const project = await detectProjectStructure(cwd)
   const registryVersion = await getRegistryVersion()
-
-  const useTypeScript = true
+  const useTypeScript = await detectTypeScript(cwd)
 
   // Detect Tailwind before prompting for anything, so a missing Tailwind
   // install aborts the run immediately instead of after the user has
@@ -48,6 +48,7 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
   console.log(`  Lib directory: ${libDir}`)
   console.log(`  Hooks directory: ${hooksDir}`)
   console.log(`  Package manager: ${pm}`)
+  console.log(`  Language: ${useTypeScript ? 'TypeScript' : 'JavaScript'}`)
   console.log(`  Tailwind: v${version}${cssPath ? ` (${cssPath})` : ' (no global CSS file found)'}`)
 
   if (!yes) {

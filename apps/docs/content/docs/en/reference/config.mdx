@@ -26,7 +26,7 @@ This example shows every v2 field. Actual values depend on the project and the C
 
 | Field | Accepted value | Meaning |
 | --- | --- | --- |
-| `typescript` | `true` | Only TypeScript templates are available; `false` is invalid. |
+| `typescript` | `true` or `false` | Auto-detected by `init` from the presence of `tsconfig.json` (no prompt). Determines whether `add` writes `.tsx`/`.ts` output as authored (`true`) or strips TypeScript syntax and writes `.jsx`/`.js` output instead (`false`). |
 | `componentDir` | non-empty string | Component destination relative to the project root. |
 | `libDir` | non-empty string | Destination for `utils.ts`; `init` defaults to `lib`. |
 | `hooksDir` | non-empty string | Destination for `use-thai-address-index.ts`; defaults to `hooks`. |
@@ -83,6 +83,6 @@ Existing `lib` and hook files are protected by default, even with `--yes`, and a
 
 ## Legacy configuration
 
-When `add` reads a recognized v1 config, it migrates the file in place to v2 by adding `libDir`, `hooksDir`, and detected Tailwind metadata. If Tailwind detection fails, migration uses version `4` with an empty CSS path. JavaScript configs (`typescript: false`) and invalid configs are not migrated; run `npx react-thaizip init` again to generate a valid file.
+When `add` reads a recognized v1 config, it migrates the file in place to v2 by adding `libDir`, `hooksDir`, and detected Tailwind metadata. If Tailwind detection fails, migration uses version `4` with an empty CSS path. A v1 config with `typescript: false` migrates the same way (the `typescript` value carries over as-is, or defaults to `true` when the field is missing). Only a config with an invalid shape fails to migrate; run `npx react-thaizip init` again to generate a valid file.
 
 If paths or metadata do not match the project, follow the recovery steps in [Troubleshooting](/en/docs/troubleshooting).

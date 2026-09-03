@@ -25,7 +25,7 @@ export type TailwindInfo = {
 }
 
 export type ThaiZipConfig = {
-  typescript: true
+  typescript: boolean
   componentDir: string
   libDir: string
   hooksDir: string
@@ -86,8 +86,8 @@ export function validateConfig(value: unknown): { ok: true; config: ThaiZipConfi
 
   const raw = value as Record<string, unknown>
 
-  if (raw.typescript !== true) {
-    errors.push('typescript: JavaScript templates are no longer supported; re-run init')
+  if (typeof raw.typescript !== 'boolean') {
+    errors.push('typescript: expected a boolean')
   }
   for (const key of DIRECTORY_KEYS) {
     const directory = raw[key]
@@ -130,16 +130,9 @@ export function migrateLegacyConfig(raw: Record<string, unknown>, tailwind: Tail
   if (typeof raw.componentDir !== 'string' || typeof raw.packageManager !== 'string' || 'libDir' in raw) {
     return null
   }
-  // JS templates are no longer supported. Don't silently upgrade a v1 JS
-  // project's config to `typescript: true` — fall through to readConfig's
-  // "invalid config" path, whose errors (from validateConfig on the raw,
-  // unmigrated config) already include the typescript-false message below.
-  if (raw.typescript === false) {
-    return null
-  }
 
   return {
-    typescript: true,
+    typescript: typeof raw.typescript === 'boolean' ? raw.typescript : true,
     componentDir: raw.componentDir,
     libDir: 'lib',
     hooksDir: 'hooks',

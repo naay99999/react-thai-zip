@@ -216,4 +216,77 @@ describe('initProject', () => {
 
     expect(nextStepIndex).toBeGreaterThan(createdIndex)
   })
+
+  it('detects TypeScript when tsconfig.json is present and writes typescript: true to config', async () => {
+    const cwd = await tempProject()
+    await mkdir(path.join(cwd, 'app'), { recursive: true })
+    await writeFile(path.join(cwd, 'tsconfig.json'), '{}')
+    await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+
+    await initProject({ cwd, yes: true })
+
+    const config = JSON.parse(await readFile(path.join(cwd, 'thaizip.config.json'), 'utf8'))
+    expect(config.typescript).toBe(true)
+  })
+
+  it('detects JavaScript when tsconfig.json is absent and writes typescript: false to config', async () => {
+    const cwd = await tempProject()
+    await mkdir(path.join(cwd, 'app'), { recursive: true })
+    await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+
+    await initProject({ cwd, yes: true })
+
+    const config = JSON.parse(await readFile(path.join(cwd, 'thaizip.config.json'), 'utf8'))
+    expect(config.typescript).toBe(false)
+  })
+
+  it('includes TypeScript in the detection summary when tsconfig.json is present', async () => {
+    const cwd = await tempProject()
+    await mkdir(path.join(cwd, 'app'), { recursive: true })
+    await writeFile(path.join(cwd, 'tsconfig.json'), '{}')
+    await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    mockedPrompts.mockResolvedValueOnce({})
+
+    await initProject({ cwd })
+
+    const logCalls = (console.log as ReturnType<typeof vi.fn>).mock
+    const logged = logCalls.calls.map((call) => call.join(' ')).join('\n')
+
+    expect(logged).toContain('Language: TypeScript')
+  })
+
+  it('includes JavaScript in the detection summary when tsconfig.json is absent', async () => {
+    const cwd = await tempProject()
+    await mkdir(path.join(cwd, 'app'), { recursive: true })
+    await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    mockedPrompts.mockResolvedValueOnce({})
+
+    await initProject({ cwd })
+
+    const logCalls = (console.log as ReturnType<typeof vi.fn>).mock
+    const logged = logCalls.calls.map((call) => call.join(' ')).join('\n')
+
+    expect(logged).toContain('Language: JavaScript')
+  })
+
+  it('prints the Language line in the detection summary before the componentDir prompt', async () => {
+    const cwd = await tempProject()
+    await mkdir(path.join(cwd, 'app'), { recursive: true })
+    await writeFile(path.join(cwd, 'tsconfig.json'), '{}')
+    await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
+    await writeFile(path.join(cwd, 'package-lock.json'), '{}')
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    mockedPrompts.mockResolvedValueOnce({})
+
+    await initProject({ cwd })
+
+    const logCalls = (console.log as ReturnType<typeof vi.fn>).mock
+    const languageCallIndex = logCalls.calls.findIndex((call) => call.join(' ').includes('Language:'))
+    expect(languageCallIndex).toBeGreaterThanOrEqual(0)
+    expect(logCalls.invocationCallOrder[languageCallIndex]).toBeLessThan(mockedPrompts.mock.invocationCallOrder[0])
+  })
 })

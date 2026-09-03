@@ -1,9 +1,10 @@
-import { readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import prompts from 'prompts'
 import { installPackage } from '../utils/install.js'
-import { copyTemplate, getTemplatePath } from '../utils/copyTemplate.js'
+import { getTemplatePath } from '../utils/copyTemplate.js'
 import { pathExistsNoFollow } from '../utils/fs.js'
+import { stripTypes, toJsExtension } from '../utils/stripTypes.js'
 import {
   CORE_PACKAGE_NAME,
   CORE_PACKAGE_VERSION,
@@ -124,10 +125,11 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
     let primaryFileCopied = false
 
     for (const [index, file] of item.files.entries()) {
-      const destination = path.join(cwd, config[file.target.dir], file.target.file)
+      const destinationFile = config.typescript ? file.target.file : toJsExtension(file.target.file)
+      const destination = path.join(cwd, config[file.target.dir], destinationFile)
       // Defense in depth behind validateConfig's own path checks: the config
       // could still route the write outside the project through a symlink
-      // planted in the checked-out repo, which mkdir/copyFile follow silently.
+      // planted in the checked-out repo, which mkdir/writeFile follow silently.
       assertPathInsideRoot(destination, cwd)
       await assertRealPathInsideRoot(destination, cwd)
 
@@ -149,13 +151,9 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
         }
       }
 
-      const copied = await copyTemplate({
-        destination,
-        overwrite: allowOverwrite,
-        templatePath: getTemplatePath(file.source),
-      })
+      const shouldWrite = !exists || allowOverwrite
 
-      if (copied === 'skipped') {
+      if (!shouldWrite) {
         const relativePath = path.relative(cwd, destination)
         if (isProtected) {
           console.log(`\nSkipped ${relativePath} (protected; pass --overwrite to update it).`)
@@ -168,6 +166,17 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
           console.log(`\nSkipped ${relativePath} (already exists).`)
         }
       } else {
+        // Single in-memory pipeline: read the authored .tsx/.ts template once,
+        // strip TS syntax for a JS-target project, rewrite @/lib and @/hooks
+        // aliases for component files, then write the result exactly once —
+        // replacing the old copy-then-read-back-then-maybe-rewrite dance.
+        let content = await readFile(getTemplatePath(file.source), 'utf8')
+        if (!config.typescript) content = stripTypes(content, file.source)
+        if (item.type === 'component') content = rewriteTemplateImports(content, path.dirname(destination), config, cwd)
+
+        await mkdir(path.dirname(destination), { recursive: true })
+        await writeFile(destination, content, 'utf8')
+
         anyFileWritten = true
 
         // Report every file that actually lands on disk. Without this, a
@@ -178,20 +187,13 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
         if (index === 0) {
           primaryFileCopied = true
         }
-
-        if (item.type === 'component') {
-          const content = await readFile(destination, 'utf8')
-          const rewritten = rewriteTemplateImports(content, path.dirname(destination), config, cwd)
-          if (rewritten !== content) {
-            await writeFile(destination, rewritten, 'utf8')
-          }
-        }
       }
     }
 
     if (item.type === 'component' && primaryFileCopied) {
       const primaryFile = item.files[0]
-      const destination = path.join(cwd, config[primaryFile.target.dir], primaryFile.target.file)
+      const primaryDestinationFile = config.typescript ? primaryFile.target.file : toJsExtension(primaryFile.target.file)
+      const destination = path.join(cwd, config[primaryFile.target.dir], primaryDestinationFile)
       const importSymbol = item.exportName ?? path.basename(primaryFile.target.file, path.extname(primaryFile.target.file))
       const importPath = `./${path.relative(cwd, destination).replace(/\\/g, '/').replace(/\.(tsx|jsx|ts|js)$/, '')}`
       console.log(`\n${item.name} added successfully.`)

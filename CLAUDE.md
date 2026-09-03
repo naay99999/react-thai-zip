@@ -32,14 +32,16 @@ Use Node **22.9+** locally (CI pins Node 24). `engines.node: ">=18"` describes t
 src/cli.ts                      # Entry point — parses argv/flags, routes to commands, prints help/version
 src/registry.ts                 # RegistryItem model + resolver (multi-file items, aliases, dependencies, registryDependencies, exportName)
 src/commands/
-  add.ts                        # "add" command: resolves targets + transitive registryDependencies, version-gates thaizip, writes files, rewrites @/ imports
-  init.ts                       # "init" command: detects project layout + Tailwind, writes design tokens, writes config
+  add.ts                        # "add" command: resolves targets + transitive registryDependencies, version-gates thaizip, writes files, strips TS for JS-target projects, rewrites @/ imports
+  init.ts                       # "init" command: detects project layout + Tailwind + TypeScript, writes design tokens, writes config
 src/utils/
   config.ts                     # thaizip.config.json (v2) read/write/migrate; CORE_PACKAGE_VERSION, MINIMUM_THAIZIP_VERSION
   detectPM.ts                   # Infers npm/yarn/pnpm/bun from lockfiles (bun.lock, bun.lockb, ...)
   detectProjectStructure.ts     # Decides where to write components (see below)
   detectTailwind.ts             # Detects Tailwind v3 vs v4 and locates the global CSS file
+  detectTypeScript.ts           # Detects TypeScript presence via tsconfig.json; auto-detection for `init`
   tokens.ts                     # Design-token block + Tailwind v3 config snippet + CSS token writer
+  stripTypes.ts                 # Strips TS syntax from templates for JS-target projects; maps .tsx/.ts to .jsx/.js
   install.ts                    # Generic package install helper
   copyTemplate.ts               # Copies template files to the destination directory
   rewriteImports.ts             # Rewrites templates' authored `@/lib/*` and `@/hooks/*` imports to relative paths at scaffold time
@@ -49,7 +51,7 @@ src/utils/
   semver.ts                     # Minimal semver comparison used for the thaizip version gate
   prompt.ts                     # Confirm-prompt helper (respects --yes)
 templates/react/
-  ts/                           # TypeScript component templates (TS-only; no JS templates)
+  ts/                           # TypeScript component templates (TS-authored; JS output derived via stripTypes at scaffold time)
     thai-address-autocomplete.tsx    # Base UI Combobox-based autocomplete (imports `@/lib/utils` + `@/hooks/use-thai-address-index`)
     thai-address-cascade-select.tsx  # Base UI Select ×3 cascade (imports `@/lib/utils` + `@/hooks/use-thai-address-index`)
     thai-address-form.tsx            # house-no/moo/soi/street + embedded ThaiAddressCascadeSelect (imports `@/lib/utils` + `./thai-address-cascade-select`)
@@ -180,12 +182,17 @@ release-please (`release-please-config.json` + `.release-please-manifest.json`, 
 - `CORE_PACKAGE_VERSION` — the `thaizip` version range (`>=0.7.0`) that `init` installs into the target project. Keep in sync with the published `thaizip` package.
 - `MINIMUM_THAIZIP_VERSION` (`0.7.0`) — the floor `add` enforces against an already-installed `thaizip` before writing components, since the scaffolded templates rely on the cascade/enumeration API and bilingual labels introduced in that version.
 
+## JavaScript scaffold output
+
+All templates are authored in TypeScript (`.tsx`/`.ts` under `templates/react/ts/`) but scaffolded output adapts to the target project's language: `init` auto-detects TypeScript presence via `detectTypeScript` (checking for `tsconfig.json`), and stores the boolean result in `thaizip.config.json`'s `typescript` field. When `add` writes files for a JS-target project (`config.typescript === false`), it runs each file's content through `stripTypes` (via `ts.transpileModule` with `jsx: Preserve`) to remove type annotations, type-only imports, and other TS syntax while preserving JSX and import/export specifiers — then `toJsExtension` renames the destination file (`.tsx` → `.jsx`, `.ts` → `.js`). The rewrite pipeline (`@/lib`/`@/hooks` → relative paths) runs after stripping for component files, so import paths are recomputed for the final `.jsx`/`.js` filenames. TS-target projects skip `stripTypes`/`toJsExtension` and keep `.tsx`/`.ts` filenames; component files still go through the same `@/lib`/`@/hooks` rewrite as JS-target output (see "Template import rewriting" above) — only `lib`/`hook` files are copied byte-for-byte unmodified in TS mode.
+
 ## Build details
 
 - `tsup` bundles `src/cli.ts` → `dist/cli.js` as ESM, prepends `#!/usr/bin/env node`
 - `dts: false` — no type declarations emitted (it's a CLI, not a library)
 - `dist/` and `templates/` are both included in the published npm package
 - `@base-ui/react`, `clsx`, `tailwind-merge`, `react`, `react-dom` are `devDependencies` here (needed to author/typecheck/test the templates and this repo's own RTL tests) — they are never bundled into `dist/`. `add` installs them into the *target* project instead, per registry item's own `dependencies` list.
+- `typescript` is a runtime `dependency` (not a `devDependency`) because `src/utils/stripTypes.ts` imports it from `src/` to strip TS syntax for JS-target scaffolds — moving it back to `devDependencies` would silently break JS-target `add` in the published CLI while every local check (tests, both typechecks, build, the CI symlink smoke test) still passes, the same class of silent-only-on-publish gotcha as the `isEntryPoint` symlink issue below.
 - Tests need Node ≥22.9 (jsdom 30's undici needs `util.markAsUncloneable`) even though `package.json` `engines` says `>=18` — CI pins Node 24; match that locally if `npm test` fails to start.
 - `src/cli.ts`'s self-invocation check (`isEntryPoint`) resolves `process.argv[1]` through `realpath` before comparing to `import.meta.url`. This is required, not incidental: npm/npx/yarn/pnpm always invoke a package's `bin` entry through a symlink, and a naive direct comparison silently no-ops the entire CLI (exit 0, no output) — this shipped broken in every published version through 0.3.1, fixed in 0.3.2. `isEntryPoint` is exported/parameterized specifically so `tests/cli.test.ts` can regression-test the symlink case with a real `fs.symlinkSync` fixture; preserve that shape when touching the entry point.
 - `.github/workflows/ci.yml` has two jobs on pushes to `main` and all PRs: `verify` (`npm test` + both typechecks + `build`, then a smoke test that runs the built `dist/cli.js` through a real symlink to guard against the bug above regressing silently) and `docs` (installs this repo's `node_modules` *and* `apps/docs`'s, then `npm run build` in `apps/docs` — since the docs site imports `templates/react/ts/**/*` directly, see `apps/docs` root `README.md` section). `release-please.yml` handles releases.
