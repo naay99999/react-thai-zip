@@ -49,6 +49,22 @@ describe('ThaiAddressDisplay', () => {
     ).toBeTruthy()
   })
 
+  it('romanizes the street-portion label words to "Moo"/"Soi" under locale="en" — no Thai text leaks in', () => {
+    const value: ThaiAddressDisplayValue = {
+      ...baseAddress,
+      houseNo: '99/1',
+      moo: '5',
+      soi: '1',
+      street: 'Sukhumvit Road',
+    }
+    const { container } = render(<ThaiAddressDisplay value={value} locale="en" />)
+    expect(
+      screen.getByText('99/1 Moo 5 Soi 1 Sukhumvit Road, Bang Rak > Bang Rak > Bangkok 10500'),
+    ).toBeTruthy()
+    // No Thai script anywhere in the rendered output (Thai Unicode block U+0E00–U+0E7F).
+    expect(container.textContent ?? '').not.toMatch(/[฀-๿]/)
+  })
+
   it('omits the street portion entirely when no house-level fields are present (no stray punctuation)', () => {
     const { container } = render(<ThaiAddressDisplay value={baseAddress} />)
     expect(container.querySelector('address')?.textContent).toBe('บางรัก > บางรัก > กรุงเทพมหานคร 10500')

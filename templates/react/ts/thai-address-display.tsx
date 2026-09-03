@@ -47,12 +47,18 @@ function localityLabel(value: ThaiAddressDisplayValue, locale: AddressLocale): s
  * Composes the house-level portion from whichever of houseNo/moo/soi/street are present,
  * skipping each missing/empty segment (and its label word) entirely — never leaving a
  * stray separator behind. Returns `null` when none are present.
+ *
+ * The "หมู่"/"ซอย" label words switch to their standard English transliterations
+ * ("Moo"/"Soi" — the same romanizations Thailand Post and English-language Thai address
+ * forms use, not a translation) under `locale="en"`, so no Thai text leaks into an
+ * English-locale render. `houseNo`/`street` are passed through as authored either way —
+ * they're free text the caller supplies, not this component's own vocabulary.
  */
-function streetPortion(value: ThaiAddressDisplayValue): string | null {
+function streetPortion(value: ThaiAddressDisplayValue, locale: AddressLocale): string | null {
   const parts: string[] = []
   if (value.houseNo) parts.push(value.houseNo)
-  if (value.moo) parts.push(`หมู่ ${value.moo}`)
-  if (value.soi) parts.push(`ซอย${value.soi}`)
+  if (value.moo) parts.push(locale === 'en' ? `Moo ${value.moo}` : `หมู่ ${value.moo}`)
+  if (value.soi) parts.push(locale === 'en' ? `Soi ${value.soi}` : `ซอย${value.soi}`)
   if (value.street) parts.push(value.street)
   return parts.length > 0 ? parts.join(' ') : null
 }
@@ -77,7 +83,7 @@ export function ThaiAddressDisplay({
   }
 
   const locality = localityLabel(value, locale)
-  const street = streetPortion(value)
+  const street = streetPortion(value, locale)
 
   if (mode === 'multi-line') {
     return (

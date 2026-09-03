@@ -3,6 +3,11 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { isEntryPoint, main, parseCliArgs } from '../src/cli.js'
+import { registryItems } from '../src/registry.js'
+
+// Drives the help-listing assertions below from the actual registry instead of a
+// hardcoded subset, so they stay correct as component-type items are added/removed.
+const componentItemNames = registryItems.filter((item) => item.type === 'component').map((item) => item.name)
 
 vi.mock('../src/commands/add.js', () => ({
   addComponents: vi.fn().mockResolvedValue(undefined),
@@ -97,8 +102,9 @@ describe('main flag handling', () => {
 
     const output = log.mock.calls.flat().join('\n')
     expect(output).toContain('react-thaizip add')
-    expect(output).toContain('autocomplete')
-    expect(output).toContain('cascade-select')
+    for (const name of componentItemNames) {
+      expect(output).toContain(name)
+    }
     expect(vi.mocked(addComponents)).not.toHaveBeenCalled()
     log.mockRestore()
   })
@@ -112,8 +118,9 @@ describe('main flag handling', () => {
 
     const output = log.mock.calls.flat().join('\n')
     expect(output).toContain('react-thaizip init')
-    expect(output).not.toContain('autocomplete')
-    expect(output).not.toContain('cascade-select')
+    for (const name of componentItemNames) {
+      expect(output).not.toContain(name)
+    }
     expect(vi.mocked(initProject)).not.toHaveBeenCalled()
     log.mockRestore()
   })
@@ -122,10 +129,11 @@ describe('main flag handling', () => {
     const log = vi.spyOn(console, 'log').mockImplementation(() => {})
     await main(['--help'])
     const output = log.mock.calls.flat().join('\n')
-    const lines = output.split('\n').filter((line) => /^  (autocomplete|cascade-select)\s+/.test(line))
-    expect(lines).toHaveLength(2)
+    const namePattern = componentItemNames.map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
+    const lines = output.split('\n').filter((line) => new RegExp(`^  (${namePattern})\\s+`).test(line))
+    expect(lines).toHaveLength(componentItemNames.length)
     const prefixLengths = lines.map((line) => /^  (\S+)\s+/.exec(line)?.[0].length)
-    expect(prefixLengths[0]).toBe(prefixLengths[1])
+    expect(new Set(prefixLengths).size).toBe(1)
     log.mockRestore()
   })
 })
