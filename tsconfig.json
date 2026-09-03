@@ -20,6 +20,7 @@
     "tests/thai-address-form.test.tsx",
     "tests/thai-address-form-field.test.tsx",
     "tests/thai-address-cascade-select.shadcn.test.tsx",
-    "tests/thai-address-autocomplete.shadcn.test.tsx"
+    "tests/thai-address-autocomplete.shadcn.test.tsx",
+    "tests/thai-address-form.shadcn.test.tsx"
   ]
 }
