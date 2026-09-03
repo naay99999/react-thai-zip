@@ -15,7 +15,14 @@ export function stripTypes(code: string, fileName: string): string {
       jsx: ts.JsxEmit.Preserve,
     },
     fileName,
+    reportDiagnostics: true,
   })
+  if (result.diagnostics && result.diagnostics.length > 0) {
+    const messages = result.diagnostics
+      .map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, ' '))
+      .join('; ')
+    throw new Error(`Failed to strip types from ${fileName}: ${messages}`)
+  }
   return result.outputText
 }
 
