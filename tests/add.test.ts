@@ -414,7 +414,7 @@ describe('addComponents', () => {
     await expect(pathExists(path.join(cwd, 'app/components', 'thai-address-autocomplete.tsx'))).resolves.toBe(true)
   })
 
-  it('rejects a legacy config with typescript: false instead of silently migrating it to TypeScript', async () => {
+  it('accepts and migrates a legacy config with typescript: false', async () => {
     const cwd = await tempDir()
     await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
     await mkdir(path.join(cwd, 'app'), { recursive: true })
@@ -424,8 +424,10 @@ describe('addComponents', () => {
       JSON.stringify({ typescript: false, componentDir: 'app/components', packageManager: 'npm', registryVersion: '0.1.0' }),
     )
 
-    await expect(addComponents({ cwd, targets: ['autocomplete'], yes: true })).rejects.toThrow(/no longer supported/)
-    await expect(pathExists(path.join(cwd, 'app/components', 'thai-address-autocomplete.tsx'))).resolves.toBe(false)
+    await addComponents({ cwd, targets: ['autocomplete'], yes: true })
+    await expect(pathExists(path.join(cwd, 'app/components', 'thai-address-autocomplete.tsx'))).resolves.toBe(true)
+    const config = JSON.parse(await readFile(path.join(cwd, 'thaizip.config.json'), 'utf8'))
+    expect(config.typescript).toBe(false)
   })
 
   it('scaffolds the real utils and use-thai-address-index items into libDir/hooksDir', async () => {

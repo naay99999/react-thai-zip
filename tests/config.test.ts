@@ -79,10 +79,23 @@ describe('validateConfig', () => {
       expect(result.errors.join('\n')).toContain('tailwind.version')
     }
   })
-  it('rejects typescript: false with a migration hint', () => {
+  it('accepts typescript: false as a boolean value', () => {
     const result = validateConfig({ ...v2, typescript: false })
-    expect(result.ok).toBe(false)
-    if (!result.ok) expect(result.errors.join('\n')).toMatch(/no longer supported/)
+    expect(result.ok).toBe(true)
+    if (result.ok) expect(result.config.typescript).toBe(false)
+  })
+
+  it('rejects non-boolean typescript values', () => {
+    const invalidCases = [
+      { ...v2, typescript: 'yes' },
+      { ...v2, typescript: 1 },
+      { ...v2, typescript: undefined },
+    ]
+    for (const testCase of invalidCases) {
+      const result = validateConfig(testCase)
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.errors.join('\n')).toContain('typescript: expected a boolean')
+    }
   })
 })
 
