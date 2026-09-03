@@ -8,6 +8,9 @@ const baseV2Config: ThaiZipConfig = {
   hooksDir: 'hooks',
   packageManager: 'npm',
   tailwind: { version: 4, css: 'app/globals.css' },
+  style: 'vanilla',
+  shadcnUiAlias: '',
+  shadcnUiDir: '',
   registryVersion: '0.1.0',
 }
 
