@@ -20,7 +20,8 @@ import { confirm } from '../utils/prompt.js'
 import { compareVersions, extractVersionAnchor, isVersionAtLeast } from '../utils/semver.js'
 import { rewriteTemplateImports } from '../utils/rewriteImports.js'
 import { assertPathInsideRoot, assertRealPathInsideRoot } from '../utils/pathSafety.js'
-import { registryItems, resolveRegistryItem, resolveWithDependencies, type RegistryItem } from '../registry.js'
+import { registryItems, resolveRegistryItem, resolveWithDependencies, selectVariant, type RegistryItem } from '../registry.js'
+import { ensureShadcnPrimitives } from '../utils/shadcnPrimitives.js'
 import { initProject } from './init.js'
 
 type AddComponentsOptions = {
@@ -71,8 +72,9 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
   }
 
   const resolved = resolveWithDependencies(selected, registry)
+  const variants = resolved.map((item) => ({ item, variant: selectVariant(item, config.style) }))
 
-  const dependencies = resolved.flatMap((item) => item.dependencies)
+  const dependencies = variants.flatMap(({ variant }) => variant.dependencies)
   const missingDependencies = await getMissingDependencies(cwd, dependencies)
 
   // thaizip already being present doesn't mean it's new enough — the
@@ -81,7 +83,7 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
   // before this CLI was updated would otherwise pass the name-only
   // dependency check above and then receive a component that fails to
   // resolve at build time.
-  const needsCorePackage = resolved.some((item) => item.dependencies.includes(CORE_PACKAGE_NAME))
+  const needsCorePackage = variants.some(({ variant }) => variant.dependencies.includes(CORE_PACKAGE_NAME))
   if (needsCorePackage && !missingDependencies.includes(CORE_PACKAGE_NAME)) {
     const versionCheck = await checkCorePackageVersion(cwd)
     if (!versionCheck.ok) {
@@ -119,12 +121,24 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
     }
   }
 
+  if (config.style === 'shadcn') {
+    const shadcnPrimitives = Array.from(new Set(variants.flatMap(({ variant }) => variant.shadcnPrimitives)))
+    if (shadcnPrimitives.length > 0) {
+      await ensureShadcnPrimitives(shadcnPrimitives, {
+        cwd,
+        pm: config.packageManager,
+        uiDir: config.shadcnUiDir,
+        yes: Boolean(yes),
+      })
+    }
+  }
+
   let anyFileWritten = false
 
-  for (const item of resolved) {
+  for (const { item, variant } of variants) {
     let primaryFileCopied = false
 
-    for (const [index, file] of item.files.entries()) {
+    for (const [index, file] of variant.files.entries()) {
       const destinationFile = config.typescript ? file.target.file : toJsExtension(file.target.file)
       const destination = path.join(cwd, config[file.target.dir], destinationFile)
       // Defense in depth behind validateConfig's own path checks: the config
@@ -191,7 +205,7 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
     }
 
     if (item.type === 'component' && primaryFileCopied) {
-      const primaryFile = item.files[0]
+      const primaryFile = variant.files[0]
       const primaryDestinationFile = config.typescript ? primaryFile.target.file : toJsExtension(primaryFile.target.file)
       const destination = path.join(cwd, config[primaryFile.target.dir], primaryDestinationFile)
       const importSymbol = item.exportName ?? path.basename(primaryFile.target.file, path.extname(primaryFile.target.file))

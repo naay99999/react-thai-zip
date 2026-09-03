@@ -6,6 +6,7 @@ import { addComponents } from '../src/commands/add.js'
 import { getRegistryVersion, writeConfig } from '../src/utils/config.js'
 import { pathExists } from '../src/utils/fs.js'
 import { installPackage } from '../src/utils/install.js'
+import { ensureShadcnPrimitives } from '../src/utils/shadcnPrimitives.js'
 import type { RegistryItem } from '../src/registry.js'
 
 vi.mock('prompts', () => ({
@@ -16,15 +17,27 @@ vi.mock('../src/utils/install.js', () => ({
   installPackage: vi.fn().mockResolvedValue(undefined),
 }))
 
+vi.mock('../src/utils/shadcnPrimitives.js', () => ({
+  ensureShadcnPrimitives: vi.fn().mockResolvedValue(undefined),
+}))
+
 const mockedPrompts = vi.mocked(prompts)
 const mockedInstallPackage = vi.mocked(installPackage)
+const mockedEnsureShadcnPrimitives = vi.mocked(ensureShadcnPrimitives)
 
 async function tempDir() {
   return mkdtemp(path.join(os.tmpdir(), 'react-thaizip-'))
 }
 
 async function tempProjectWithConfigV2(
-  options: { thaizipRange?: string; registryVersion?: string; typescript?: boolean } = {},
+  options: {
+    thaizipRange?: string
+    registryVersion?: string
+    typescript?: boolean
+    style?: 'vanilla' | 'shadcn'
+    shadcnUiAlias?: string
+    shadcnUiDir?: string
+  } = {},
 ) {
   const cwd = await tempDir()
   const thaizipRange = options.thaizipRange ?? '^0.7.0'
@@ -53,9 +66,9 @@ async function tempProjectWithConfigV2(
       hooksDir: 'hooks',
       packageManager: 'npm',
       tailwind: { version: 4, css: 'app/globals.css' },
-      style: 'vanilla',
-      shadcnUiAlias: '',
-      shadcnUiDir: '',
+      style: options.style ?? 'vanilla',
+      shadcnUiAlias: options.shadcnUiAlias ?? '',
+      shadcnUiDir: options.shadcnUiDir ?? '',
       registryVersion: options.registryVersion ?? '0.1.0',
     },
     cwd,
@@ -94,6 +107,8 @@ describe('addComponents', () => {
     mockedPrompts.mockReset()
     mockedInstallPackage.mockReset()
     mockedInstallPackage.mockResolvedValue(undefined)
+    mockedEnsureShadcnPrimitives.mockReset()
+    mockedEnsureShadcnPrimitives.mockResolvedValue(undefined)
   })
 
   afterEach(() => {
@@ -613,6 +628,8 @@ describe('addComponents write-path containment', () => {
     mockedPrompts.mockReset()
     mockedInstallPackage.mockReset()
     mockedInstallPackage.mockResolvedValue(undefined)
+    mockedEnsureShadcnPrimitives.mockReset()
+    mockedEnsureShadcnPrimitives.mockResolvedValue(undefined)
   })
 
   afterEach(() => {
@@ -677,5 +694,64 @@ describe('addComponents write-path containment', () => {
     await addComponents({ cwd, targets: ['widget'], registry: syntheticRegistry })
 
     await expect(pathExists(path.join(cwd, 'real/planted.ts'))).resolves.toBe(false)
+  })
+})
+
+describe('addComponents — shadcn style', () => {
+  // Each test below asserts on mockedEnsureShadcnPrimitives' call count/args,
+  // so its call history must not leak between tests in this block the way it
+  // would if left to accumulate for the whole file.
+  beforeEach(() => {
+    mockedEnsureShadcnPrimitives.mockReset()
+    mockedEnsureShadcnPrimitives.mockResolvedValue(undefined)
+  })
+
+  it('writes the shadcn-variant file and does not install @base-ui/react', async () => {
+    const cwd = await tempProjectWithConfigV2({ style: 'shadcn', shadcnUiAlias: '@/components/ui', shadcnUiDir: 'components/ui' })
+    await mkdir(path.join(cwd, 'components/ui'), { recursive: true })
+    for (const name of ['popover', 'command', 'button']) {
+      await writeFile(path.join(cwd, 'components/ui', `${name}.tsx`), '')
+    }
+
+    await addComponents({ cwd, targets: ['autocomplete'], yes: true })
+
+    const content = await readFile(path.join(cwd, 'app/components', 'thai-address-autocomplete.tsx'), 'utf8')
+    expect(content).toContain("from '@/components/ui/popover'")
+    expect(content).not.toContain('@base-ui/react')
+    expect(mockedInstallPackage).not.toHaveBeenCalledWith(expect.arrayContaining(['@base-ui/react']), expect.anything())
+  })
+
+  it('calls ensureShadcnPrimitives with the union of shadcnPrimitives across the resolved item list', async () => {
+    const cwd = await tempProjectWithConfigV2({ style: 'shadcn', shadcnUiAlias: '@/components/ui', shadcnUiDir: 'components/ui' })
+
+    await addComponents({ cwd, targets: ['address-form'], yes: true })
+
+    expect(mockedEnsureShadcnPrimitives).toHaveBeenCalledTimes(1)
+    const [primitives, options] = mockedEnsureShadcnPrimitives.mock.calls[0]
+    // address-form's own ['input', 'label'] plus cascade-select's ['select', 'label'] (deduped).
+    expect(new Set(primitives)).toEqual(new Set(['input', 'label', 'select']))
+    expect(options).toEqual({ cwd, pm: 'npm', uiDir: 'components/ui', yes: true })
+  })
+
+  it('never calls ensureShadcnPrimitives for a vanilla-style project', async () => {
+    const cwd = await tempProjectWithConfigV2({ style: 'vanilla' })
+
+    await addComponents({ cwd, targets: ['autocomplete'], yes: true })
+
+    expect(mockedEnsureShadcnPrimitives).not.toHaveBeenCalled()
+  })
+
+  it('rewrites @/components/ui/* to a customized alias in the written file', async () => {
+    const cwd = await tempProjectWithConfigV2({ style: 'shadcn', shadcnUiAlias: '@/ui', shadcnUiDir: 'src/ui' })
+    await mkdir(path.join(cwd, 'src/ui'), { recursive: true })
+    for (const name of ['select', 'label']) {
+      await writeFile(path.join(cwd, 'src/ui', `${name}.tsx`), '')
+    }
+
+    await addComponents({ cwd, targets: ['cascade-select'], yes: true })
+
+    const content = await readFile(path.join(cwd, 'app/components', 'thai-address-cascade-select.tsx'), 'utf8')
+    expect(content).toContain("from '@/ui/select'")
+    expect(content).not.toContain('@/components/ui')
   })
 })
