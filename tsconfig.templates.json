@@ -10,7 +10,16 @@
     "types": [],
     "paths": {
       "@/lib/utils": ["./templates/react/ts/lib/utils.ts"],
-      "@/hooks/use-thai-address-index": ["./templates/react/ts/hooks/use-thai-address-index.ts"]
+      "@/hooks/use-thai-address-index": ["./templates/react/ts/hooks/use-thai-address-index.ts"],
+      "@/components/ui/button": ["./templates/react/ts/shadcn/__fixtures__/components/ui/button.tsx"],
+      "@/components/ui/input": ["./templates/react/ts/shadcn/__fixtures__/components/ui/input.tsx"],
+      "@/components/ui/label": ["./templates/react/ts/shadcn/__fixtures__/components/ui/label.tsx"],
+      "@/components/ui/popover": ["./templates/react/ts/shadcn/__fixtures__/components/ui/popover.tsx"],
+      "@/components/ui/select": ["./templates/react/ts/shadcn/__fixtures__/components/ui/select.tsx"],
+      "@/components/ui/command": ["./templates/react/ts/shadcn/__fixtures__/components/ui/command.tsx"],
+      "@/components/ui/dialog": ["./templates/react/ts/shadcn/__fixtures__/components/ui/dialog.tsx"],
+      "@/components/ui/input-group": ["./templates/react/ts/shadcn/__fixtures__/components/ui/input-group.tsx"],
+      "@/components/ui/textarea": ["./templates/react/ts/shadcn/__fixtures__/components/ui/textarea.tsx"]
     }
   },
   "include": [
