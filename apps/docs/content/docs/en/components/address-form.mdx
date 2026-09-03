@@ -1,0 +1,104 @@
+---
+title: Full address form
+description: Capture house number, moo, soi, and street alongside an ordered address selection in one form
+---
+
+import AddressFormDemo from '../../../../components/demos/AddressFormDemo'
+
+`ThaiAddressForm` is for forms that need a full address: house number/moo/soi/street plus sub-district, district, and province. It embeds a [cascade select](/en/docs/components/cascade-select) internally.
+
+## Install
+
+```bash
+npx react-thaizip add address-form
+```
+
+The command adds the component, the embedded `thai-address-cascade-select.tsx` file, `utils`, and the address-index loading hook to the directories recorded in [`thaizip.config.json`](/en/docs/reference/config).
+
+## Basic usage
+
+Import from the location generated in your project:
+
+```tsx
+import { ThaiAddressForm } from '@/components/thai-address-form'
+
+export function AddressField() {
+  return <ThaiAddressForm onValueChange={(address) => console.log(address)} />
+}
+```
+
+`onValueChange` receives `FullThaiAddress | null`. It is only non-null once the house number is filled in and all three cascade levels are selected.
+
+## Thai input
+
+<AddressFormDemo client:visible locale="th" />
+
+## English input
+
+Use `locale="en"` for English labels and options, for both the free-text fields and the embedded cascade select.
+
+<AddressFormDemo client:visible locale="en" />
+
+## Controlled value
+
+Pass `value` to control the whole address, or `defaultValue` to seed it. An in-progress, not-yet-complete cascade selection is never cleared, even while the controlled `value` is `null`.
+
+<AddressFormDemo client:visible locale="th" mode="controlled" showOutput />
+
+## Disabled and invalid states
+
+Pass `disabled` to disable every text field and select, or `aria-invalid` to mark them invalid.
+
+<AddressFormDemo client:visible locale="th" disabled />
+
+<AddressFormDemo client:visible locale="th" invalid />
+
+## Props
+
+### Value
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `value` | `FullThaiAddress \| null` | Controlled value; pass `null` to clear it. |
+| `defaultValue` | `FullThaiAddress \| null` | Uncontrolled seed value; pre-fills both the text fields and the embedded cascade. |
+| `onValueChange` | `(address: FullThaiAddress \| null) => void` | Called once the house number is non-blank and all three levels are selected, or when the value becomes incomplete again. |
+
+### Field
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `name` | `string` | Renders 8 hidden inputs: the cascade's own 4 (`-subdistrict`/`-district`/`-province`/`-zipcode`) plus this component's own 4 (`-houseno`/`-moo`/`-soi`/`-street`). |
+| `locale` | `'th' \| 'en'` | Text and label locale for both this component and the embedded cascade; defaults to `'th'`. |
+| `disabled` | `boolean` | Disables every text field and the embedded cascade. |
+| `required` | `boolean` | Marks the house-number field and the embedded cascade as required (moo/soi/street stay always optional). |
+| `aria-invalid` | `React.AriaAttributes['aria-invalid']` | Marks the four text inputs and the cascade's triggers invalid. |
+| `onBlur` | `React.FocusEventHandler<HTMLInputElement>` | Runs only when the house-number input loses focus. |
+| `onError` | `(error: Error) => void` | Runs if the address index cannot load (handled by the embedded cascade). |
+
+### Text
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `texts` | `Partial<ThaiAddressFormTexts>` | Overrides the house-number/moo/soi/street labels and placeholders. |
+| `cascadeTexts` | `Partial<ThaiAddressCascadeSelectTexts>` | Forwarded as the embedded cascade select's own `texts` prop. |
+
+### Class slots
+
+| Prop | Applied to |
+| --- | --- |
+| `className` | Root wrapper |
+| `labelClassName` | Labels of the text fields and the cascade |
+| `inputClassName` | The house-number/moo/soi/street inputs |
+| `triggerClassName` | The cascade's select triggers and postal-code input |
+| `popupClassName` | The cascade's option popups |
+| `itemClassName` | Each of the cascade's option items |
+
+### Ref
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `ref` | `React.Ref<HTMLInputElement>` | Forwarded to the house-number input. |
+
+## Related guides
+
+See [Forms](/en/docs/guides/forms) to submit address values and [Customization](/en/docs/guides/customization) to change the presentation. For the embedded component on its own, see [cascade select](/en/docs/components/cascade-select).

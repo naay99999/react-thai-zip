@@ -61,7 +61,7 @@ Add multiple targets by separating their names with spaces:
 npx react-thaizip add autocomplete cascade-select
 ```
 
-With no targets, `add` opens an interactive multiselect containing only the two public components:
+With no targets, `add` opens an interactive multiselect containing all five public components:
 
 ```bash
 npx react-thaizip add
@@ -75,6 +75,9 @@ Name matching is case-insensitive.
 | --- | --- |
 | `ThaiAddressAutocomplete` | `autocomplete`, `thai-address-autocomplete`, `ThaiAddressAutocomplete` |
 | `ThaiAddressCascadeSelect` | `cascade`, `cascade-select`, `thai-address-cascade-select`, `ThaiAddressCascadeSelect` |
+| `ThaiAddressForm` | `address-form`, `thai-address-form`, `ThaiAddressForm` |
+| `ThaiAddressDisplay` | `address-display`, `thai-address-display`, `ThaiAddressDisplay` |
+| `ThaiAddressFormField` | `address-form-field`, `thai-address-form-field`, `ThaiAddressFormField` |
 
 Each component automatically pulls in `utils` and the address-index hook as registry dependencies. These internal items are not shown in the multiselect or `--help`, and you do not need to name them.
 

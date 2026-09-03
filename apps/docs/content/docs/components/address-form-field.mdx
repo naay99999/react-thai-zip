@@ -1,0 +1,104 @@
+---
+title: ฟิลด์ที่อยู่สำหรับ react-hook-form
+description: ครอบ cascade select ด้วย Controller ของ react-hook-form เพื่อผูกกับ validation และ state ของฟอร์มที่มีอยู่แล้ว
+---
+
+import AddressFormFieldDemo from '../../../components/demos/AddressFormFieldDemo'
+
+`ThaiAddressFormField` เหมาะกับฟอร์มที่ใช้ [react-hook-form](https://react-hook-form.com/) อยู่แล้วและต้องการผูกที่อยู่เข้ากับ state ของฟอร์มโดยตรง แทนที่จะอ่านค่าจาก hidden inputs รูปแบบ prop ต่างจากคอมโพเนนต์อื่นโดยตั้งใจ: ส่ง `control`/`name`/`rules` เหมือนกับ `useController` ของ react-hook-form เอง และไม่มี `value`/`onValueChange`/hidden inputs
+
+## ติดตั้ง
+
+```bash
+npx react-thaizip add address-form-field
+```
+
+คำสั่งจะเพิ่มคอมโพเนนต์ รวมถึงไฟล์ `thai-address-cascade-select.tsx` ที่ฝังอยู่ภายใน, `utils`, hook สำหรับโหลดดัชนีที่อยู่ ลงในตำแหน่งที่บันทึกไว้ใน [`thaizip.config.json`](/docs/reference/config) และติดตั้ง `react-hook-form` เป็น dependency ใหม่ให้ด้วย
+
+## ใช้งานพื้นฐาน
+
+นำเข้าจากตำแหน่งที่ CLI สร้างในโปรเจกต์ของคุณ พร้อม `useForm` จาก react-hook-form:
+
+```tsx
+import { useForm } from 'react-hook-form'
+import type { ResolvedThaiAddress } from 'thaizip'
+import { ThaiAddressFormField } from '@/components/thai-address-form-field'
+
+type FormValues = {
+  address: ResolvedThaiAddress | null
+}
+
+export function AddressField() {
+  const { control, handleSubmit } = useForm<FormValues>({ defaultValues: { address: null } })
+
+  return (
+    <form onSubmit={handleSubmit((data) => console.log(data.address))}>
+      <ThaiAddressFormField
+        control={control}
+        name="address"
+        rules={{ validate: (value) => value !== null || 'กรุณาเลือกที่อยู่ให้ครบ' }}
+      />
+      <button type="submit">ส่งฟอร์ม</button>
+    </form>
+  )
+}
+```
+
+ฟิลด์ `name` ที่ระบุ (`"address"` ในตัวอย่าง) ต้องมีชนิดค่าเป็น `ResolvedThaiAddress | null` ใน type ของฟอร์ม react-hook-form จะเรียก `handleSubmit` เพื่ออ่านค่าโดยตรง component นี้ไม่ render hidden inputs
+
+## กรอกข้อมูลภาษาไทย
+
+<AddressFormFieldDemo client:visible locale="th" />
+
+## กรอกข้อมูลภาษาอังกฤษ
+
+ใช้ `locale="en"` เพื่อแสดงป้ายและตัวเลือกของ cascade select ที่ฝังอยู่เป็นภาษาอังกฤษ
+
+<AddressFormFieldDemo client:visible locale="en" />
+
+## ตรวจสอบด้วย validation rule
+
+ส่ง `rules` แบบเดียวกับที่ส่งให้ `Controller`/`useController` ของ react-hook-form ตัวอย่างนี้กำหนดให้ต้องเลือกที่อยู่ครบก่อนส่งฟอร์ม ข้อความ error จะแสดงเป็น `<p role="alert">` ใต้ cascade select
+
+<AddressFormFieldDemo client:visible locale="th" required showOutput />
+
+## ปิดใช้งาน
+
+ส่ง `disabled` เพื่อปิดทุก select ใน cascade select ที่ฝังอยู่
+
+<AddressFormFieldDemo client:visible locale="th" disabled />
+
+## Props
+
+### ฟิลด์ของ react-hook-form
+
+| Prop | Type | รายละเอียด |
+| --- | --- | --- |
+| `control` | `Control<TFieldValues>` | ค่า `control` จาก `useForm()` ของ react-hook-form |
+| `name` | `FieldPath<TFieldValues>` | พาธของฟิลด์ในฟอร์ม ต้องมีชนิดค่าเป็น `ResolvedThaiAddress \| null` |
+| `rules` | `Omit<RegisterOptions<TFieldValues, FieldPath<TFieldValues>>, 'valueAsNumber' \| 'valueAsDate' \| 'setValueAs' \| 'disabled'>` | ส่งต่อให้ `Controller` ของ react-hook-form ใช้ตรวจสอบค่า |
+
+### ตัวเลือกและข้อความ
+
+| Prop | Type | รายละเอียด |
+| --- | --- | --- |
+| `locale` | `'th' \| 'en'` | ภาษาของป้ายและตัวเลือกใน cascade select ที่ฝังอยู่; ค่าเริ่มต้นคือ `'th'` |
+| `texts` | `Partial<ThaiAddressCascadeSelectTexts>` | ส่งต่อเป็น `texts` ของ cascade select ที่ฝังอยู่ |
+| `disabled` | `boolean` | ปิดใช้งานทุก select ใน cascade select ที่ฝังอยู่ |
+
+### Class slots
+
+| Prop | ใช้กับ |
+| --- | --- |
+| `className` | `<div>` ที่ครอบ cascade select และข้อความแจ้งเตือน |
+| `labelClassName` | ป้ายกำกับของ cascade select |
+| `triggerClassName` | select trigger และช่องรหัสไปรษณีย์ของ cascade select |
+| `popupClassName` | กล่องตัวเลือกของ cascade select |
+| `itemClassName` | แต่ละตัวเลือกของ cascade select |
+| `errorClassName` | ข้อความแจ้งเตือน `role="alert"` เมื่อ validation ไม่ผ่าน |
+
+Component นี้ไม่รับ `value`/`onValueChange`/`ref`/`name` (สำหรับ hidden input) เหมือนคอมโพเนนต์อื่น เพราะ react-hook-form อ่านและเขียนค่าให้ผ่าน `control`/`name` ที่ส่งเข้ามาแทน
+
+## คู่มือที่เกี่ยวข้อง
+
+ดู [การปรับแต่ง](/docs/guides/customization) สำหรับปรับหน้าตา ถ้าไม่ได้ใช้ react-hook-form ในฟอร์ม ดู [cascade select](/docs/components/cascade-select) หรือ [address form](/docs/components/address-form) ซึ่งใช้ `value`/`onValueChange`/hidden inputs แบบปกติ

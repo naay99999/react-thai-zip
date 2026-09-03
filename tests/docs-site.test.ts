@@ -8,6 +8,9 @@ const requiredDocSlugs = [
   'getting-started.mdx',
   'components/autocomplete.mdx',
   'components/cascade-select.mdx',
+  'components/address-form.mdx',
+  'components/address-display.mdx',
+  'components/address-form-field.mdx',
   'guides/forms.mdx',
   'guides/customization.mdx',
   'reference/cli.mdx',
@@ -88,6 +91,9 @@ describe('documentation site structure', () => {
 
       expect(entries.some((entry) => entry.endsWith('thai-address-autocomplete.tsx'))).toBe(false)
       expect(entries.some((entry) => entry.endsWith('thai-address-cascade-select.tsx'))).toBe(false)
+      expect(entries.some((entry) => entry.endsWith('thai-address-form.tsx'))).toBe(false)
+      expect(entries.some((entry) => entry.endsWith('thai-address-display.tsx'))).toBe(false)
+      expect(entries.some((entry) => entry.endsWith('thai-address-form-field.tsx'))).toBe(false)
     }
   })
 
@@ -104,6 +110,21 @@ describe('documentation site structure', () => {
     expect(cascade).toContain('export default CascadeSelectDemo')
     expect(form).toMatch(/from '@\/thai-address-(autocomplete|cascade-select)'/)
     expect(form).toContain('export default FormDemo')
+  })
+
+  it('address-form/display/form-field demo wrappers import canonical templates through the alias', async () => {
+    const addressForm = await read(`${docsDir}/components/demos/AddressFormDemo.tsx`)
+    const addressDisplay = await read(`${docsDir}/components/demos/AddressDisplayDemo.tsx`)
+    const addressFormField = await read(`${docsDir}/components/demos/AddressFormFieldDemo.tsx`)
+
+    expect(addressForm).toContain("'use client'")
+    expect(addressFormField).toContain("'use client'")
+    expect(addressForm).toContain("from '@/thai-address-form'")
+    expect(addressDisplay).toContain("from '@/thai-address-display'")
+    expect(addressFormField).toContain("from '@/thai-address-form-field'")
+    expect(addressForm).toContain('export default AddressFormDemo')
+    expect(addressDisplay).toContain('export default AddressDisplayDemo')
+    expect(addressFormField).toContain('export default AddressFormFieldDemo')
   })
 
   it('form demo presents the localized current resolved address', async () => {

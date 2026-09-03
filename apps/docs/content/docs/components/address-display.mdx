@@ -1,0 +1,86 @@
+---
+title: แสดงที่อยู่แบบอ่านอย่างเดียว
+description: จัดรูปแบบที่อยู่ไทยที่เลือกไว้แล้วให้เป็นข้อความอ่านง่าย ไม่ต้องโหลดดัชนีที่อยู่
+---
+
+import AddressDisplayDemo from '../../../components/demos/AddressDisplayDemo'
+
+`ThaiAddressDisplay` เหมาะกับหน้าที่ต้องแสดงที่อยู่ที่บันทึกไว้แล้ว เช่นหน้าสรุปคำสั่งซื้อหรือโปรไฟล์ผู้ใช้ เป็นคอมโพเนนต์อ่านอย่างเดียว ไม่มี Base UI และไม่โหลดดัชนีที่อยู่
+
+## ติดตั้ง
+
+```bash
+npx react-thaizip add address-display
+```
+
+คำสั่งจะเพิ่มคอมโพเนนต์และ `utils` ลงในตำแหน่งที่บันทึกไว้ใน [`thaizip.config.json`](/docs/reference/config) เท่านั้น — ต่างจากคอมโพเนนต์อื่น component นี้ไม่ดึง hook สำหรับโหลดดัชนีมาด้วย
+
+## ใช้งานพื้นฐาน
+
+นำเข้าจากตำแหน่งที่ CLI สร้างในโปรเจกต์ของคุณ:
+
+```tsx
+import { ThaiAddressDisplay, type ThaiAddressDisplayValue } from '@/components/thai-address-display'
+
+export function OrderAddress({ address }: { address: ThaiAddressDisplayValue | null }) {
+  return <ThaiAddressDisplay value={address} />
+}
+```
+
+`value` รับที่อยู่ที่ resolve ไว้แล้ว (`ResolvedThaiAddress` บวก `houseNo`/`moo`/`soi`/`street` แบบ optional) หรือ `null` เมื่อยังไม่มีที่อยู่ ซึ่งจะแสดง `emptyText` แทน
+
+## แสดงที่อยู่แบบเต็ม
+
+<AddressDisplayDemo client:visible locale="th" variant="full" />
+
+## แสดงแบบหลายบรรทัด
+
+ใช้ `mode="multi-line"` เพื่อแยกส่วนบ้านเลขที่/หมู่/ซอย/ถนน กับส่วนตำบล-อำเภอ-จังหวัดออกเป็นคนละบรรทัด
+
+<AddressDisplayDemo client:visible locale="th" mode="multi-line" variant="full" />
+
+## แสดงเป็นภาษาอังกฤษ
+
+ใช้ `locale="en"` เพื่อแสดงชื่อภาษาอังกฤษ คำว่า "หมู่"/"ซอย" จะเปลี่ยนเป็นคำทับศัพท์มาตรฐาน "Moo"/"Soi" โดยอัตโนมัติ ส่วนบ้านเลขที่และชื่อถนนแสดงตามที่กรอกไว้เสมอ
+
+<AddressDisplayDemo client:visible locale="en" variant="full" />
+
+## แสดงเมื่อไม่มีบ้านเลขที่
+
+เมื่อ `value` ไม่มี `houseNo`/`moo`/`soi`/`street` เลย จะแสดงเฉพาะตำบล-อำเภอ-จังหวัด
+
+<AddressDisplayDemo client:visible locale="th" variant="minimal" />
+
+## แสดงเมื่อยังไม่มีที่อยู่
+
+ส่ง `value={null}` เพื่อแสดง `emptyText` แทน (ค่าเริ่มต้นคือ "ไม่มีที่อยู่" หรือ "No address" ตาม `locale`)
+
+<AddressDisplayDemo client:visible locale="th" variant="empty" />
+
+## Props
+
+### ค่า
+
+| Prop | Type | รายละเอียด |
+| --- | --- | --- |
+| `value` | `ThaiAddressDisplayValue \| null` | ที่อยู่ที่จะแสดง; `null` จะแสดง `emptyText` แทน (พร็อพเดียวที่จำเป็นต้องส่ง) |
+| `locale` | `'th' \| 'en'` | กำหนดป้ายตำบล-อำเภอ-จังหวัดและ `emptyText` เริ่มต้น; ค่าเริ่มต้นคือ `'th'` |
+| `mode` | `'single-line' \| 'multi-line'` | `'single-line'` (ค่าเริ่มต้น) รวมส่วนบ้านเลขที่กับส่วนตำบล-อำเภอ-จังหวัดด้วย `', '`; `'multi-line'` แยกเป็นสองบรรทัด |
+| `emptyText` | `string` | ข้อความแทนที่เมื่อ `value` เป็น `null`; ค่าเริ่มต้นคือ `'ไม่มีที่อยู่'` (`'No address'` เมื่อ `locale="en"`) |
+
+### Class slots
+
+| Prop | ใช้กับ |
+| --- | --- |
+| `className` | `<address>` หลัก |
+| `lineClassName` | แต่ละบรรทัดในโหมด `'multi-line'` |
+
+### Ref
+
+| Prop | Type | รายละเอียด |
+| --- | --- | --- |
+| `ref` | `React.Ref<HTMLElement>` | ref ที่ส่งต่อไปยัง `<address>` |
+
+## คู่มือที่เกี่ยวข้อง
+
+ดู [การปรับแต่ง](/docs/guides/customization) สำหรับปรับหน้าตา ถ้าต้องการให้ผู้ใช้เลือกหรือแก้ที่อยู่แทนการแสดงอย่างเดียว ดู [address form](/docs/components/address-form) หรือ [cascade select](/docs/components/cascade-select)

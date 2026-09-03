@@ -1,0 +1,86 @@
+---
+title: Read-only address display
+description: Format an already-resolved Thai address as readable text, with no address-index loading
+---
+
+import AddressDisplayDemo from '../../../../components/demos/AddressDisplayDemo'
+
+`ThaiAddressDisplay` is for pages that show an address you already have, such as an order summary or a user profile. It is purely presentational — no Base UI, and no address-index loading.
+
+## Install
+
+```bash
+npx react-thaizip add address-display
+```
+
+The command adds the component and `utils` only, to the directories recorded in [`thaizip.config.json`](/en/docs/reference/config) — unlike the other components, this one does not pull in the address-index loading hook.
+
+## Basic usage
+
+Import from the location generated in your project:
+
+```tsx
+import { ThaiAddressDisplay, type ThaiAddressDisplayValue } from '@/components/thai-address-display'
+
+export function OrderAddress({ address }: { address: ThaiAddressDisplayValue | null }) {
+  return <ThaiAddressDisplay value={address} />
+}
+```
+
+`value` takes an already-resolved address (`ResolvedThaiAddress` plus optional `houseNo`/`moo`/`soi`/`street`), or `null` when there is no address yet, which renders `emptyText` instead.
+
+## Full address
+
+<AddressDisplayDemo client:visible locale="en" variant="full" />
+
+## Multi-line layout
+
+Use `mode="multi-line"` to render the house-number/moo/soi/street portion and the sub-district/district/province portion as separate rows.
+
+<AddressDisplayDemo client:visible locale="en" mode="multi-line" variant="full" />
+
+## Thai output
+
+Use `locale="th"` for Thai names. "หมู่"/"ซอย" automatically become the standard transliterations "Moo"/"Soi" only under `locale="en"` — the house number and street name always render exactly as supplied.
+
+<AddressDisplayDemo client:visible locale="th" variant="full" />
+
+## No house-level fields
+
+When `value` has none of `houseNo`/`moo`/`soi`/`street`, only the sub-district/district/province portion is rendered.
+
+<AddressDisplayDemo client:visible locale="en" variant="minimal" />
+
+## No address yet
+
+Pass `value={null}` to render `emptyText` instead (the default is "No address" or "ไม่มีที่อยู่", based on `locale`).
+
+<AddressDisplayDemo client:visible locale="en" variant="empty" />
+
+## Props
+
+### Value
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `value` | `ThaiAddressDisplayValue \| null` | The address to render; `null` renders `emptyText` instead. The only required prop. |
+| `locale` | `'th' \| 'en'` | Drives the locality label and the default `emptyText`; defaults to `'th'`. |
+| `mode` | `'single-line' \| 'multi-line'` | `'single-line'` (default) joins the street portion and the locality with `', '`; `'multi-line'` renders them as two rows. |
+| `emptyText` | `string` | Replacement text when `value` is `null`; defaults to `'No address'` (`'ไม่มีที่อยู่'` when `locale="th"`). |
+
+### Class slots
+
+| Prop | Applied to |
+| --- | --- |
+| `className` | The root `<address>` |
+| `lineClassName` | Each row in `'multi-line'` mode |
+
+### Ref
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `ref` | `React.Ref<HTMLElement>` | Forwarded to the `<address>` element. |
+
+## Related guides
+
+See [Customization](/en/docs/guides/customization) to change the presentation. To let people choose or edit an address instead of only displaying it, see [address form](/en/docs/components/address-form) or [cascade select](/en/docs/components/cascade-select).

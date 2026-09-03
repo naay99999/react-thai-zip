@@ -1,0 +1,104 @@
+---
+title: react-hook-form address field
+description: Wrap the cascade select in react-hook-form's Controller to bind it to an existing form's validation and state
+---
+
+import AddressFormFieldDemo from '../../../../components/demos/AddressFormFieldDemo'
+
+`ThaiAddressFormField` is for forms that already use [react-hook-form](https://react-hook-form.com/) and want the address bound directly into form state, instead of reading it from hidden inputs. Its prop shape is deliberately different from the other components: pass `control`/`name`/`rules` the same way you would to react-hook-form's own `useController`, and there is no `value`/`onValueChange`/hidden inputs.
+
+## Install
+
+```bash
+npx react-thaizip add address-form-field
+```
+
+The command adds the component, the embedded `thai-address-cascade-select.tsx` file, `utils`, the address-index loading hook, to the directories recorded in [`thaizip.config.json`](/en/docs/reference/config), and installs `react-hook-form` as a new dependency.
+
+## Basic usage
+
+Import from the location generated in your project, along with `useForm` from react-hook-form:
+
+```tsx
+import { useForm } from 'react-hook-form'
+import type { ResolvedThaiAddress } from 'thaizip'
+import { ThaiAddressFormField } from '@/components/thai-address-form-field'
+
+type FormValues = {
+  address: ResolvedThaiAddress | null
+}
+
+export function AddressField() {
+  const { control, handleSubmit } = useForm<FormValues>({ defaultValues: { address: null } })
+
+  return (
+    <form onSubmit={handleSubmit((data) => console.log(data.address))}>
+      <ThaiAddressFormField
+        control={control}
+        name="address"
+        rules={{ validate: (value) => value !== null || 'Please select a complete address.' }}
+      />
+      <button type="submit">Submit</button>
+    </form>
+  )
+}
+```
+
+The `name` you pass (`"address"` above) must have type `ResolvedThaiAddress | null` in the form's value type. react-hook-form's own `handleSubmit` reads the value directly — this component renders no hidden inputs.
+
+## Thai input
+
+<AddressFormFieldDemo client:visible locale="th" />
+
+## English input
+
+Use `locale="en"` for English labels and options in the embedded cascade select.
+
+<AddressFormFieldDemo client:visible locale="en" />
+
+## Validation with a rule
+
+Pass `rules` the same way you would to react-hook-form's `Controller`/`useController`. This example requires a complete address before the form can submit; the error message renders as a `<p role="alert">` below the cascade select.
+
+<AddressFormFieldDemo client:visible locale="en" required showOutput />
+
+## Disabled
+
+Pass `disabled` to disable every select in the embedded cascade.
+
+<AddressFormFieldDemo client:visible locale="en" disabled />
+
+## Props
+
+### react-hook-form fields
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `control` | `Control<TFieldValues>` | The `control` value from react-hook-form's `useForm()`. |
+| `name` | `FieldPath<TFieldValues>` | The form field's path; its value type must be `ResolvedThaiAddress \| null`. |
+| `rules` | `Omit<RegisterOptions<TFieldValues, FieldPath<TFieldValues>>, 'valueAsNumber' \| 'valueAsDate' \| 'setValueAs' \| 'disabled'>` | Forwarded to react-hook-form's `Controller` for validation. |
+
+### Options and text
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `locale` | `'th' \| 'en'` | Label and option locale for the embedded cascade select; defaults to `'th'`. |
+| `texts` | `Partial<ThaiAddressCascadeSelectTexts>` | Forwarded as the embedded cascade select's own `texts` prop. |
+| `disabled` | `boolean` | Disables every select in the embedded cascade select. |
+
+### Class slots
+
+| Prop | Applied to |
+| --- | --- |
+| `className` | The `<div>` wrapping the cascade select and its validation message |
+| `labelClassName` | The cascade select's labels |
+| `triggerClassName` | The cascade select's triggers and postal-code input |
+| `popupClassName` | The cascade select's option popups |
+| `itemClassName` | Each of the cascade select's option items |
+| `errorClassName` | The `role="alert"` validation message shown when validation fails |
+
+This component accepts no `value`/`onValueChange`/`ref`/`name` (for a hidden input) like the other components do — react-hook-form reads and writes the value through the `control`/`name` you pass instead.
+
+## Related guides
+
+See [Customization](/en/docs/guides/customization) to change the presentation. If your form doesn't use react-hook-form, see [cascade select](/en/docs/components/cascade-select) or [address form](/en/docs/components/address-form), which use the usual `value`/`onValueChange`/hidden-input shape.

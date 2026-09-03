@@ -1,0 +1,104 @@
+---
+title: ฟอร์มที่อยู่แบบเต็ม
+description: กรอกบ้านเลขที่ หมู่ ซอย ถนน พร้อมเลือกที่อยู่ตามลำดับชั้นในฟอร์มเดียว
+---
+
+import AddressFormDemo from '../../../components/demos/AddressFormDemo'
+
+`ThaiAddressForm` เหมาะกับฟอร์มที่ต้องการที่อยู่แบบเต็ม คือบ้านเลขที่/หมู่/ซอย/ถนน บวกกับตำบล อำเภอ/เขต และจังหวัด โดยฝัง [cascade select](/docs/components/cascade-select) ไว้ภายในให้แล้ว
+
+## ติดตั้ง
+
+```bash
+npx react-thaizip add address-form
+```
+
+คำสั่งจะเพิ่มคอมโพเนนต์ รวมถึงไฟล์ `thai-address-cascade-select.tsx` ที่ฝังอยู่ภายใน, `utils` และ hook สำหรับโหลดดัชนีที่อยู่ ลงในตำแหน่งที่บันทึกไว้ใน [`thaizip.config.json`](/docs/reference/config)
+
+## ใช้งานพื้นฐาน
+
+นำเข้าจากตำแหน่งที่ CLI สร้างในโปรเจกต์ของคุณ:
+
+```tsx
+import { ThaiAddressForm } from '@/components/thai-address-form'
+
+export function AddressField() {
+  return <ThaiAddressForm onValueChange={(address) => console.log(address)} />
+}
+```
+
+ค่าใน `onValueChange` คือ `FullThaiAddress | null` จะไม่เป็น `null` ก็ต่อเมื่อกรอกบ้านเลขที่แล้วและเลือกที่อยู่ตามลำดับชั้นครบทั้งสามระดับ
+
+## กรอกข้อมูลภาษาไทย
+
+<AddressFormDemo client:visible locale="th" />
+
+## กรอกข้อมูลภาษาอังกฤษ
+
+ใช้ `locale="en"` เพื่อแสดงป้ายกำกับและตัวเลือกเป็นภาษาอังกฤษ ทั้งฟิลด์ข้อความของตัวเองและ cascade select ที่ฝังอยู่
+
+<AddressFormDemo client:visible locale="en" />
+
+## ควบคุมค่าจากภายนอก
+
+ส่ง `value` เพื่อควบคุมค่าทั้งชุด หรือ `defaultValue` เพื่อตั้งค่าเริ่มต้น การเลือกที่อยู่ตามลำดับชั้นที่ยังเลือกไม่ครบจะไม่ถูกล้าง แม้ `value` ที่ควบคุมอยู่จะเป็น `null`
+
+<AddressFormDemo client:visible locale="th" mode="controlled" showOutput />
+
+## ปิดใช้งานและแสดงข้อผิดพลาด
+
+ส่ง `disabled` เพื่อปิดทุกช่องกรอกและทุก select หรือ `aria-invalid` เพื่อทำเครื่องหมายว่าไม่ผ่านการตรวจสอบ
+
+<AddressFormDemo client:visible locale="th" disabled />
+
+<AddressFormDemo client:visible locale="th" invalid />
+
+## Props
+
+### ค่า
+
+| Prop | Type | รายละเอียด |
+| --- | --- | --- |
+| `value` | `FullThaiAddress \| null` | ค่าที่ควบคุมอยู่; ส่ง `null` เพื่อล้าง |
+| `defaultValue` | `FullThaiAddress \| null` | ค่าเริ่มต้นของโหมด uncontrolled เติมทั้งฟิลด์ข้อความและ cascade ที่ฝังอยู่ |
+| `onValueChange` | `(address: FullThaiAddress \| null) => void` | เรียกเมื่อบ้านเลขที่ไม่ว่างและเลือกที่อยู่ครบสามระดับ หรือเมื่อค่ากลับไม่ครบอีกครั้ง |
+
+### ฟิลด์
+
+| Prop | Type | รายละเอียด |
+| --- | --- | --- |
+| `name` | `string` | สร้าง hidden inputs 8 ช่อง: 4 ช่องของ cascade (`-subdistrict`/`-district`/`-province`/`-zipcode`) และ 4 ช่องของตัวเอง (`-houseno`/`-moo`/`-soi`/`-street`) |
+| `locale` | `'th' \| 'en'` | ภาษาของข้อความและป้ายกำกับ ทั้งของตัวเองและ cascade ที่ฝังอยู่; ค่าเริ่มต้นคือ `'th'` |
+| `disabled` | `boolean` | ปิดใช้งานทุกช่องกรอกและ cascade ที่ฝังอยู่ |
+| `required` | `boolean` | กำหนดให้ช่องบ้านเลขที่และ cascade ต้องมีค่า (หมู่/ซอย/ถนนยังคงเป็นตัวเลือกเสมอ) |
+| `aria-invalid` | `React.AriaAttributes['aria-invalid']` | ทำเครื่องหมายช่องข้อความทั้งสี่และ trigger ของ cascade ว่าไม่ผ่านการตรวจสอบ |
+| `onBlur` | `React.FocusEventHandler<HTMLInputElement>` | ทำงานเมื่อช่องบ้านเลขที่สูญเสียโฟกัสเท่านั้น |
+| `onError` | `(error: Error) => void` | ทำงานเมื่อโหลดดัชนีที่อยู่ไม่สำเร็จ (จัดการโดย cascade ที่ฝังอยู่) |
+
+### ข้อความ
+
+| Prop | Type | รายละเอียด |
+| --- | --- | --- |
+| `texts` | `Partial<ThaiAddressFormTexts>` | แทนที่ป้ายกำกับและ placeholder ของบ้านเลขที่/หมู่/ซอย/ถนน |
+| `cascadeTexts` | `Partial<ThaiAddressCascadeSelectTexts>` | ส่งต่อเป็น `texts` ของ cascade select ที่ฝังอยู่ |
+
+### Class slots
+
+| Prop | ใช้กับ |
+| --- | --- |
+| `className` | wrapper หลัก |
+| `labelClassName` | ป้ายกำกับของช่องข้อความและของ cascade |
+| `inputClassName` | ช่องบ้านเลขที่/หมู่/ซอย/ถนน |
+| `triggerClassName` | select trigger และช่องรหัสไปรษณีย์ของ cascade |
+| `popupClassName` | กล่องตัวเลือกของ cascade |
+| `itemClassName` | แต่ละตัวเลือกของ cascade |
+
+### Ref
+
+| Prop | Type | รายละเอียด |
+| --- | --- | --- |
+| `ref` | `React.Ref<HTMLInputElement>` | ref ที่ส่งต่อไปยังช่องบ้านเลขที่ |
+
+## คู่มือที่เกี่ยวข้อง
+
+ดู [การใช้งานร่วมกับฟอร์ม](/docs/guides/forms) สำหรับการส่งค่าที่อยู่ และ [การปรับแต่ง](/docs/guides/customization) สำหรับปรับหน้าตา ส่วนคอมโพเนนต์ที่ฝังอยู่ภายใน ดู [cascade select](/docs/components/cascade-select)

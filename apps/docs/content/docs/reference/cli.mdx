@@ -61,7 +61,7 @@ npx react-thaizip add autocomplete
 npx react-thaizip add autocomplete cascade-select
 ```
 
-ถ้าไม่ระบุชื่อ `add` จะแสดง interactive multiselect ที่มีเฉพาะคอมโพเนนต์สาธารณะสองตัว:
+ถ้าไม่ระบุชื่อ `add` จะแสดง interactive multiselect ที่มีคอมโพเนนต์สาธารณะทั้งห้าตัว:
 
 ```bash
 npx react-thaizip add
@@ -75,6 +75,9 @@ npx react-thaizip add
 | --- | --- |
 | `ThaiAddressAutocomplete` | `autocomplete`, `thai-address-autocomplete`, `ThaiAddressAutocomplete` |
 | `ThaiAddressCascadeSelect` | `cascade`, `cascade-select`, `thai-address-cascade-select`, `ThaiAddressCascadeSelect` |
+| `ThaiAddressForm` | `address-form`, `thai-address-form`, `ThaiAddressForm` |
+| `ThaiAddressDisplay` | `address-display`, `thai-address-display`, `ThaiAddressDisplay` |
+| `ThaiAddressFormField` | `address-form-field`, `thai-address-form-field`, `ThaiAddressFormField` |
 
 แต่ละคอมโพเนนต์ดึง `utils` และ hook สำหรับโหลดดัชนีมาเป็น registry dependencies โดยอัตโนมัติ รายการภายในเหล่านี้ไม่แสดงใน multiselect หรือ `--help` และไม่ต้องระบุชื่อเอง
 
