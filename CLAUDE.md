@@ -93,9 +93,24 @@ Both `address-form.tsx` and `address-form-field.tsx` import `thai-address-cascad
 
 Multiple targets can be passed at once: `npx react-thaizip add autocomplete cascade-select`
 
+Four of the five `component` items — `autocomplete`, `cascade-select`, `address-form`, `address-form-field` — carry an additional `shadcn` block (`files`/`dependencies`/`shadcnPrimitives`) selected by `selectVariant(item, config.style)` instead of the item's own top-level `files`/`dependencies` when `style === 'shadcn'`. Their shadcn-style templates live in a sibling `templates/react/ts/shadcn/` tree (same filenames as the vanilla ones) and compose the target project's own Base UI–backed shadcn/ui primitives (`@/components/ui/*`) instead of raw `@base-ui/react`. `address-display` has no shadcn variant — it's presentational only, no interactive primitive, same file for both styles. `utils`/`use-thai-address-index` are likewise unforked (`registryDependencies` stays identical across styles; only `files`/`dependencies`/`shadcnPrimitives` differ).
+
+Before writing any files, `add` (style `'shadcn'` only) collects the union of `shadcnPrimitives` across the whole resolved item list and runs `npx shadcn@latest add <missing...>` (`ensureShadcnPrimitives` in `src/utils/shadcnPrimitives.ts`) for whichever of the target project's own `@/components/ui/*` files don't exist yet — never passing `-b`/`--base` itself, since the project's own `components.json` already pins the component library. `--yes` on `add` propagates as `-y` to that shadcn CLI invocation too.
+
 ## Template import rewriting
 
 Templates that need `lib`/`hook` helpers are authored against a fixed `@/lib/*` / `@/hooks/*` alias (the shadcn/ui convention) so `tsconfig.templates.json` can typecheck them standalone via `npm run typecheck:templates`. Real user projects rarely have that alias wired up, so `add` rewrites every `@/lib/...` / `@/hooks/...` import in copied **`component`**-type files to a relative path pointing at wherever the user's `thaizip.config.json` actually placed `libDir`/`hooksDir` — `rewriteTemplateImports` in `src/utils/rewriteImports.ts`. It's a regex-based rewrite over quoted specifiers (not a JS/TS parse), so it's only safe to run over trusted, maintainer-authored template content — not arbitrary user files.
+
+Shadcn-style **`component`**-type files additionally use `@/components/ui/*` imports, authored against the shadcn CLI's default alias. Unlike `@/lib`/`@/hooks`, this is never rewritten to a relative path — a `style: 'shadcn'` project has `components.json`, which guarantees the `@` alias already works. Only the bare-specifier prefix itself is swapped, to `config.shadcnUiAlias`, and only when that differs from the default (a project that customized `aliases.ui`).
+
+## Component styles (vanilla vs shadcn)
+
+`react-thaizip` scaffolds against one of two styles, decided once at `init` and recorded in `thaizip.config.json` (`style`):
+
+- **`vanilla`** (default) — raw `@base-ui/react` primitives styled with Tailwind utility classes against shadcn-shaped CSS variable tokens. Works in any Tailwind project.
+- **`shadcn`** — composes the target project's own installed shadcn/ui primitives (`@/components/ui/*`) instead. Detected from `components.json.style`; **only Base UI–backed shadcn projects are supported** (a `base-` style prefix — the shadcn CLI's current default, e.g. `base-nova`). A Radix- or React Aria–backed shadcn project (`radix-`/`aria-` prefix, or a legacy bare style name like `default`/`new-york` from before the 3-way `-b/--base` split existed) is detected but falls back to `style: 'vanilla'`, with `init` printing why. Extending support to those engines is tracked as follow-up work, not implemented yet.
+
+The four shadcn-style templates (everything except `address-display`) are authored and typechecked against real shadcn-generated fixtures under `templates/react/ts/shadcn/__fixtures__/components/ui/` — copies of `npx shadcn@latest add ... -b base` output, not hand-approximated stubs — wired into `tsconfig.templates.json` and `vitest.config.ts` the same way `@/lib/utils`/`@/hooks/use-thai-address-index` already are for the vanilla templates. Like `CORE_PACKAGE_VERSION`, these fixtures are a version snapshot and can drift from a future `shadcn` release; regenerate them the same way (a scratch `create-next-app` + `shadcn init -d` + `shadcn add <items>`) if shadcn's own component internals change in a way that breaks `typecheck:templates`.
 
 ## Write-path containment
 
@@ -181,6 +196,7 @@ release-please (`release-please-config.json` + `.release-please-manifest.json`, 
 
 - `CORE_PACKAGE_VERSION` — the `thaizip` version range (`>=0.7.0`) that `init` installs into the target project. Keep in sync with the published `thaizip` package.
 - `MINIMUM_THAIZIP_VERSION` (`0.7.0`) — the floor `add` enforces against an already-installed `thaizip` before writing components, since the scaffolded templates rely on the cascade/enumeration API and bilingual labels introduced in that version.
+- `style` (`'vanilla' | 'shadcn'`) — auto-detected at `init` from `components.json.style`: a `base-` prefix (the shadcn CLI's current Base UI–backed default, e.g. `base-nova`) sets `'shadcn'`; a `radix-`/`aria-` prefix, a legacy bare style name (`default`/`new-york`), or no `components.json` at all sets `'vanilla'`. No `--style` flag or prompt overrides this — hand-edit the config and re-run `add --overwrite` to change it. `shadcnUiAlias`/`shadcnUiDir` cache the target project's `components.json` `aliases.ui` (import specifier) and its resolved filesystem directory, both `''` when `style === 'vanilla'`.
 
 ## JavaScript scaffold output
 
