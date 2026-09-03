@@ -141,13 +141,13 @@ Tailwind CSS is a **prerequisite**, not something this CLI installs. `init` dete
 
 ## Project structure detection
 
-`detectProjectStructure.ts` decides the component directory:
+`detectProjectStructure.ts` decides the component, lib, and hooks directories together — `libDir`/`hooksDir` follow the same signal as `componentDir` (not independently detected, and no prompt for either — `init.ts` takes them as-is):
 
-| Condition | Component directory |
-|-----------|---------------------|
-| `app/` exists | `app/components/` (Next.js App Router) |
-| `pages/` exists | `components/` (Next.js Pages Router) |
-| Neither | `src/components/` (fallback) |
+| Condition | Component directory | Lib directory | Hooks directory |
+|-----------|---------------------|----------------|------------------|
+| `app/` exists | `app/components/` (Next.js App Router) | `lib/` | `hooks/` |
+| `pages/` exists | `components/` (Next.js Pages Router) | `lib/` | `hooks/` |
+| Neither | `src/components/` (fallback, assumes a `src/` layout) | `src/lib/` | `src/hooks/` |
 
 ## Components
 

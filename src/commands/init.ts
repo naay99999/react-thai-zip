@@ -22,8 +22,6 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
   const registryVersion = await getRegistryVersion()
 
   const useTypeScript = true
-  const libDir = 'lib'
-  const hooksDir = 'hooks'
 
   // Detect Tailwind before prompting for anything, so a missing Tailwind
   // install aborts the run immediately instead of after the user has
@@ -40,11 +38,15 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
   const { version, cssPath } = tailwind
 
   let componentDir = path.relative(cwd, project.directory).replace(/\\/g, '/')
+  const libDir = path.relative(cwd, project.libDir).replace(/\\/g, '/')
+  const hooksDir = path.relative(cwd, project.hooksDir).replace(/\\/g, '/')
 
   // Surface what was detected before any files are written or prompts are
   // answered, so the user can sanity-check the guesses up front.
   console.log('\nDetected project settings:')
   console.log(`  Components directory: ${componentDir}`)
+  console.log(`  Lib directory: ${libDir}`)
+  console.log(`  Hooks directory: ${hooksDir}`)
   console.log(`  Package manager: ${pm}`)
   console.log(`  Tailwind: v${version}${cssPath ? ` (${cssPath})` : ' (no global CSS file found)'}`)
 

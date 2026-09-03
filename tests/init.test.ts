@@ -64,6 +64,19 @@ describe('initProject', () => {
     })
   })
 
+  it('detects src/lib + src/hooks (not root lib/hooks) when the project has no app/ or pages/ directory', async () => {
+    const cwd = await tempProject()
+    await writeFile(path.join(cwd, 'tailwind.config.ts'), '')
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+
+    await initProject({ cwd, yes: true })
+
+    const config = JSON.parse(await readFile(path.join(cwd, 'thaizip.config.json'), 'utf8'))
+    expect(config.componentDir).toBe('src/components')
+    expect(config.libDir).toBe('src/lib')
+    expect(config.hooksDir).toBe('src/hooks')
+  })
+
   it('exits without writing config when Tailwind is absent', async () => {
     const cwd = await tempProject() // no tailwind markers
 

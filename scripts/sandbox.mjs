@@ -65,7 +65,23 @@ const pkg = {
 
 const files = {
   'package.json': `${JSON.stringify(pkg, null, 2)}\n`,
-  'next.config.mjs': `/** @type {import('next').NextConfig} */\nconst config = { reactStrictMode: true };\nexport default config;\n`,
+  'next.config.mjs': `import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const dirname = path.dirname(fileURLToPath(import.meta.url));
+
+/** @type {import('next').NextConfig} */
+const config = {
+  reactStrictMode: true,
+  // Pin the Turbopack/Tailwind workspace root to this app. The monorepo root
+  // (react-thai-zip/) also has its own package-lock.json, so without this Next.js
+  // infers that as the root and scans/watches the whole monorepo instead of just
+  // this app — which corrupts Tailwind's generated CSS with garbled class names
+  // picked up from unrelated binary/minified files outside this directory.
+  turbopack: { root: dirname },
+};
+export default config;
+`,
   'postcss.config.mjs': `const config = {\n  plugins: { '@tailwindcss/postcss': {} },\n};\nexport default config;\n`,
   'tsconfig.json': `${JSON.stringify(
     {
@@ -132,7 +148,7 @@ Next steps — exercise the published npm package end to end:
 
   1. cd apps/sandbox
   2. npx react-thaizip@${npmTag} init --yes
-  3. npx react-thaizip@${npmTag} add autocomplete cascade-select --yes
+  3. npx react-thaizip@${npmTag} add autocomplete cascade-select address-form address-display address-form-field --yes
   4. npm run dev                        # http://localhost:3000
 
 Note: this pulls react-thaizip@${npmTag} from the npm registry, not your local src/ changes.
@@ -145,7 +161,7 @@ Next steps — exercise the CLI end to end:
   1. npm run build                      # repo root — builds dist/cli.js
   2. cd apps/sandbox
   3. node ../../dist/cli.js init --yes
-  4. node ../../dist/cli.js add autocomplete cascade-select --yes
+  4. node ../../dist/cli.js add autocomplete cascade-select address-form address-display address-form-field --yes
   5. npm run dev                        # http://localhost:3000
 
 Tip: run \`npm run sandbox -- --npm\` instead to test the published npm package via npx.
