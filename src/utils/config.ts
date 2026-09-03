@@ -24,6 +24,8 @@ export type TailwindInfo = {
   css: string
 }
 
+export type ComponentStyle = 'vanilla' | 'shadcn'
+
 export type ThaiZipConfig = {
   typescript: boolean
   componentDir: string
@@ -31,6 +33,12 @@ export type ThaiZipConfig = {
   hooksDir: string
   packageManager: PackageManager
   tailwind: TailwindInfo
+  style: ComponentStyle
+  // Import specifier for the target project's shadcn/ui components directory
+  // (e.g. '@/components/ui'), and its resolved project-relative filesystem
+  // directory (e.g. 'src/components/ui'). Both are '' when style === 'vanilla'.
+  shadcnUiAlias: string
+  shadcnUiDir: string
   registryVersion: string
 }
 
@@ -112,6 +120,18 @@ export function validateConfig(value: unknown): { ok: true; config: ThaiZipConfi
       errors.push('tailwind.css: expected string')
     }
   }
+  if (raw.style !== 'vanilla' && raw.style !== 'shadcn') {
+    errors.push("style: expected 'vanilla' or 'shadcn'")
+  }
+  if (typeof raw.shadcnUiAlias !== 'string') {
+    errors.push('shadcnUiAlias: expected a string')
+  }
+  if (typeof raw.shadcnUiDir !== 'string') {
+    errors.push('shadcnUiDir: expected a string')
+  } else if (raw.shadcnUiDir !== '') {
+    const problem = describeUnsafeDirectory(raw.shadcnUiDir)
+    if (problem) errors.push(`shadcnUiDir: ${problem}`)
+  }
   if (typeof raw.registryVersion !== 'string' || raw.registryVersion.length === 0) {
     errors.push('registryVersion: expected non-empty string')
   }
@@ -123,7 +143,7 @@ export function validateConfig(value: unknown): { ok: true; config: ThaiZipConfi
 /**
  * Migrates a v1 thaizip.config.json (componentDir + packageManager, no
  * libDir/hooksDir/tailwind, corePackage instead of a bare registryVersion
- * source of truth) to the v2 shape. Returns null when `raw` doesn't look
+ * source of truth) to the v3 shape. Returns null when `raw` doesn't look
  * like a recognizable v1 config.
  */
 export function migrateLegacyConfig(raw: Record<string, unknown>, tailwind: TailwindInfo): ThaiZipConfig | null {
@@ -138,8 +158,32 @@ export function migrateLegacyConfig(raw: Record<string, unknown>, tailwind: Tail
     hooksDir: 'hooks',
     packageManager: raw.packageManager as PackageManager,
     tailwind,
+    style: 'vanilla',
+    shadcnUiAlias: '',
+    shadcnUiDir: '',
     registryVersion: typeof raw.registryVersion === 'string' ? raw.registryVersion : '',
   }
+}
+
+/**
+ * Migrates a v2 thaizip.config.json (typescript/componentDir/libDir/hooksDir/
+ * packageManager/tailwind/registryVersion, no `style`) to the v3 shape by
+ * backfilling `style: 'vanilla'` (and the empty shadcn alias/dir fields).
+ * Returns null when `raw` doesn't look like a recognizable v2 config (e.g. a
+ * v1 config, which `migrateLegacyConfig` handles instead, or something with
+ * `style` already present but otherwise invalid).
+ */
+export function migrateV2Config(raw: Record<string, unknown>): ThaiZipConfig | null {
+  if (typeof raw.libDir !== 'string' || typeof raw.hooksDir !== 'string' || 'style' in raw) {
+    return null
+  }
+
+  return {
+    ...raw,
+    style: 'vanilla',
+    shadcnUiAlias: '',
+    shadcnUiDir: '',
+  } as ThaiZipConfig
 }
 
 export async function readConfig(cwd = process.cwd(), options?: { tailwind?: TailwindInfo }): Promise<ThaiZipConfig> {
@@ -150,19 +194,15 @@ export async function readConfig(cwd = process.cwd(), options?: { tailwind?: Tai
   if (validated.ok) return validated.config
 
   if (typeof parsed === 'object' && parsed !== null) {
-    const migrated = migrateLegacyConfig(parsed as Record<string, unknown>, options?.tailwind ?? { version: 4, css: '' })
+    const raw = parsed as Record<string, unknown>
+    const migrated = migrateLegacyConfig(raw, options?.tailwind ?? { version: 4, css: '' }) ?? migrateV2Config(raw)
     if (migrated) {
       const revalidated = validateConfig(migrated)
       if (revalidated.ok) {
         await writeConfig(revalidated.config, cwd)
-        console.log('Migrated thaizip.config.json to v2.')
+        console.log('Migrated thaizip.config.json to v3.')
         return revalidated.config
       }
-      // The v1 shape was recognized, but migration produced something that
-      // still fails validation (e.g. an unsupported packageManager, or a
-      // missing registryVersion) — fall through to the same invalid-config
-      // error as if migration had never been attempted, rather than writing
-      // a broken v2 file to disk.
       throw new Error(
         `Invalid thaizip.config.json:\n  - ${revalidated.errors.join('\n  - ')}\nRe-run \`npx react-thaizip init\` to regenerate it.`,
       )
