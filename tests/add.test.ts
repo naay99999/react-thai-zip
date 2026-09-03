@@ -23,7 +23,9 @@ async function tempDir() {
   return mkdtemp(path.join(os.tmpdir(), 'react-thaizip-'))
 }
 
-async function tempProjectWithConfigV2(options: { thaizipRange?: string; registryVersion?: string } = {}) {
+async function tempProjectWithConfigV2(
+  options: { thaizipRange?: string; registryVersion?: string; typescript?: boolean } = {},
+) {
   const cwd = await tempDir()
   const thaizipRange = options.thaizipRange ?? '^0.7.0'
   // Pre-declare every npm dependency the registry items can pull in (thaizip,
@@ -45,7 +47,7 @@ async function tempProjectWithConfigV2(options: { thaizipRange?: string; registr
   )
   await writeConfig(
     {
-      typescript: true,
+      typescript: options.typescript ?? true,
       componentDir: 'app/components',
       libDir: 'lib',
       hooksDir: 'hooks',
@@ -414,7 +416,7 @@ describe('addComponents', () => {
     await expect(pathExists(path.join(cwd, 'app/components', 'thai-address-autocomplete.tsx'))).resolves.toBe(true)
   })
 
-  it('accepts and migrates a legacy config with typescript: false', async () => {
+  it('migrates a legacy config with typescript: false, and a subsequent add scaffolds .jsx/.js files from it', async () => {
     const cwd = await tempDir()
     await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
     await mkdir(path.join(cwd, 'app'), { recursive: true })
@@ -425,9 +427,16 @@ describe('addComponents', () => {
     )
 
     await addComponents({ cwd, targets: ['autocomplete'], yes: true })
-    await expect(pathExists(path.join(cwd, 'app/components', 'thai-address-autocomplete.tsx'))).resolves.toBe(true)
+
     const config = JSON.parse(await readFile(path.join(cwd, 'thaizip.config.json'), 'utf8'))
     expect(config.typescript).toBe(false)
+
+    // The migrated config drove a real scaffold, not just a config rewrite:
+    // the legacy config predates libDir/hooksDir, so they fall back to 'lib'/'hooks'.
+    await expect(pathExists(path.join(cwd, 'app/components', 'thai-address-autocomplete.jsx'))).resolves.toBe(true)
+    await expect(pathExists(path.join(cwd, 'app/components', 'thai-address-autocomplete.tsx'))).resolves.toBe(false)
+    await expect(pathExists(path.join(cwd, 'lib', 'utils.js'))).resolves.toBe(true)
+    await expect(pathExists(path.join(cwd, 'hooks', 'use-thai-address-index.js'))).resolves.toBe(true)
   })
 
   it('scaffolds the real utils and use-thai-address-index items into libDir/hooksDir', async () => {
@@ -449,6 +458,47 @@ describe('addComponents', () => {
     expect(component).not.toContain("'@/")
     expect(await pathExists(path.join(cwd, 'lib/utils.ts'))).toBe(true)
     expect(await pathExists(path.join(cwd, 'hooks/use-thai-address-index.ts'))).toBe(true)
+  })
+
+  it('scaffolds .jsx/.js output with TS syntax stripped and @/lib, @/hooks imports still rewritten for a JS-target config', async () => {
+    const cwd = await tempProjectWithConfigV2({ typescript: false })
+    await addComponents({ cwd, targets: ['autocomplete'], yes: true })
+
+    const componentPath = path.join(cwd, 'app/components/thai-address-autocomplete.jsx')
+    const utilsPath = path.join(cwd, 'lib/utils.js')
+    const hookPath = path.join(cwd, 'hooks/use-thai-address-index.js')
+
+    // Written at the JS-target extension, not the authored .tsx/.ts one.
+    expect(await pathExists(componentPath)).toBe(true)
+    expect(await pathExists(utilsPath)).toBe(true)
+    expect(await pathExists(hookPath)).toBe(true)
+    expect(await pathExists(path.join(cwd, 'app/components/thai-address-autocomplete.tsx'))).toBe(false)
+    expect(await pathExists(path.join(cwd, 'lib/utils.ts'))).toBe(false)
+    expect(await pathExists(path.join(cwd, 'hooks/use-thai-address-index.ts'))).toBe(false)
+
+    const component = await readFile(componentPath, 'utf8')
+    const utils = await readFile(utilsPath, 'utf8')
+    const hook = await readFile(hookPath, 'utf8')
+
+    // No TS-only syntax survives the strip step, for both component and lib/hook files.
+    for (const content of [component, utils, hook]) {
+      expect(content).not.toMatch(/:\s*(string|boolean|number)\b/)
+      expect(content).not.toContain('interface ')
+    }
+
+    // JSX is preserved in the component output.
+    expect(component).toMatch(/<[A-Za-z]/)
+
+    // @/lib and @/hooks aliases were still rewritten to relative paths —
+    // proving strip-then-rewrite ordering, not strip-instead-of-rewrite.
+    expect(component).toContain("from '../../lib/utils'")
+    expect(component).toContain("from '../../hooks/use-thai-address-index'")
+    expect(component).not.toContain("'@/")
+
+    // The "Import it from" hint is extension-free either way, but must be
+    // computed off the .jsx destination, not the authored .tsx one.
+    const logged = (console.log as ReturnType<typeof vi.fn>).mock.calls.map((call) => call.join(' ')).join('\n')
+    expect(logged).toContain("import { ThaiAddressAutocomplete } from './app/components/thai-address-autocomplete'")
   })
 
   it('address-form writes itself plus its transitive registryDependencies (cascade-select, lib/utils, the index hook) from an empty project', async () => {
