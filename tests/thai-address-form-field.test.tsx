@@ -95,6 +95,31 @@ function Harness({ onSubmit, disabled }: { onSubmit: (values: FormValues) => voi
   )
 }
 
+// Same as `Harness`, but with the boolean-shorthand `required: true` rule instead of a custom
+// message string — react-hook-form's built-in validators set `fieldState.error.message` to
+// `''` (not `undefined`) in that case.
+function BooleanRequiredHarness({ onSubmit }: { onSubmit: (values: FormValues) => void }) {
+  const { control, handleSubmit } = useForm<FormValues>({ defaultValues: { address: null } })
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <ThaiAddressFormField control={control} name="address" rules={{ required: true }} />
+      <button type="submit">Submit</button>
+    </form>
+  )
+}
+
+// Deliberately omits `defaultValues` — a real consumer can easily forget to seed this field,
+// leaving `field.value` as `undefined` on first render.
+function NoDefaultValuesHarness({ onSubmit }: { onSubmit: (values: FormValues) => void }) {
+  const { control, handleSubmit } = useForm<FormValues>()
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <ThaiAddressFormField control={control} name="address" />
+      <button type="submit">Submit</button>
+    </form>
+  )
+}
+
 describe('ThaiAddressFormField — react-hook-form Controller wrapper', () => {
   it('selects a full address through the cascade and calls the submit handler with the resolved value', async () => {
     const onSubmit = vi.fn()
@@ -153,5 +178,41 @@ describe('ThaiAddressFormField — react-hook-form Controller wrapper', () => {
 
     await getTriggers()
     expect(container.querySelectorAll('input[type="hidden"]')).toHaveLength(0)
+  })
+
+  it('surfaces a fallback alert message for a boolean `required: true` rule (RHF leaves error.message as an empty string)', async () => {
+    const onSubmit = vi.fn()
+    const user = userEvent.setup()
+    render(<BooleanRequiredHarness onSubmit={onSubmit} />)
+
+    await getTriggers()
+    await user.click(screen.getByRole('button', { name: 'Submit' }))
+
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('ข้อมูลไม่ถูกต้อง'))
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+
+  it('still resolves and submits a full address when the consuming form has no defaultValues for this field', async () => {
+    const onSubmit = vi.fn()
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const user = userEvent.setup()
+    render(<NoDefaultValuesHarness onSubmit={onSubmit} />)
+
+    const { provinceTrigger, districtTrigger, subdistrictTrigger } = await getTriggers()
+    await pickOption(user, provinceTrigger, province.nameTh)
+    await waitFor(() => expect(isDisabled(districtTrigger)).toBe(false))
+    await pickOption(user, districtTrigger, amphure.nameTh)
+    await waitFor(() => expect(isDisabled(subdistrictTrigger)).toBe(false))
+    await pickOption(user, subdistrictTrigger, tambon.nameTh)
+
+    await user.click(screen.getByRole('button', { name: 'Submit' }))
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
+    expect(onSubmit.mock.calls[0][0]).toEqual({ address: expectedAddress })
+    // Guards the underlying `field.value ?? null` normalization: without it, `field.value`
+    // starts as `undefined` and later becomes a real object, which is exactly the shape of
+    // React's "component is changing an uncontrolled input to be controlled" warning.
+    expect(consoleError).not.toHaveBeenCalledWith(expect.stringContaining('uncontrolled'))
+    consoleError.mockRestore()
   })
 })

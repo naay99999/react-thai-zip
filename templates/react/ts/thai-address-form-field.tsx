@@ -13,6 +13,15 @@ import type { ThaiAddressCascadeSelectTexts } from './thai-address-cascade-selec
 
 type AddressLocale = 'th' | 'en'
 
+// Fallback for `fieldState.error.message` when a rule was declared with the boolean shorthand
+// (e.g. `rules={{ required: true }}`) — react-hook-form's built-in validators set `message` to
+// `''` (not `undefined`) in that case, so the `role="alert"` text below must not rely on the
+// message string alone to decide whether to render.
+const DEFAULT_INVALID_TEXT: Record<AddressLocale, string> = {
+  th: 'ข้อมูลไม่ถูกต้อง',
+  en: 'This field is invalid.',
+}
+
 export type ThaiAddressFormFieldProps<TFieldValues extends FieldValues = FieldValues> = {
   control: Control<TFieldValues>
   name: FieldPath<TFieldValues>
@@ -76,8 +85,11 @@ export function ThaiAddressFormField<TFieldValues extends FieldValues = FieldVal
             // RHF's `FieldPath<TFieldValues>` doesn't statically constrain the value type at
             // that path without a much heavier generic helper (out of scope here) — this
             // component is only meant to be pointed at a `ResolvedThaiAddress | null` field, and
-            // this cast documents that assumption.
-            value={field.value as ResolvedThaiAddress | null}
+            // this cast documents that assumption. The `?? null` guards against `field.value`
+            // being `undefined` (e.g. the consumer's `useForm()` omitted `defaultValues` for
+            // this path) — passing `undefined` through would make the embedded cascade mount
+            // uncontrolled and then flip to controlled the moment a real value arrives.
+            value={(field.value as ResolvedThaiAddress | null | undefined) ?? null}
             onValueChange={field.onChange}
             onBlur={field.onBlur}
             // Deliberately not forwarding `field.name` here: `ThaiAddressCascadeSelect` renders 4
@@ -95,9 +107,9 @@ export function ThaiAddressFormField<TFieldValues extends FieldValues = FieldVal
             popupClassName={popupClassName}
             itemClassName={itemClassName}
           />
-          {fieldState.error?.message && (
+          {fieldState.error && (
             <p role="alert" className={cn('text-sm text-destructive', errorClassName)}>
-              {fieldState.error.message}
+              {fieldState.error.message || DEFAULT_INVALID_TEXT[locale ?? 'th']}
             </p>
           )}
         </div>

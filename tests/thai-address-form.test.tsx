@@ -180,6 +180,23 @@ describe('ThaiAddressForm', () => {
     expect(hiddenInput('addr-zipcode').value).toBe(tambon.zipCode)
   })
 
+  it('trims the hidden houseno/moo/soi/street inputs so a native form submit matches onValueChange', async () => {
+    const user = userEvent.setup()
+    render(<ThaiAddressForm name="addr" />)
+
+    await completeCascade(user)
+
+    await user.type(screen.getByLabelText('บ้านเลขที่'), '  99/1  ')
+    await user.type(screen.getByLabelText('หมู่'), '  2  ')
+    await user.type(screen.getByLabelText('ซอย'), '  สุขใจ  ')
+    await user.type(screen.getByLabelText('ถนน'), '  สุขุมวิท  ')
+
+    await waitFor(() => expect(hiddenInput('addr-houseno').value).toBe('99/1'))
+    expect(hiddenInput('addr-moo').value).toBe('2')
+    expect(hiddenInput('addr-soi').value).toBe('สุขใจ')
+    expect(hiddenInput('addr-street').value).toBe('สุขุมวิท')
+  })
+
   it('controlled value prop pre-fills the house-number input and pre-selects the cascade triggers', async () => {
     const value = buildFullAddress()
     render(<ThaiAddressForm value={value} onValueChange={() => {}} />)

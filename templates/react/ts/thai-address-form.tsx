@@ -272,11 +272,14 @@ export function ThaiAddressForm({
       </div>
 
       {name && (
+        // Trimmed to match `computeFull`'s own trimming — otherwise a native `<form>` submit
+        // (the no-JS/progressive-enhancement path these hidden inputs exist for) would post
+        // untrimmed whitespace that `onValueChange`'s `FullThaiAddress` never exposes.
         <>
-          <input type="hidden" name={`${name}-houseno`} value={houseNo} disabled={disabled} />
-          <input type="hidden" name={`${name}-moo`} value={moo} disabled={disabled} />
-          <input type="hidden" name={`${name}-soi`} value={soi} disabled={disabled} />
-          <input type="hidden" name={`${name}-street`} value={street} disabled={disabled} />
+          <input type="hidden" name={`${name}-houseno`} value={houseNo.trim()} disabled={disabled} />
+          <input type="hidden" name={`${name}-moo`} value={moo.trim()} disabled={disabled} />
+          <input type="hidden" name={`${name}-soi`} value={soi.trim()} disabled={disabled} />
+          <input type="hidden" name={`${name}-street`} value={street.trim()} disabled={disabled} />
         </>
       )}
     </div>
