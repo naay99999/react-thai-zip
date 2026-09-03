@@ -3,6 +3,7 @@ import prompts from 'prompts'
 import { CORE_PACKAGE_NAME, CORE_PACKAGE_VERSION, configExists, getRegistryVersion, writeConfig } from '../utils/config.js'
 import { detectPM } from '../utils/detectPM.js'
 import { detectProjectStructure } from '../utils/detectProjectStructure.js'
+import { detectShadcn } from '../utils/detectShadcn.js'
 import { detectTailwind } from '../utils/detectTailwind.js'
 import { detectTypeScript } from '../utils/detectTypeScript.js'
 import { installPackage } from '../utils/install.js'
@@ -22,6 +23,7 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
   const project = await detectProjectStructure(cwd)
   const registryVersion = await getRegistryVersion()
   const useTypeScript = await detectTypeScript(cwd)
+  const shadcnDetection = await detectShadcn(cwd)
 
   // Detect Tailwind before prompting for anything, so a missing Tailwind
   // install aborts the run immediately instead of after the user has
@@ -50,6 +52,16 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
   console.log(`  Package manager: ${pm}`)
   console.log(`  Language: ${useTypeScript ? 'TypeScript' : 'JavaScript'}`)
   console.log(`  Tailwind: v${version}${cssPath ? ` (${cssPath})` : ' (no global CSS file found)'}`)
+
+  if (shadcnDetection.present && shadcnDetection.supported) {
+    console.log(`  Component style: shadcn (components.json, style: ${shadcnDetection.style})`)
+  } else if (shadcnDetection.present) {
+    console.log(
+      `  Component style: vanilla Tailwind (components.json found, style: ${shadcnDetection.style || '(none)'}, not yet supported — see CLAUDE.md)`,
+    )
+  } else {
+    console.log('  Component style: vanilla Tailwind (no components.json found)')
+  }
 
   if (!yes) {
     const directoryResponse = await prompts({
@@ -131,9 +143,9 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
       hooksDir,
       packageManager: pm,
       tailwind: { version, css: cssPath ?? '' },
-      style: 'vanilla',
-      shadcnUiAlias: '',
-      shadcnUiDir: '',
+      style: shadcnDetection.present && shadcnDetection.supported ? 'shadcn' : 'vanilla',
+      shadcnUiAlias: shadcnDetection.present && shadcnDetection.supported ? shadcnDetection.uiAlias : '',
+      shadcnUiDir: shadcnDetection.present && shadcnDetection.supported ? shadcnDetection.uiDir : '',
       registryVersion,
     },
     cwd,
