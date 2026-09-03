@@ -151,7 +151,7 @@ describe('selectVariant', () => {
   it('returns the shadcn override for cascade-select under style: shadcn', () => {
     const variant = selectVariant(resolveRegistryItem('cascade-select')!, 'shadcn')
     expect(variant.dependencies).toEqual(['thaizip'])
-    expect(variant.shadcnPrimitives).toEqual(['select', 'label'])
+    expect(variant.shadcnPrimitives).toEqual(['select', 'label', 'button', 'input'])
   })
 
   it('returns the shadcn override for address-form and address-form-field under style: shadcn', () => {

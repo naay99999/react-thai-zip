@@ -728,8 +728,9 @@ describe('addComponents — shadcn style', () => {
 
     expect(mockedEnsureShadcnPrimitives).toHaveBeenCalledTimes(1)
     const [primitives, options] = mockedEnsureShadcnPrimitives.mock.calls[0]
-    // address-form's own ['input', 'label'] plus cascade-select's ['select', 'label'] (deduped).
-    expect(new Set(primitives)).toEqual(new Set(['input', 'label', 'select']))
+    // address-form's own ['input', 'label'] plus cascade-select's (corrected)
+    // ['select', 'label', 'button', 'input'] (deduped).
+    expect(new Set(primitives)).toEqual(new Set(['input', 'label', 'select', 'button']))
     expect(options).toEqual({ cwd, pm: 'npm', uiDir: 'components/ui', yes: true })
   })
 
