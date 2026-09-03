@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.3.5](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.4...react-thaizip-v0.3.5) (2026-09-03)
+
+
+### Features
+
+* add --npm flag to sandbox script for testing the published package ([7db591a](https://github.com/naay99999/react-thai-zip/commit/7db591a7ed1b763a30a1fdc21b5ad4056467f9a5))
+* add ThaiAddressDisplay registry component ([24f09bb](https://github.com/naay99999/react-thai-zip/commit/24f09bbffd82b540ce5ef6d44fbc0fc49287a70f))
+* add ThaiAddressForm registry component ([fc5d93c](https://github.com/naay99999/react-thai-zip/commit/fc5d93c85413e895caa1a6d689bc959f4002c9b6))
+* add ThaiAddressFormField registry component ([49b51a1](https://github.com/naay99999/react-thai-zip/commit/49b51a12f3beb5e58e159efe33b5f6c7b7d420a9))
+* add TS-stripping and TypeScript detection utils for JS scaffold output ([d0aa0da](https://github.com/naay99999/react-thai-zip/commit/d0aa0da70dbd005863bbc7fbca560ed6b5dfb8cf))
+* allow typescript: false in thaizip.config.json for JS-target scaffolds ([e2baa6f](https://github.com/naay99999/react-thai-zip/commit/e2baa6f6ad2d9ee93fc3a7b4c5723e11b2a4516a))
+* detect target project language (TS/JS) in react-thaizip init ([14a6711](https://github.com/naay99999/react-thai-zip/commit/14a6711f0a1cc11b95fdee43bba1c9cb4545401c))
+* scaffold JavaScript output for JS-target projects in react-thaizip add ([4212444](https://github.com/naay99999/react-thai-zip/commit/4212444e3b07dbef8f3bab3ccea1f0e919f0d81e))
+
+
+### Bug Fixes
+
+* address code-review findings in ThaiAddressForm/FormField templates ([722004c](https://github.com/naay99999/react-thai-zip/commit/722004c93f6df5700686ed18c482b0aaca42e5cb))
+* address final review findings — controlled-mode deadlock, required wiring, add.ts coverage, doc fixes ([31adae6](https://github.com/naay99999/react-thai-zip/commit/31adae68de9c610420d7238b27f54df73766785f))
+* address final review findings — docs accuracy, runtime-dep note, stripTypes diagnostics ([5e3dce8](https://github.com/naay99999/react-thai-zip/commit/5e3dce83faca8a20c3770ed73a7ca65e1047defc))
+* auto-detect libDir/hooksDir like componentDir, pin sandbox turbopack root ([795b1f1](https://github.com/naay99999/react-thai-zip/commit/795b1f1d283ae17ec0129aa665ce97e0129094bd))
+* romanize ThaiAddressDisplay street words under locale="en", document new components in CLAUDE.md, widen cli.test.ts help coverage ([3f87e8b](https://github.com/naay99999/react-thai-zip/commit/3f87e8b74c13e1e07120d45f54a0aa6c8523afa2))
+* stop ThaiAddressFormField from forwarding name to the embedded cascade ([66aeda1](https://github.com/naay99999/react-thai-zip/commit/66aeda1bc477006e4f9f12dd379d9c08e4c8a886))
+
 ## [0.3.4](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.3...react-thaizip-v0.3.4) (2026-08-29)
 
 
