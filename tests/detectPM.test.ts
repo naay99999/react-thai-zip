@@ -1,7 +1,7 @@
 import { mkdtemp, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
-import { detectPM } from '../src/utils/detectPM.js'
+import { detectPM, getPackageManagerCommands } from '../src/utils/detectPM.js'
 
 async function tempDir() {
   return mkdtemp(path.join(os.tmpdir(), 'react-thaizip-'))
@@ -36,5 +36,33 @@ describe('detectPM', () => {
   it('falls back to npm', async () => {
     const cwd = await tempDir()
     await expect(detectPM(cwd)).resolves.toBe('npm')
+  })
+})
+
+describe('getPackageManagerCommands().dlx', () => {
+  // dlx is a distinct "fetch and run a remote package once" family from
+  // exec (which only resolves node_modules/.bin) — see src/utils/detectPM.ts.
+  it('npm: prefixes npx --yes so the fetch prompt is suppressed, flags before the positional package spec', () => {
+    expect(getPackageManagerCommands('npm').dlx(['shadcn@latest', 'add', 'button'])).toEqual([
+      'npx', '--yes', 'shadcn@latest', 'add', 'button',
+    ])
+  })
+
+  it('pnpm: uses pnpm dlx', () => {
+    expect(getPackageManagerCommands('pnpm').dlx(['shadcn@latest', 'add', 'button'])).toEqual([
+      'pnpm', 'dlx', 'shadcn@latest', 'add', 'button',
+    ])
+  })
+
+  it('yarn: uses yarn dlx (Yarn Berry; Yarn Classic v1 has no dlx)', () => {
+    expect(getPackageManagerCommands('yarn').dlx(['shadcn@latest', 'add', 'button'])).toEqual([
+      'yarn', 'dlx', 'shadcn@latest', 'add', 'button',
+    ])
+  })
+
+  it('bun: uses bunx, same as exec', () => {
+    expect(getPackageManagerCommands('bun').dlx(['shadcn@latest', 'add', 'button'])).toEqual([
+      'bunx', 'shadcn@latest', 'add', 'button',
+    ])
   })
 })

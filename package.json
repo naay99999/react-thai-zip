@@ -9,7 +9,8 @@
   "files": [
     "dist",
     "templates",
-    "README.md"
+    "README.md",
+    "!templates/**/__fixtures__/**"
   ],
   "scripts": {
     "build": "tsup",

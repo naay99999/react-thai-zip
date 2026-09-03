@@ -23,3 +23,18 @@ export async function runPackageManagerExec(
     stdio: 'inherit',
   })
 }
+
+// Fetches-and-runs a remote package spec once (e.g. `shadcn@latest add ...`)
+// via the project's own package manager — `npx`/`pnpm dlx`/`yarn dlx`/`bunx`.
+// Distinct from runPackageManagerExec above, which only resolves a locally
+// installed node_modules/.bin binary and cannot fetch an unlisted package.
+export async function runPackageManagerDlx(
+  args: string[],
+  options: { cwd: string; pm: PackageManager },
+): Promise<void> {
+  const command = getPackageManagerCommands(options.pm).dlx(args)
+  await execa(command[0], command.slice(1), {
+    cwd: options.cwd,
+    stdio: 'inherit',
+  })
+}

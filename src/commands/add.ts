@@ -124,12 +124,23 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
   if (config.style === 'shadcn') {
     const shadcnPrimitives = Array.from(new Set(variants.flatMap(({ variant }) => variant.shadcnPrimitives)))
     if (shadcnPrimitives.length > 0) {
-      await ensureShadcnPrimitives(shadcnPrimitives, {
-        cwd,
-        pm: config.packageManager,
-        uiDir: config.shadcnUiDir,
-        yes: Boolean(yes),
-      })
+      try {
+        await ensureShadcnPrimitives(shadcnPrimitives, {
+          cwd,
+          pm: config.packageManager,
+          uiDir: config.shadcnUiDir,
+          yes: Boolean(yes),
+          typescript: config.typescript,
+        })
+      } catch (error) {
+        console.error(`\nFailed to install shadcn primitives (${shadcnPrimitives.join(', ')}).`)
+        console.error(`Run \`npx shadcn@latest add ${shadcnPrimitives.join(' ')}\` manually, then run this command again.`)
+        if (error instanceof Error) {
+          console.error(`\n${error.message}`)
+        }
+        process.exitCode = 1
+        return
+      }
     }
   }
 
@@ -205,6 +216,11 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
     }
 
     if (item.type === 'component' && primaryFileCopied) {
+      // Must read the resolved variant's files, not item.files (the vanilla
+      // set) — otherwise a shadcn-style add would print an import hint for a
+      // filename that isn't guaranteed to match what was actually written.
+      // Every shadcn variant today happens to target the same filename as
+      // its vanilla counterpart, but that's a coincidence, not a guarantee.
       const primaryFile = variant.files[0]
       const primaryDestinationFile = config.typescript ? primaryFile.target.file : toJsExtension(primaryFile.target.file)
       const destination = path.join(cwd, config[primaryFile.target.dir], primaryDestinationFile)

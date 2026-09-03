@@ -2,14 +2,14 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
-import { runPackageManagerExec } from '../src/utils/install.js'
+import { runPackageManagerDlx } from '../src/utils/install.js'
 import { ensureShadcnPrimitives } from '../src/utils/shadcnPrimitives.js'
 
 vi.mock('../src/utils/install.js', () => ({
-  runPackageManagerExec: vi.fn().mockResolvedValue(undefined),
+  runPackageManagerDlx: vi.fn().mockResolvedValue(undefined),
 }))
 
-const mockedExec = vi.mocked(runPackageManagerExec)
+const mockedDlx = vi.mocked(runPackageManagerDlx)
 
 async function tempDir() {
   return mkdtemp(path.join(os.tmpdir(), 'react-thaizip-shadcn-primitives-'))
@@ -22,22 +22,22 @@ describe('ensureShadcnPrimitives', () => {
     await writeFile(path.join(cwd, 'components', 'ui', 'select.tsx'), '')
     await writeFile(path.join(cwd, 'components', 'ui', 'label.tsx'), '')
 
-    mockedExec.mockClear()
-    await ensureShadcnPrimitives(['select', 'label'], { cwd, pm: 'npm', uiDir: 'components/ui', yes: true })
+    mockedDlx.mockClear()
+    await ensureShadcnPrimitives(['select', 'label'], { cwd, pm: 'npm', uiDir: 'components/ui', yes: true, typescript: true })
 
-    expect(mockedExec).not.toHaveBeenCalled()
+    expect(mockedDlx).not.toHaveBeenCalled()
   })
 
-  it('execs only the missing primitives, passing -y when yes is true', async () => {
+  it('execs only the missing primitives, passing -y when yes is true, via runPackageManagerDlx', async () => {
     const cwd = await tempDir()
     await mkdir(path.join(cwd, 'components', 'ui'), { recursive: true })
     await writeFile(path.join(cwd, 'components', 'ui', 'select.tsx'), '')
 
-    mockedExec.mockClear()
-    await ensureShadcnPrimitives(['select', 'label', 'button'], { cwd, pm: 'npm', uiDir: 'components/ui', yes: true })
+    mockedDlx.mockClear()
+    await ensureShadcnPrimitives(['select', 'label', 'button'], { cwd, pm: 'npm', uiDir: 'components/ui', yes: true, typescript: true })
 
-    expect(mockedExec).toHaveBeenCalledTimes(1)
-    expect(mockedExec).toHaveBeenCalledWith(
+    expect(mockedDlx).toHaveBeenCalledTimes(1)
+    expect(mockedDlx).toHaveBeenCalledWith(
       ['shadcn@latest', 'add', 'label', 'button', '-y'],
       { cwd, pm: 'npm' },
     )
@@ -46,10 +46,28 @@ describe('ensureShadcnPrimitives', () => {
   it('omits -y when yes is false, letting the shadcn CLI prompt', async () => {
     const cwd = await tempDir()
 
-    mockedExec.mockClear()
-    await ensureShadcnPrimitives(['popover'], { cwd, pm: 'pnpm', uiDir: 'src/components/ui', yes: false })
+    mockedDlx.mockClear()
+    await ensureShadcnPrimitives(['popover'], { cwd, pm: 'pnpm', uiDir: 'src/components/ui', yes: false, typescript: true })
 
-    expect(mockedExec).toHaveBeenCalledWith(['shadcn@latest', 'add', 'popover'], { cwd, pm: 'pnpm' })
+    expect(mockedDlx).toHaveBeenCalledWith(['shadcn@latest', 'add', 'popover'], { cwd, pm: 'pnpm' })
+  })
+
+  it('goes through runPackageManagerDlx (not a local-bin exec) for npm', async () => {
+    const cwd = await tempDir()
+
+    mockedDlx.mockClear()
+    await ensureShadcnPrimitives(['input'], { cwd, pm: 'npm', uiDir: 'components/ui', yes: true, typescript: true })
+
+    expect(mockedDlx).toHaveBeenCalledWith(['shadcn@latest', 'add', 'input', '-y'], { cwd, pm: 'npm' })
+  })
+
+  it('goes through runPackageManagerDlx (not a local-bin exec) for pnpm', async () => {
+    const cwd = await tempDir()
+
+    mockedDlx.mockClear()
+    await ensureShadcnPrimitives(['input'], { cwd, pm: 'pnpm', uiDir: 'components/ui', yes: true, typescript: true })
+
+    expect(mockedDlx).toHaveBeenCalledWith(['shadcn@latest', 'add', 'input', '-y'], { cwd, pm: 'pnpm' })
   })
 
   it('treats a dangling symlink at the expected path as present (no exec) — same never-follow rule as add.ts', async () => {
@@ -58,9 +76,49 @@ describe('ensureShadcnPrimitives', () => {
     const { symlink } = await import('node:fs/promises')
     await symlink(path.join(cwd, 'nowhere.tsx'), path.join(cwd, 'components', 'ui', 'command.tsx'))
 
-    mockedExec.mockClear()
-    await ensureShadcnPrimitives(['command'], { cwd, pm: 'npm', uiDir: 'components/ui', yes: true })
+    mockedDlx.mockClear()
+    await ensureShadcnPrimitives(['command'], { cwd, pm: 'npm', uiDir: 'components/ui', yes: true, typescript: true })
 
-    expect(mockedExec).not.toHaveBeenCalled()
+    expect(mockedDlx).not.toHaveBeenCalled()
+  })
+
+  describe('typescript option controls the existence-check extension', () => {
+    it('checks for .tsx when typescript is true, ignoring an existing .jsx file', async () => {
+      const cwd = await tempDir()
+      await mkdir(path.join(cwd, 'components', 'ui'), { recursive: true })
+      // Only the .jsx file exists — under typescript: true this must still
+      // count as "missing" because the project expects a .tsx primitive.
+      await writeFile(path.join(cwd, 'components', 'ui', 'select.jsx'), '')
+
+      mockedDlx.mockClear()
+      await ensureShadcnPrimitives(['select'], { cwd, pm: 'npm', uiDir: 'components/ui', yes: true, typescript: true })
+
+      expect(mockedDlx).toHaveBeenCalledWith(['shadcn@latest', 'add', 'select', '-y'], { cwd, pm: 'npm' })
+    })
+
+    it('checks for .jsx when typescript is false, recognizing an existing .jsx file as present', async () => {
+      const cwd = await tempDir()
+      await mkdir(path.join(cwd, 'components', 'ui'), { recursive: true })
+      await writeFile(path.join(cwd, 'components', 'ui', 'select.jsx'), '')
+
+      mockedDlx.mockClear()
+      await ensureShadcnPrimitives(['select'], { cwd, pm: 'npm', uiDir: 'components/ui', yes: true, typescript: false })
+
+      expect(mockedDlx).not.toHaveBeenCalled()
+    })
+
+    it('under typescript: false, a genuinely missing primitive is checked for at the .jsx path, not .tsx', async () => {
+      const cwd = await tempDir()
+      await mkdir(path.join(cwd, 'components', 'ui'), { recursive: true })
+      // Only a .tsx file exists (e.g. leftover from a prior TS-target run) —
+      // under typescript: false this must not count as present, since the
+      // project now expects .jsx.
+      await writeFile(path.join(cwd, 'components', 'ui', 'select.tsx'), '')
+
+      mockedDlx.mockClear()
+      await ensureShadcnPrimitives(['select'], { cwd, pm: 'npm', uiDir: 'components/ui', yes: true, typescript: false })
+
+      expect(mockedDlx).toHaveBeenCalledWith(['shadcn@latest', 'add', 'select', '-y'], { cwd, pm: 'npm' })
+    })
   })
 })
