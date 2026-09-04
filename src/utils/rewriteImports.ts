@@ -12,6 +12,8 @@ const IMPORT_ALIASES: ReadonlyArray<{ pattern: RegExp; dirKey: 'libDir' | 'hooks
   { pattern: /(['"])@\/hooks\/([^'"]+)\1/g, dirKey: 'hooksDir' },
 ]
 
+const SHADCN_UI_PATTERN = /(['"])@\/components\/ui\/([^'"]+)\1/g
+
 /**
  * Rewrites `@/lib/*` and `@/hooks/*` import specifiers in `content` to
  * relative paths from `destinationDir` to `<cwd>/<config.libDir|hooksDir>/*`
@@ -38,6 +40,21 @@ export function rewriteTemplateImports(content: string, destinationDir: string, 
       return `${quote}${escapeStringLiteral(relative, quote)}${quote}`
     })
   }
+
+  // @/components/ui/* is a bare specifier, not a filesystem path — unlike
+  // @/lib and @/hooks above, it's never converted to a relative path. Left
+  // untouched when the project uses the default alias (the common case);
+  // only the prefix itself is swapped for a project that customized
+  // components.json's aliases.ui, and the result is still escaped for the
+  // surrounding quote the same way, since it still lands inside a string
+  // literal in the scaffolded file.
+  if (config.shadcnUiAlias && config.shadcnUiAlias !== '@/components/ui') {
+    result = result.replace(SHADCN_UI_PATTERN, (_match, quote: string, rest: string) => {
+      const specifier = `${config.shadcnUiAlias}/${rest}`
+      return `${quote}${escapeStringLiteral(specifier, quote)}${quote}`
+    })
+  }
+
   return result
 }
 

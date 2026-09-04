@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { registryItems, resolveRegistryItem, resolveWithDependencies, type RegistryItem } from '../src/registry.js'
+import { registryItems, resolveRegistryItem, resolveWithDependencies, selectVariant, type RegistryItem } from '../src/registry.js'
 
 describe('registry', () => {
   it.each([
@@ -125,5 +125,54 @@ describe('registryItems data', () => {
     expect(() => resolveWithDependencies([item])).not.toThrow()
     const resolved = resolveWithDependencies([item])
     expect(resolved.map((i) => i.name)).toContain('cascade-select')
+  })
+})
+
+describe('selectVariant', () => {
+  it('returns the vanilla files/dependencies with an empty shadcnPrimitives list for style: vanilla', () => {
+    const item = resolveRegistryItem('autocomplete')!
+    expect(selectVariant(item, 'vanilla')).toEqual({
+      files: item.files,
+      dependencies: item.dependencies,
+      shadcnPrimitives: [],
+    })
+  })
+
+  it('returns the shadcn override for autocomplete under style: shadcn', () => {
+    const item = resolveRegistryItem('autocomplete')!
+    const variant = selectVariant(item, 'shadcn')
+    expect(variant.files).toEqual([
+      { source: 'react/ts/shadcn/thai-address-autocomplete.tsx', target: { dir: 'componentDir', file: 'thai-address-autocomplete.tsx' } },
+    ])
+    expect(variant.dependencies).toEqual(['thaizip'])
+    expect(variant.shadcnPrimitives).toEqual(['popover', 'command', 'button'])
+  })
+
+  it('returns the shadcn override for cascade-select under style: shadcn', () => {
+    const variant = selectVariant(resolveRegistryItem('cascade-select')!, 'shadcn')
+    expect(variant.dependencies).toEqual(['thaizip'])
+    expect(variant.shadcnPrimitives).toEqual(['select', 'label', 'button', 'input'])
+  })
+
+  it('returns the shadcn override for address-form and address-form-field under style: shadcn', () => {
+    expect(selectVariant(resolveRegistryItem('address-form')!, 'shadcn').shadcnPrimitives).toEqual(['input', 'label'])
+    expect(selectVariant(resolveRegistryItem('address-form-field')!, 'shadcn').shadcnPrimitives).toEqual([])
+    expect(selectVariant(resolveRegistryItem('address-form-field')!, 'shadcn').dependencies).toContain('react-hook-form')
+  })
+
+  it('falls back to the vanilla file for address-display under style: shadcn (no shadcn block)', () => {
+    const item = resolveRegistryItem('address-display')!
+    expect(selectVariant(item, 'shadcn')).toEqual({
+      files: item.files,
+      dependencies: item.dependencies,
+      shadcnPrimitives: [],
+    })
+  })
+
+  it('utils and use-thai-address-index have no shadcn block and resolve identically under both styles', () => {
+    for (const name of ['utils', 'use-thai-address-index']) {
+      const item = resolveRegistryItem(name)!
+      expect(selectVariant(item, 'shadcn')).toEqual(selectVariant(item, 'vanilla'))
+    }
   })
 })

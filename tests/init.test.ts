@@ -289,4 +289,50 @@ describe('initProject', () => {
     expect(languageCallIndex).toBeGreaterThanOrEqual(0)
     expect(logCalls.invocationCallOrder[languageCallIndex]).toBeLessThan(mockedPrompts.mock.invocationCallOrder[0])
   })
+
+  it('detects a Base UI–backed shadcn project and sets style: shadcn', async () => {
+    const cwd = await tempProject()
+    await mkdir(path.join(cwd, 'app'), { recursive: true })
+    await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await writeFile(path.join(cwd, 'components.json'), JSON.stringify({ style: 'base-nova', aliases: { ui: '@/components/ui' } }))
+    await writeFile(path.join(cwd, 'tsconfig.json'), JSON.stringify({ compilerOptions: { paths: { '@/*': ['./*'] } } }))
+
+    await initProject({ cwd, yes: true })
+
+    const config = JSON.parse(await readFile(path.join(cwd, 'thaizip.config.json'), 'utf8'))
+    expect(config.style).toBe('shadcn')
+    expect(config.shadcnUiAlias).toBe('@/components/ui')
+    expect(config.shadcnUiDir).toBe('components/ui')
+  })
+
+  it('falls back to vanilla for a Radix-backed shadcn project and prints why', async () => {
+    const cwd = await tempProject()
+    await mkdir(path.join(cwd, 'app'), { recursive: true })
+    await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await writeFile(path.join(cwd, 'components.json'), JSON.stringify({ style: 'radix-nova' }))
+
+    await initProject({ cwd, yes: true })
+
+    const config = JSON.parse(await readFile(path.join(cwd, 'thaizip.config.json'), 'utf8'))
+    expect(config.style).toBe('vanilla')
+    const logged = (console.log as ReturnType<typeof vi.fn>).mock.calls.map((call) => call.join(' ')).join('\n')
+    expect(logged).toContain('radix-nova')
+    expect(logged).toContain('not yet supported')
+  })
+
+  it('sets style: vanilla with no note when there is no components.json at all', async () => {
+    const cwd = await tempProject()
+    await mkdir(path.join(cwd, 'app'), { recursive: true })
+    await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+
+    await initProject({ cwd, yes: true })
+
+    const config = JSON.parse(await readFile(path.join(cwd, 'thaizip.config.json'), 'utf8'))
+    expect(config.style).toBe('vanilla')
+    expect(config.shadcnUiAlias).toBe('')
+    expect(config.shadcnUiDir).toBe('')
+  })
 })

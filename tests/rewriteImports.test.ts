@@ -8,6 +8,9 @@ const baseV2Config: ThaiZipConfig = {
   hooksDir: 'hooks',
   packageManager: 'npm',
   tailwind: { version: 4, css: 'app/globals.css' },
+  style: 'vanilla',
+  shadcnUiAlias: '',
+  shadcnUiDir: '',
   registryVersion: '0.1.0',
 }
 
@@ -97,5 +100,35 @@ describe('rewriteTemplateImports string-literal safety', () => {
     expect(() =>
       rewriteTemplateImports("import x from '@/lib/../../../../etc/evil'", '/p/app/components', baseV2Config, '/p'),
     ).toThrow(/outside the project/i)
+  })
+})
+
+describe('rewriteTemplateImports — @/components/ui', () => {
+  it('leaves @/components/ui/* untouched when shadcnUiAlias matches the default', () => {
+    const config = { ...baseV2Config, style: 'shadcn' as const, shadcnUiAlias: '@/components/ui', shadcnUiDir: 'components/ui' }
+    const content = `import { Button } from '@/components/ui/button'`
+    expect(rewriteTemplateImports(content, '/project/app/components', config, '/project')).toBe(content)
+  })
+
+  it('swaps the bare-specifier prefix when shadcnUiAlias is customized, alongside the existing @/lib rewrite', () => {
+    const config = { ...baseV2Config, style: 'shadcn' as const, shadcnUiAlias: '@/ui', shadcnUiDir: 'components/ui' }
+    const content = `import { Button } from '@/components/ui/button'\nimport { cn } from '@/lib/utils'`
+    const result = rewriteTemplateImports(content, '/project/app/components', config, '/project')
+    expect(result).toContain(`from '@/ui/button'`)
+    expect(result).not.toContain('@/lib') // @/lib/utils still rewritten to a relative path as before
+  })
+
+  it('never rewrites @/components/ui/* into a relative path, even with a customized alias', () => {
+    const config = { ...baseV2Config, style: 'shadcn' as const, shadcnUiAlias: '@/ui', shadcnUiDir: 'components/ui' }
+    const content = `import { Button } from '@/components/ui/button'`
+    const result = rewriteTemplateImports(content, '/project/app/components', config, '/project')
+    expect(result).not.toMatch(/from ['"]\./)
+  })
+
+  it('escapes a quote character in a (misconfigured) shadcnUiAlias instead of breaking the string literal', () => {
+    const config = { ...baseV2Config, style: 'shadcn' as const, shadcnUiAlias: "@/ui'; evil()", shadcnUiDir: 'components/ui' }
+    const content = `import { Button } from '@/components/ui/button'`
+    const result = rewriteTemplateImports(content, '/project/app/components', config, '/project')
+    expect(result).toBe(`import { Button } from '@/ui\\'; evil()/button'`)
   })
 })
