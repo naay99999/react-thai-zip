@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.3.6](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.5...react-thaizip-v0.3.6) (2026-09-04)
+
+
+### Features
+
+* add detectShadcn for Base UI–backed shadcn project detection ([d305c93](https://github.com/naay99999/react-thai-zip/commit/d305c9383e4cf9cb24a71b7bcb1defc1f7635465))
+* add ensureShadcnPrimitives for auto-installing missing shadcn ui files ([9da34b5](https://github.com/naay99999/react-thai-zip/commit/9da34b53ace924537260407e9c0a144ced87513d))
+* add shadcn variant override + selectVariant to the registry ([9c7d742](https://github.com/naay99999/react-thai-zip/commit/9c7d7429576830b00c4e87b9b73fe5282dc92108))
+* add shadcn-style ThaiAddressAutocomplete template (Popover + Command) ([e10b192](https://github.com/naay99999/react-thai-zip/commit/e10b1924bd1ffcf6b2abdcb929286f8b52d66c94))
+* add shadcn-style ThaiAddressCascadeSelect template ([c7c9cab](https://github.com/naay99999/react-thai-zip/commit/c7c9cabb4de607edbbd2894a3eb2b9ae780501af))
+* add shadcn-style ThaiAddressForm template ([49d806d](https://github.com/naay99999/react-thai-zip/commit/49d806d453e7c3e508b20e03da8eccc980ff1579))
+* add shadcn-style ThaiAddressFormField template ([6b1dd2c](https://github.com/naay99999/react-thai-zip/commit/6b1dd2cb9087d7b09ecac98a7119411ebc70c959))
+* add style/shadcnUiAlias/shadcnUiDir to thaizip.config.json (v3) ([08136df](https://github.com/naay99999/react-thai-zip/commit/08136df61390d2fd5f0578243b3c8df89427fde3))
+* detect Base UI shadcn projects during init and set style ([7e31625](https://github.com/naay99999/react-thai-zip/commit/7e31625480ed4f5ced6f90e329b8a881277bd102))
+* rewrite @/components/ui/* alias prefix (never to a relative path) ([ff93cb4](https://github.com/naay99999/react-thai-zip/commit/ff93cb4c51330f9ac3129c942ef47182b1eacf4e))
+* wire shadcn style variant selection + primitive auto-install into add ([2b6eca1](https://github.com/naay99999/react-thai-zip/commit/2b6eca1e95302dd8dc4968c1a8b23e718bc7dcaa))
+
+
+### Bug Fixes
+
+* add missing button and input to cascade-select shadcnPrimitives list ([9fe15a1](https://github.com/naay99999/react-thai-zip/commit/9fe15a14d32671151bb8ea0d81421547d27ca71b))
+* add missing v3 fields to ThaiZipConfig object literals ([df2153c](https://github.com/naay99999/react-thai-zip/commit/df2153c7c65e8a76ac05df351ff0e132bdb14700))
+* shadcn dlx invocation, JS-target extension check, add consistency test ([2548f00](https://github.com/naay99999/react-thai-zip/commit/2548f006347108ce7d110ac4809661e5e29bb101))
+
 ## [0.3.5](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.4...react-thaizip-v0.3.5) (2026-09-03)
 
 
