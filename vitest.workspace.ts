@@ -50,4 +50,5 @@ export default defineWorkspace([
     resolve: { alias: sharedAliases },
   },
   shadcnProject('base'),
+  shadcnProject('radix'),
 ])
