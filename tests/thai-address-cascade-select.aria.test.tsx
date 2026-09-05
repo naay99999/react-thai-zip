@@ -112,6 +112,17 @@ async function waitForLoad() {
   await screen.findByRole('button', { name: new RegExp(labels.province) })
 }
 
+// All three triggers, province/district/subdistrict in that order — each
+// found by its own accessible-name pattern (see `triggerPattern`'s doc
+// comment above) rather than by a shared role query, since RAC's trigger
+// carries no distinguishing role of its own.
+async function getTriggers() {
+  const provinceTrigger = await screen.findByRole('button', { name: triggerPattern(labels.province) })
+  const districtTrigger = await screen.findByRole('button', { name: triggerPattern(labels.district) })
+  const subdistrictTrigger = await screen.findByRole('button', { name: triggerPattern(labels.subdistrict) })
+  return [provinceTrigger, districtTrigger, subdistrictTrigger]
+}
+
 describeCascadeSelectBehaviour({
   engine: 'aria',
   Component: ThaiAddressCascadeSelect,
@@ -126,4 +137,5 @@ describeCascadeSelectBehaviour({
   labels,
   expectDownstreamReset,
   waitForLoad,
+  getTriggers,
 })

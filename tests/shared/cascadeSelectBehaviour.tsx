@@ -14,6 +14,7 @@ export type CascadeBehaviourOptions = {
     locale?: 'th' | 'en'
     disabled?: boolean
     required?: boolean
+    'aria-invalid'?: boolean | 'true' | 'false'
   }>
   /** Opens the select whose accessible label matches, then clicks the named option. */
   pick: (labelText: string | RegExp, optionName: string) => Promise<void>
@@ -52,10 +53,19 @@ export type CascadeBehaviourOptions = {
    * wait lives with each engine's test file rather than hardcoded here.
    */
   waitForLoad: () => Promise<unknown>
+  /**
+   * Resolves to the province/district/subdistrict triggers, in that order,
+   * once the index has loaded. Base UI and Radix both render a real
+   * `<button role="combobox">` for each; React Aria's `SelectTrigger`
+   * renders a RAC `Button` with no such role, so — same rationale as
+   * `waitForLoad` — the lookup lives with each engine's test file rather
+   * than a hardcoded `role` query here.
+   */
+  getTriggers: () => Promise<HTMLElement[]>
 }
 
 export function describeCascadeSelectBehaviour(options: CascadeBehaviourOptions): void {
-  const { engine, Component, pick, chain, labels, expectDownstreamReset, waitForLoad } = options
+  const { engine, Component, pick, chain, labels, expectDownstreamReset, waitForLoad, getTriggers } = options
 
   describe(`ThaiAddressCascadeSelect (${engine}) — shared behaviour`, () => {
     it('emits the resolved address after the full chain is picked', async () => {
@@ -118,6 +128,14 @@ export function describeCascadeSelectBehaviour(options: CascadeBehaviourOptions)
       render(<Component locale="en" />)
       expect(screen.getByText('Province')).toBeTruthy()
       expect(screen.getByText('Postal code')).toBeTruthy()
+    })
+
+    it('applies aria-invalid to all three triggers', async () => {
+      render(<Component aria-invalid />)
+      const triggers = await getTriggers()
+      for (const trigger of triggers) {
+        expect(trigger.getAttribute('aria-invalid')).toBe('true')
+      }
     })
   })
 }

@@ -97,6 +97,11 @@ async function waitForLoad() {
   await screen.findAllByRole('combobox')
 }
 
+// All three triggers, province/district/subdistrict in DOM order.
+async function getTriggers() {
+  return screen.findAllByRole('combobox')
+}
+
 describeCascadeSelectBehaviour({
   engine: 'radix',
   Component: ThaiAddressCascadeSelect,
@@ -111,4 +116,5 @@ describeCascadeSelectBehaviour({
   labels,
   expectDownstreamReset,
   waitForLoad,
+  getTriggers,
 })

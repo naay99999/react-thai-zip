@@ -258,6 +258,20 @@ type CascadeFieldProps = {
   itemClassName?: string
 }
 
+// Merges an external ref (the province trigger's forwarded ref; `undefined`
+// for district/subdistrict) with an internal one, so both get the same DOM
+// node. Kept local rather than pulled from a library — React Aria doesn't
+// export a ref-merging utility from its public entry points.
+function mergeRefs<T>(...refs: Array<React.Ref<T> | undefined>): React.RefCallback<T> {
+  return (node) => {
+    for (const ref of refs) {
+      if (!ref) continue
+      if (typeof ref === 'function') ref(node)
+      else (ref as React.RefObject<T | null>).current = node
+    }
+  }
+}
+
 function CascadeField({
   label,
   placeholder,
@@ -275,17 +289,45 @@ function CascadeField({
   popupClassName,
   itemClassName,
 }: CascadeFieldProps) {
+  const isInvalid = ariaInvalid === true || ariaInvalid === 'true'
+
+  // React Aria's Button (what SelectTrigger renders under the hood) filters
+  // its DOM props through an explicit allowlist (id, labelable aria-*, link
+  // props, a small set of global attributes, events, and anything matching
+  // `data-*`) before spreading them onto the real <button> — `aria-invalid`
+  // is not on that list, so passing it as a normal prop is silently dropped
+  // before it ever reaches the DOM (verified empirically: rendering
+  // `<Button aria-invalid="true">` leaves `aria-invalid` absent from the
+  // resulting element). `isInvalid` on <Select> only ever surfaces as
+  // `data-invalid` on the Select's own outer wrapper <div>, never on the
+  // trigger button either. Base and radix don't have this problem — their
+  // SelectTrigger is a thin wrapper around a real button that forwards
+  // arbitrary aria-* props straight through. So the only way to get a real
+  // `aria-invalid` attribute onto this engine's trigger — for the shadcn
+  // fixture's own `aria-invalid:border-destructive` Tailwind styling and for
+  // screen readers — is to set it on the DOM node directly.
+  const internalTriggerRef = React.useRef<HTMLButtonElement>(null)
+  React.useEffect(() => {
+    const node = internalTriggerRef.current
+    if (!node) return
+    if (isInvalid) node.setAttribute('aria-invalid', 'true')
+    else node.removeAttribute('aria-invalid')
+  }, [isInvalid])
+
   return (
     // React Aria keys list items by `id` (a Key = string | number), so the
     // numeric option ids go in and come back out unconverted — unlike the Base
     // UI and Radix copies of this file, which round-trip them through strings.
-    // `selectedKey={null}` is RAC's native cleared state.
+    // `selectedKey={null}` is RAC's native cleared state. `isInvalid` here
+    // still earns its place even though it doesn't reach the trigger: it
+    // drives RAC's own `data-invalid` render prop on the Select's wrapper
+    // <div> and feeds its internal validation/`aria-describedby` wiring.
     <Select
       selectedKey={value}
       onSelectionChange={(key) => onChange(key === null ? null : Number(key))}
       isDisabled={disabled}
       isRequired={required}
-      isInvalid={ariaInvalid === true || ariaInvalid === 'true'}
+      isInvalid={isInvalid}
       placeholder={placeholder}
       className="flex w-full flex-col gap-1.5"
     >
@@ -297,7 +339,7 @@ function CascadeField({
           it renders a real `<button>` at runtime, so this adapts the event
           back to the `HTMLButtonElement` shape our own public prop promises. */}
       <SelectTrigger
-        ref={triggerRef}
+        ref={mergeRefs(triggerRef, internalTriggerRef)}
         onBlur={onBlur && ((event: React.FocusEvent<Element>) => onBlur(event as React.FocusEvent<HTMLButtonElement>))}
         className={cn('w-full', triggerClassName)}
       >
