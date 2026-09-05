@@ -36,6 +36,7 @@ describe('detectShadcn', () => {
       present: true,
       supported: true,
       style: 'base-nova',
+      base: 'base',
       uiAlias: '@/components/ui',
       uiDir: 'components/ui',
     })
@@ -75,18 +76,42 @@ describe('detectShadcn', () => {
     expect(result).toMatchObject({ present: true, supported: true, uiDir: 'components/ui' })
   })
 
-  it.each([['radix-nova'], ['aria-nova'], ['default'], ['new-york']])(
-    'detects but marks unsupported for style %s',
-    async (style) => {
-      const cwd = await tempDir()
-      await writeComponentsJson(cwd, { style })
-      expect(await detectShadcn(cwd)).toEqual({ present: true, supported: false, style })
-    },
-  )
+  it('treats an unrecognized style as unsupported', async () => {
+    const cwd = await tempDir()
+    await writeComponentsJson(cwd, { style: 'solid-nova' })
+    expect(await detectShadcn(cwd)).toEqual({ present: true, supported: false, style: 'solid-nova' })
+  })
 
-  it('treats a missing/non-string style field as unsupported (present, but not "base-")', async () => {
+  it('treats a missing/non-string style field as unsupported (present, but not mapped to a base)', async () => {
     const cwd = await tempDir()
     await writeComponentsJson(cwd, { aliases: { ui: '@/components/ui' } })
     expect(await detectShadcn(cwd)).toEqual({ present: true, supported: false, style: '' })
+  })
+})
+
+describe('component library detection', () => {
+  it.each([
+    ['base-nova', 'base'],
+    ['radix-nova', 'radix'],
+    ['aria-nova', 'aria'],
+    ['default', 'radix'],
+    ['new-york', 'radix'],
+  ])('maps style %s to base %s', async (style, expected) => {
+    const cwd = await tempDir()
+    await writeComponentsJson(cwd, { style, aliases: { ui: '@/components/ui' } })
+    const detection = await detectShadcn(cwd)
+    expect(detection).toMatchObject({ present: true, supported: true, base: expected })
+  })
+
+  it('treats an unrecognized style as unsupported', async () => {
+    const cwd = await tempDir()
+    await writeComponentsJson(cwd, { style: 'solid-nova' })
+    expect(await detectShadcn(cwd)).toMatchObject({ present: true, supported: false })
+  })
+
+  it('treats a missing style as unsupported', async () => {
+    const cwd = await tempDir()
+    await writeComponentsJson(cwd, { aliases: { ui: '@/components/ui' } })
+    expect(await detectShadcn(cwd)).toMatchObject({ present: true, supported: false })
   })
 })
