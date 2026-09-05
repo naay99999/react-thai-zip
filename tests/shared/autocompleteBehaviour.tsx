@@ -12,6 +12,8 @@ export type AutocompleteBehaviourOptions = {
     onValueChange?: (address: ResolvedThaiAddress | null) => void
     name?: string
     locale?: 'th' | 'en'
+    'aria-invalid'?: boolean | 'true' | 'false'
+    ref?: React.Ref<HTMLInputElement>
   }>
   /**
    * Opens the popup and types `query` into the search field. Base UI's and
@@ -48,10 +50,28 @@ export type AutocompleteBehaviourOptions = {
     labelPattern: RegExp
     zipCode: string
   }
+  /**
+   * Opens the popup without typing anything (a click on the trigger). Used
+   * where a test only needs the popup open — e.g. to check that the search
+   * input the popup mounts is the one a forwarded `ref` resolves to — and
+   * doesn't want to couple that to `openAndType`'s typing step. Each engine
+   * supplies its own trigger lookup here, for the same reason `openAndType`
+   * does.
+   */
+  openPopup: () => Promise<void>
+  /**
+   * Resolves the trigger element itself (not the search input inside the
+   * popup). cmdk-backed engines render a real `<button>`; a future engine
+   * may not, so — same rationale as `openAndType`'s trigger lookup — this
+   * lives with each engine's test file rather than a hardcoded `role` query
+   * here.
+   */
+  getTrigger: () => Promise<HTMLElement>
 }
 
 export function describeAutocompleteBehaviour(options: AutocompleteBehaviourOptions): void {
-  const { engine, Component, openAndType, pickSuggestion, clickClear, expectTriggerLabel, chain } = options
+  const { engine, Component, openAndType, pickSuggestion, clickClear, expectTriggerLabel, chain, openPopup, getTrigger } =
+    options
 
   describe(`ThaiAddressAutocomplete (${engine}) — shared behaviour`, () => {
     it('opens the popup on trigger click and lets the user pick a suggestion by typing', async () => {
@@ -98,6 +118,26 @@ export function describeAutocompleteBehaviour(options: AutocompleteBehaviourOpti
       await waitFor(() => {
         expect(document.querySelector<HTMLInputElement>('input[name="address-zipcode"]')?.value).toBe(zipCode)
       })
+    })
+
+    it('forwards the ref to the real search input once the popup is open', async () => {
+      const ref = React.createRef<HTMLInputElement>()
+      render(<Component ref={ref} />)
+
+      // Documented on all three templates' own `ref` prop: the search input
+      // only exists in the DOM while the popup is open, so the ref is null
+      // beforehand.
+      expect(ref.current).toBeNull()
+
+      await openPopup()
+
+      await waitFor(() => expect(ref.current).toBeInstanceOf(HTMLInputElement))
+    })
+
+    it('applies aria-invalid to the trigger', async () => {
+      render(<Component aria-invalid />)
+      const trigger = await getTrigger()
+      expect(trigger.getAttribute('aria-invalid')).toBe('true')
     })
   })
 }

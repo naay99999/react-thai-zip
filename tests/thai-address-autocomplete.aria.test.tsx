@@ -48,9 +48,19 @@ afterEach(() => {
 // one genuinely engine-specific mechanic the shared behaviour helper
 // delegates to each engine's test file. See the shared helper's doc
 // comments.
+async function getTrigger() {
+  return screen.findByRole('button', { name: /พิมพ์ตำบล/ })
+}
+
+async function openPopup() {
+  const user = userEvent.setup()
+  const trigger = await getTrigger()
+  await user.click(trigger)
+}
+
 async function openAndType(query: string) {
   const user = userEvent.setup()
-  const trigger = await screen.findByRole('button', { name: /พิมพ์ตำบล/ })
+  const trigger = await getTrigger()
   await user.click(trigger)
   const searchBox = await screen.findByRole('searchbox')
   await user.type(searchBox, query)
@@ -82,6 +92,8 @@ describeAutocompleteBehaviour({
   pickSuggestion,
   clickClear,
   expectTriggerLabel,
+  openPopup,
+  getTrigger,
   chain: () => ({
     query: sampleRecord.tambonNameTh.slice(0, 3),
     labelPattern: new RegExp(sampleRecord.tambonNameTh),
