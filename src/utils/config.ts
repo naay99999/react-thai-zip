@@ -26,6 +26,15 @@ export type TailwindInfo = {
 
 export type ComponentStyle = 'vanilla' | 'shadcn'
 
+/**
+ * Which component library the target project's shadcn/ui primitives are built
+ * on, read from `components.json`'s `style` prefix at `init`. Decides which
+ * `templates/react/ts/shadcn/<base>/` tree a scaffold copies from.
+ */
+export type ShadcnBase = 'base' | 'radix' | 'aria'
+
+export const SHADCN_BASES: readonly ShadcnBase[] = ['base', 'radix', 'aria']
+
 export type ThaiZipConfig = {
   typescript: boolean
   componentDir: string
@@ -34,6 +43,8 @@ export type ThaiZipConfig = {
   packageManager: PackageManager
   tailwind: TailwindInfo
   style: ComponentStyle
+  // '' whenever style === 'vanilla'; one of SHADCN_BASES otherwise.
+  shadcnBase: ShadcnBase | ''
   // Import specifier for the target project's shadcn/ui components directory
   // (e.g. '@/components/ui'), and its resolved project-relative filesystem
   // directory (e.g. 'src/components/ui'). Both are '' when style === 'vanilla'.
@@ -123,6 +134,13 @@ export function validateConfig(value: unknown): { ok: true; config: ThaiZipConfi
   if (raw.style !== 'vanilla' && raw.style !== 'shadcn') {
     errors.push("style: expected 'vanilla' or 'shadcn'")
   }
+  if (raw.shadcnBase !== '' && !SHADCN_BASES.includes(raw.shadcnBase as ShadcnBase)) {
+    errors.push(`shadcnBase: expected '' or one of ${SHADCN_BASES.join(', ')}`)
+  } else if (raw.style === 'shadcn' && raw.shadcnBase === '') {
+    errors.push("shadcnBase: required when style is 'shadcn'")
+  } else if (raw.style === 'vanilla' && raw.shadcnBase !== '') {
+    errors.push("shadcnBase: must be '' when style is 'vanilla'")
+  }
   if (typeof raw.shadcnUiAlias !== 'string') {
     errors.push('shadcnUiAlias: expected a string')
   }
@@ -159,6 +177,7 @@ export function migrateLegacyConfig(raw: Record<string, unknown>, tailwind: Tail
     packageManager: raw.packageManager as PackageManager,
     tailwind,
     style: 'vanilla',
+    shadcnBase: '',
     shadcnUiAlias: '',
     shadcnUiDir: '',
     registryVersion: typeof raw.registryVersion === 'string' ? raw.registryVersion : '',
@@ -181,8 +200,24 @@ export function migrateV2Config(raw: Record<string, unknown>): ThaiZipConfig | n
   return {
     ...raw,
     style: 'vanilla',
+    shadcnBase: '',
     shadcnUiAlias: '',
     shadcnUiDir: '',
+  } as ThaiZipConfig
+}
+
+/**
+ * Migrates a v3 thaizip.config.json (has `style`, no `shadcnBase`) to v4.
+ * v3 could only ever set `style: 'shadcn'` for a Base UI–backed project — the
+ * `base-` gate in detectShadcn was the only way to reach it — so that is the
+ * only correct backfill. Returns null when `raw` isn't a recognizable v3.
+ */
+export function migrateV3Config(raw: Record<string, unknown>): ThaiZipConfig | null {
+  if (!('style' in raw) || 'shadcnBase' in raw) return null
+
+  return {
+    ...raw,
+    shadcnBase: raw.style === 'shadcn' ? 'base' : '',
   } as ThaiZipConfig
 }
 
@@ -195,12 +230,13 @@ export async function readConfig(cwd = process.cwd(), options?: { tailwind?: Tai
 
   if (typeof parsed === 'object' && parsed !== null) {
     const raw = parsed as Record<string, unknown>
-    const migrated = migrateLegacyConfig(raw, options?.tailwind ?? { version: 4, css: '' }) ?? migrateV2Config(raw)
+    const migrated =
+      migrateLegacyConfig(raw, options?.tailwind ?? { version: 4, css: '' }) ?? migrateV2Config(raw) ?? migrateV3Config(raw)
     if (migrated) {
       const revalidated = validateConfig(migrated)
       if (revalidated.ok) {
         await writeConfig(revalidated.config, cwd)
-        console.log('Migrated thaizip.config.json to v3.')
+        console.log('Migrated thaizip.config.json to v4.')
         return revalidated.config
       }
       throw new Error(

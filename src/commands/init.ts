@@ -144,6 +144,7 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
       packageManager: pm,
       tailwind: { version, css: cssPath ?? '' },
       style: shadcnDetection.present && shadcnDetection.supported ? 'shadcn' : 'vanilla',
+      shadcnBase: '',
       shadcnUiAlias: shadcnDetection.present && shadcnDetection.supported ? shadcnDetection.uiAlias : '',
       shadcnUiDir: shadcnDetection.present && shadcnDetection.supported ? shadcnDetection.uiDir : '',
       registryVersion,
