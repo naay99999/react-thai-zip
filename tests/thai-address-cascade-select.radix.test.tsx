@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, beforeAll } from 'vitest'
+import { afterEach, beforeAll, expect } from 'vitest'
 import { cleanup, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { loadDefaultIndex } from 'thaizip/data'
@@ -76,6 +76,20 @@ async function pick(labelText: string | RegExp, optionName: string) {
   await user.click(option)
 }
 
+const labels = {
+  province: 'จังหวัด',
+  district: 'อำเภอ/เขต',
+  subdistrict: 'ตำบล/แขวง',
+} as const
+
+// Radix's SelectTrigger is a real `<button>`; disabled state is the native
+// `disabled` property. This lookup is radix-specific by design — see the
+// shared helper's `expectDownstreamReset` doc comment.
+async function expectDownstreamReset() {
+  const subdistrictTrigger = await screen.findByRole('combobox', { name: labels.subdistrict })
+  expect((subdistrictTrigger as HTMLButtonElement).disabled).toBe(true)
+}
+
 describeCascadeSelectBehaviour({
   engine: 'radix',
   Component: ThaiAddressCascadeSelect,
@@ -87,9 +101,6 @@ describeCascadeSelectBehaviour({
     address: expectedAddress,
     otherProvinceName: otherProvince.nameTh,
   }),
-  labels: {
-    province: 'จังหวัด',
-    district: 'อำเภอ/เขต',
-    subdistrict: 'ตำบล/แขวง',
-  },
+  labels,
+  expectDownstreamReset,
 })

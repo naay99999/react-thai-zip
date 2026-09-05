@@ -33,10 +33,21 @@ export type CascadeBehaviourOptions = {
     otherProvinceName: string
   }
   labels: { province: string | RegExp; district: string | RegExp; subdistrict: string | RegExp }
+  /**
+   * Asserts that the sub-district select has reset to its disabled,
+   * awaiting-a-district state. Called right after a province change that
+   * follows a full pick, to verify the cascade actually cleared its
+   * downstream selection — not merely that `onValueChange(null)` fired.
+   * Each engine supplies its own trigger lookup/disabled check here (Base UI
+   * and Radix both render a real `<button role="combobox">`, but a future
+   * React Aria variant may expose a different role/attribute), which is why
+   * the shared helper itself never queries for `role="combobox"` directly.
+   */
+  expectDownstreamReset: () => Promise<void> | void
 }
 
 export function describeCascadeSelectBehaviour(options: CascadeBehaviourOptions): void {
-  const { engine, Component, pick, chain, labels } = options
+  const { engine, Component, pick, chain, labels, expectDownstreamReset } = options
 
   describe(`ThaiAddressCascadeSelect (${engine}) — shared behaviour`, () => {
     it('emits the resolved address after the full chain is picked', async () => {
@@ -63,6 +74,10 @@ export function describeCascadeSelectBehaviour(options: CascadeBehaviourOptions)
 
       await pick(labels.province, otherProvinceName)
       expect(onValueChange).toHaveBeenCalledWith(null)
+      // onValueChange(null) alone doesn't prove the downstream selection was
+      // actually cleared — assert the sub-district select itself reset back
+      // to its disabled, awaiting-a-district state.
+      await expectDownstreamReset()
     })
 
     it('renders the four hidden inputs under the given name', async () => {
