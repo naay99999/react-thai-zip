@@ -302,24 +302,26 @@ describe('initProject', () => {
 
     const config = JSON.parse(await readFile(path.join(cwd, 'thaizip.config.json'), 'utf8'))
     expect(config.style).toBe('shadcn')
+    expect(config.shadcnBase).toBe('base')
     expect(config.shadcnUiAlias).toBe('@/components/ui')
     expect(config.shadcnUiDir).toBe('components/ui')
   })
 
-  it('falls back to vanilla for a Radix-backed shadcn project and prints why', async () => {
+  it('falls back to vanilla for an unrecognized shadcn style and prints why', async () => {
     const cwd = await tempProject()
     await mkdir(path.join(cwd, 'app'), { recursive: true })
     await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
     await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
-    await writeFile(path.join(cwd, 'components.json'), JSON.stringify({ style: 'radix-nova' }))
+    await writeFile(path.join(cwd, 'components.json'), JSON.stringify({ style: 'solid-nova' }))
 
     await initProject({ cwd, yes: true })
 
     const config = JSON.parse(await readFile(path.join(cwd, 'thaizip.config.json'), 'utf8'))
     expect(config.style).toBe('vanilla')
+    expect(config.shadcnBase).toBe('')
     const logged = (console.log as ReturnType<typeof vi.fn>).mock.calls.map((call) => call.join(' ')).join('\n')
-    expect(logged).toContain('radix-nova')
-    expect(logged).toContain('not yet supported')
+    expect(logged).toContain('solid-nova')
+    expect(logged).toContain('unrecognized component library')
   })
 
   it('sets style: vanilla with no note when there is no components.json at all', async () => {
@@ -334,5 +336,34 @@ describe('initProject', () => {
     expect(config.style).toBe('vanilla')
     expect(config.shadcnUiAlias).toBe('')
     expect(config.shadcnUiDir).toBe('')
+  })
+
+  async function shadcnProject(style: string) {
+    const cwd = await tempProject()
+    await writeFile(path.join(cwd, 'tsconfig.json'), '{}')
+    await writeFile(path.join(cwd, 'tailwind.config.ts'), '')
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await writeFile(path.join(cwd, 'components.json'), JSON.stringify({ style, aliases: { ui: '@/components/ui' } }))
+    return cwd
+  }
+
+  it('records the detected base for a radix project', async () => {
+    const cwd = await shadcnProject('radix-nova')
+    mockedPrompts.mockResolvedValueOnce({})
+
+    await initProject({ cwd })
+
+    const config = JSON.parse(await readFile(path.join(cwd, 'thaizip.config.json'), 'utf8'))
+    expect(config).toMatchObject({ style: 'shadcn', shadcnBase: 'radix' })
+  })
+
+  it('prints the base in the detection summary', async () => {
+    const cwd = await shadcnProject('aria-nova')
+    mockedPrompts.mockResolvedValueOnce({})
+
+    await initProject({ cwd })
+
+    const logged = vi.mocked(console.log).mock.calls.map((call) => String(call[0])).join('\n')
+    expect(logged).toContain('Component style: shadcn (components.json, style: aria-nova, base: aria)')
   })
 })
