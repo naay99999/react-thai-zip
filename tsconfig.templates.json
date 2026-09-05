@@ -11,6 +11,7 @@
     "paths": {
       "@/lib/utils": ["./templates/react/ts/lib/utils.ts"],
       "@/hooks/use-thai-address-index": ["./templates/react/ts/hooks/use-thai-address-index.ts"],
+      "@/hooks/use-thai-address-cascade": ["./templates/react/ts/hooks/use-thai-address-cascade.ts"],
       "@/components/ui/button": ["./templates/react/ts/shadcn/__fixtures__/components/ui/button.tsx"],
       "@/components/ui/input": ["./templates/react/ts/shadcn/__fixtures__/components/ui/input.tsx"],
       "@/components/ui/label": ["./templates/react/ts/shadcn/__fixtures__/components/ui/label.tsx"],
@@ -27,6 +28,7 @@
     "templates/react/ts/**/*.tsx",
     "tests/thai-address-autocomplete.test.tsx",
     "tests/thai-address-cascade-select.test.tsx",
+    "tests/use-thai-address-cascade.test.tsx",
     "tests/thai-address-autocomplete-loading.test.tsx",
     "tests/thai-address-display.test.tsx",
     "tests/thai-address-form.test.tsx",

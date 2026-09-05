@@ -17,6 +17,7 @@ export default defineConfig({
     alias: {
       '@/lib/utils': path.resolve(dirname, 'templates/react/ts/lib/utils.ts'),
       '@/hooks/use-thai-address-index': path.resolve(dirname, 'templates/react/ts/hooks/use-thai-address-index.ts'),
+      '@/hooks/use-thai-address-cascade': path.resolve(dirname, 'templates/react/ts/hooks/use-thai-address-cascade.ts'),
       '@/components/ui/button': path.resolve(dirname, 'templates/react/ts/shadcn/__fixtures__/components/ui/button.tsx'),
       '@/components/ui/input': path.resolve(dirname, 'templates/react/ts/shadcn/__fixtures__/components/ui/input.tsx'),
       '@/components/ui/label': path.resolve(dirname, 'templates/react/ts/shadcn/__fixtures__/components/ui/label.tsx'),

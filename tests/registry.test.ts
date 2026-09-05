@@ -20,7 +20,7 @@ describe('registry', () => {
     expect(resolveRegistryItem(alias)?.name).toBe(expected)
   })
 
-  it('exposes the seven supported registry items', () => {
+  it('exposes the eight supported registry items', () => {
     expect(registryItems.map((item) => item.name)).toEqual([
       'autocomplete',
       'cascade-select',
@@ -29,6 +29,7 @@ describe('registry', () => {
       'address-form-field',
       'utils',
       'use-thai-address-index',
+      'use-thai-address-cascade',
     ])
   })
 
@@ -116,7 +117,7 @@ describe('registryItems data', () => {
       },
     ])
     expect(item?.dependencies).toEqual(['thaizip', '@base-ui/react'])
-    expect(item?.registryDependencies).toEqual(['utils', 'use-thai-address-index'])
+    expect(item?.registryDependencies).toEqual(['utils', 'use-thai-address-index', 'use-thai-address-cascade'])
     expect(item?.exportName).toBe('ThaiAddressCascadeSelect')
   })
 

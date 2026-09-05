@@ -15,6 +15,7 @@
   "exclude": [
     "tests/thai-address-autocomplete.test.tsx",
     "tests/thai-address-cascade-select.test.tsx",
+    "tests/use-thai-address-cascade.test.tsx",
     "tests/thai-address-autocomplete-loading.test.tsx",
     "tests/thai-address-display.test.tsx",
     "tests/thai-address-form.test.tsx",
