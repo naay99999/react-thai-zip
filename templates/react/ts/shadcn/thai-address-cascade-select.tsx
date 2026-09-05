@@ -1,40 +1,28 @@
 'use client'
 
 import * as React from 'react'
-import { listAmphures, listProvinces, listTambons } from 'thaizip'
-import type {
-  AmphureSummary,
-  ProvinceSummary,
-  ResolvedThaiAddress,
-  TambonSummary,
-  TrigramIndex,
-} from 'thaizip'
+import type { ResolvedThaiAddress, TrigramIndex } from 'thaizip'
 import { cn } from '@/lib/utils'
 import { useThaiAddressIndex } from '@/hooks/use-thai-address-index'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  DEFAULT_CASCADE_TEXTS,
+  optionName,
+  useThaiAddressCascade,
+  type AddressLocale,
+  type CascadeOption,
+  type ThaiAddressCascadeSelectTexts,
+} from '@/hooks/use-thai-address-cascade'
 
-type AddressLocale = 'th' | 'en'
+export type { ThaiAddressCascadeSelectTexts }
 
 // This file's filename and its `ThaiAddressCascadeSelect`/`ThaiAddressCascadeSelectTexts`
 // export names are relied on by sibling templates (thai-address-form.tsx,
 // thai-address-form-field.tsx) via plain relative imports that no tooling validates at
 // scaffold time — renaming either requires updating those files too.
-export type ThaiAddressCascadeSelectTexts = {
-  provinceLabel: string
-  districtLabel: string
-  subdistrictLabel: string
-  zipLabel: string
-  provincePlaceholder: string
-  districtPlaceholder: string
-  subdistrictPlaceholder: string
-  loadingText: string
-  errorText: string
-  retryLabel: string
-}
-
 export type ThaiAddressCascadeSelectProps = {
   /** Controlled resolved address. Pass `null` to clear a controlled cascade. */
   value?: ResolvedThaiAddress | null
@@ -63,81 +51,6 @@ export type ThaiAddressCascadeSelectProps = {
   ref?: React.Ref<HTMLButtonElement>
 }
 
-const DEFAULT_TEXTS: Record<AddressLocale, ThaiAddressCascadeSelectTexts> = {
-  th: {
-    provinceLabel: 'จังหวัด',
-    districtLabel: 'อำเภอ/เขต',
-    subdistrictLabel: 'ตำบล/แขวง',
-    zipLabel: 'รหัสไปรษณีย์',
-    provincePlaceholder: 'เลือกจังหวัด',
-    districtPlaceholder: 'เลือกอำเภอ/เขต',
-    subdistrictPlaceholder: 'เลือกตำบล/แขวง',
-    loadingText: 'กำลังโหลดข้อมูล...',
-    errorText: 'โหลดข้อมูลที่อยู่ไม่สำเร็จ',
-    retryLabel: 'ลองใหม่',
-  },
-  en: {
-    provinceLabel: 'Province',
-    districtLabel: 'District',
-    subdistrictLabel: 'Sub-district',
-    zipLabel: 'Postal code',
-    provincePlaceholder: 'Select province',
-    districtPlaceholder: 'Select district',
-    subdistrictPlaceholder: 'Select sub-district',
-    loadingText: 'Loading address data...',
-    errorText: 'Failed to load address data',
-    retryLabel: 'Retry',
-  },
-}
-
-type Option = { id: number; nameTh: string; nameEn: string }
-
-function optionName(option: Option, locale: AddressLocale): string {
-  return locale === 'en' ? option.nameEn : option.nameTh
-}
-
-function buildResolved(
-  province: ProvinceSummary,
-  amphure: AmphureSummary,
-  tambon: TambonSummary,
-): ResolvedThaiAddress {
-  return {
-    tambon: tambon.nameTh,
-    tambonEn: tambon.nameEn,
-    amphure: amphure.nameTh,
-    amphureEn: amphure.nameEn,
-    province: province.nameTh,
-    provinceEn: province.nameEn,
-    zipCode: tambon.zipCode,
-    subdistrict: tambon.nameTh,
-    subdistrictEn: tambon.nameEn,
-    district: amphure.nameTh,
-    districtEn: amphure.nameEn,
-    postalCode: tambon.zipCode,
-  }
-}
-
-type SelectionIds = { provinceId: number | null; amphureId: number | null; tambonId: number | null }
-
-const EMPTY_SELECTION: SelectionIds = { provinceId: null, amphureId: null, tambonId: null }
-
-/**
- * Maps a `ResolvedThaiAddress` (names only — the type carries no ids) back onto
- * enumeration-API ids by exact Thai-name match down the chain. Returns the empty
- * selection when any link fails to match, so a stale/foreign address degrades to
- * an unselected cascade instead of a half-selected one.
- */
-function selectionFromAddress(index: TrigramIndex, address: ResolvedThaiAddress | null): SelectionIds {
-  if (!address) return EMPTY_SELECTION
-  const province = listProvinces(index).find((entry) => entry.nameTh === address.province)
-  if (!province) return EMPTY_SELECTION
-  const amphure = listAmphures(index, province.id).find((entry) => entry.nameTh === address.district)
-  if (!amphure) return EMPTY_SELECTION
-  const tambon = listTambons(index, amphure.id).find((entry) => entry.nameTh === address.subdistrict)
-  if (!tambon) return EMPTY_SELECTION
-  return { provinceId: province.id, amphureId: amphure.id, tambonId: tambon.id }
-}
-
 export function ThaiAddressCascadeSelect({
   locale = 'th',
   texts,
@@ -150,7 +63,7 @@ export function ThaiAddressCascadeSelect({
   ...rest
 }: ThaiAddressCascadeSelectProps) {
   const resolvedTexts = React.useMemo<ThaiAddressCascadeSelectTexts>(
-    () => ({ ...DEFAULT_TEXTS[locale], ...texts }),
+    () => ({ ...DEFAULT_CASCADE_TEXTS[locale], ...texts }),
     [locale, texts],
   )
 
@@ -237,77 +150,23 @@ function ThaiAddressCascadeSelectReady({
   ref,
 }: ReadyProps) {
   const id = React.useId()
-  const isControlled = value !== undefined
 
-  const [selection, setSelection] = React.useState<SelectionIds>(() =>
-    selectionFromAddress(index, isControlled ? (value ?? null) : (defaultValue ?? null)),
-  )
-  const { provinceId, amphureId, tambonId } = selection
-
-  // Controlled mode: re-map ids whenever the caller swaps `value` (including -> null).
-  // Runs only on `value` identity changes, so in-progress partial picks (which never
-  // emit a value) are not wiped between renders.
-  React.useEffect(() => {
-    if (!isControlled) return
-    setSelection((current) => {
-      if (value) return selectionFromAddress(index, value)
-      // value === null: an external clear wipes a *full* local selection; a null
-      // echoed back right after our own parent-change invalidation must not
-      // reset the in-progress partial pick.
-      return current.tambonId === null ? current : EMPTY_SELECTION
-    })
-  }, [isControlled, index, value])
-
-  const provinces = React.useMemo(() => {
-    const collator = new Intl.Collator(locale === 'en' ? 'en' : 'th')
-    return [...listProvinces(index)].sort((a, b) => collator.compare(optionName(a, locale), optionName(b, locale)))
-  }, [index, locale])
-  const amphures = React.useMemo(() => {
-    if (provinceId === null) return []
-    const collator = new Intl.Collator(locale === 'en' ? 'en' : 'th')
-    return [...listAmphures(index, provinceId)].sort((a, b) => collator.compare(optionName(a, locale), optionName(b, locale)))
-  }, [index, provinceId, locale])
-  const tambons = React.useMemo(() => {
-    if (amphureId === null) return []
-    const collator = new Intl.Collator(locale === 'en' ? 'en' : 'th')
-    return [...listTambons(index, amphureId)].sort((a, b) => collator.compare(optionName(a, locale), optionName(b, locale)))
-  }, [index, amphureId, locale])
-
-  const selectedProvince = provinceId === null ? null : (provinces.find((entry) => entry.id === provinceId) ?? null)
-  const selectedAmphure = amphureId === null ? null : (amphures.find((entry) => entry.id === amphureId) ?? null)
-  const selectedTambon = tambonId === null ? null : (tambons.find((entry) => entry.id === tambonId) ?? null)
-
-  const resolvedAddress: ResolvedThaiAddress | null = isControlled
-    ? (value ?? null)
-    : selectedProvince && selectedAmphure && selectedTambon
-      ? buildResolved(selectedProvince, selectedAmphure, selectedTambon)
-      : null
-
-  const hadFullSelection = tambonId !== null
-
-  function handleProvinceChange(nextId: number | null) {
-    setSelection({ provinceId: nextId, amphureId: null, tambonId: null })
-    if (hadFullSelection) onValueChange?.(null)
-  }
-
-  function handleAmphureChange(nextId: number | null) {
-    setSelection((current) => ({ provinceId: current.provinceId, amphureId: nextId, tambonId: null }))
-    if (hadFullSelection) onValueChange?.(null)
-  }
-
-  function handleTambonChange(nextId: number | null) {
-    setSelection((current) => ({ ...current, tambonId: nextId }))
-    if (nextId === null) {
-      if (hadFullSelection) onValueChange?.(null)
-      return
-    }
-    const tambon = tambons.find((entry) => entry.id === nextId)
-    if (tambon && selectedProvince && selectedAmphure) {
-      onValueChange?.(buildResolved(selectedProvince, selectedAmphure, tambon))
-    }
-  }
-
-  const zipValue = selectedTambon?.zipCode ?? ''
+  const {
+    provinces,
+    amphures,
+    tambons,
+    provinceId,
+    amphureId,
+    tambonId,
+    selectedProvince,
+    selectedAmphure,
+    selectedTambon,
+    resolvedAddress,
+    zipCode: zipValue,
+    setProvince: handleProvinceChange,
+    setAmphure: handleAmphureChange,
+    setTambon: handleTambonChange,
+  } = useThaiAddressCascade({ index, value, defaultValue, onValueChange, locale })
 
   return (
     <div className={cn('grid w-full grid-cols-1 gap-4 sm:grid-cols-2', className)}>
@@ -394,9 +253,9 @@ type CascadeFieldProps = {
   labelId: string
   label: string
   placeholder: string
-  options: Option[]
+  options: CascadeOption[]
   value: number | null
-  selected: Option | null
+  selected: CascadeOption | null
   onChange: (next: number | null) => void
   disabled: boolean
   required: boolean
