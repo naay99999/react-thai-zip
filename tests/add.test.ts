@@ -832,6 +832,32 @@ describe('addComponents — shadcn style', () => {
     // address-form's own ['input', 'label'] plus cascade-select's ['select', 'label', 'button', 'input'] (deduped).
     expect(new Set(primitives)).toEqual(new Set(['input', 'label', 'select', 'button']))
   })
+
+  // Mirrors the radix case immediately above, for a `shadcnBase: 'aria'` config. `address-form`
+  // is byte-for-byte identical across all three `shadcn/<engine>/` directories, so this too
+  // targets the transitively-written `cascade-select` registryDependency, whose React Aria
+  // variant is the one file in this dependency chain with real engine-specific content
+  // (`selectedKey` — RAC's own controlled-selection prop on `<Select>`, absent from both the
+  // base and radix templates, which use `value`/`onValueChange` instead).
+  it('resolves the aria cascade template (not base or radix) end to end when scaffolding address-form for an aria-base project', async () => {
+    const cwd = await tempProjectWithConfigV2({
+      style: 'shadcn',
+      shadcnBase: 'aria',
+      shadcnUiAlias: '@/components/ui',
+      shadcnUiDir: 'components/ui',
+    })
+
+    await addComponents({ cwd, targets: ['address-form'], yes: true })
+
+    const cascadeContent = await readFile(path.join(cwd, 'app/components', 'thai-address-cascade-select.tsx'), 'utf8')
+    expect(cascadeContent).toMatch(/selectedKey/)
+    expect(cascadeContent).not.toMatch(/--radix-popover-trigger-width/)
+
+    expect(mockedEnsureShadcnPrimitives).toHaveBeenCalledTimes(1)
+    const [primitives] = mockedEnsureShadcnPrimitives.mock.calls[0]
+    // address-form's own ['input', 'label'] plus cascade-select's ['select', 'label', 'button', 'input'] (deduped).
+    expect(new Set(primitives)).toEqual(new Set(['input', 'label', 'select', 'button']))
+  })
 })
 
 describe('addComponents — shadcn style, JS-target', () => {

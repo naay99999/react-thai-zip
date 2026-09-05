@@ -107,6 +107,11 @@ export const registryItems: RegistryItem[] = [
         dependencies: ['thaizip'],
         shadcnPrimitives: ['input', 'label'],
       },
+      aria: {
+        files: [{ source: 'react/ts/shadcn/aria/thai-address-form.tsx', target: { dir: 'componentDir', file: 'thai-address-form.tsx' } }],
+        dependencies: ['thaizip'],
+        shadcnPrimitives: ['input', 'label'],
+      },
     },
   },
   {
@@ -136,6 +141,11 @@ export const registryItems: RegistryItem[] = [
       },
       radix: {
         files: [{ source: 'react/ts/shadcn/radix/thai-address-form-field.tsx', target: { dir: 'componentDir', file: 'thai-address-form-field.tsx' } }],
+        dependencies: ['thaizip', 'react-hook-form'],
+        shadcnPrimitives: [],
+      },
+      aria: {
+        files: [{ source: 'react/ts/shadcn/aria/thai-address-form-field.tsx', target: { dir: 'componentDir', file: 'thai-address-form-field.tsx' } }],
         dependencies: ['thaizip', 'react-hook-form'],
         shadcnPrimitives: [],
       },

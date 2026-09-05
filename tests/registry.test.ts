@@ -181,10 +181,6 @@ describe('selectVariant', () => {
 describe('selectVariant across bases', () => {
   const cascade = registryItems.find((item) => item.name === 'cascade-select')!
   const autocomplete = registryItems.find((item) => item.name === 'autocomplete')!
-  // address-form has no `aria` shadcn variant yet, unlike cascade-select and
-  // autocomplete — keep exercising the "no variant yet" fallback against an
-  // item that genuinely lacks one.
-  const addressForm = registryItems.find((item) => item.name === 'address-form')!
 
   it('returns the base variant for a base project', () => {
     expect(selectVariant(cascade, 'shadcn', 'base').files[0].source).toBe(
@@ -204,8 +200,32 @@ describe('selectVariant across bases', () => {
     )
   })
 
+  // Every real `component`-type registry item now has base/radix/aria shadcn variants (as of
+  // the aria address-form/address-form-field work), so this fallback branch of `selectVariant`
+  // can no longer be exercised against a real item missing one — the anchor has already been
+  // moved twice before for exactly that reason (cascade-select, then autocomplete, then
+  // address-form each gained a real aria variant in turn). A synthetic fixture proves the
+  // fallback permanently, independent of which real components happen to have variants.
   it('falls back to the vanilla files for a base with no variant yet', () => {
-    expect(selectVariant(addressForm, 'shadcn', 'aria').files[0].source).toBe(addressForm.files[0].source)
+    const syntheticItem: RegistryItem = {
+      name: 'synthetic-item',
+      description: 'test fixture with a partial shadcn map',
+      aliases: ['synthetic-item'],
+      type: 'component',
+      files: [{ source: 'react/ts/synthetic-item.tsx', target: { dir: 'componentDir', file: 'synthetic-item.tsx' } }],
+      dependencies: ['thaizip'],
+      registryDependencies: [],
+      shadcn: {
+        base: {
+          files: [{ source: 'react/ts/shadcn/base/synthetic-item.tsx', target: { dir: 'componentDir', file: 'synthetic-item.tsx' } }],
+          dependencies: ['thaizip'],
+          shadcnPrimitives: [],
+        },
+        // Deliberately no `aria` entry — this is the base under test.
+      },
+    }
+
+    expect(selectVariant(syntheticItem, 'shadcn', 'aria').files[0].source).toBe(syntheticItem.files[0].source)
   })
 
   it('ignores the base entirely for a vanilla project', () => {

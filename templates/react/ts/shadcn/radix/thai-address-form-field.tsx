@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils'
 // (this shadcn directory's own copy of that pairing — kept in lockstep separately from vanilla).
 // The coupling is now per-engine too: renaming this file or either export must be applied in
 // lockstep across the vanilla template and every `shadcn/<engine>/` directory (base, radix, and
-// eventually react-aria), not just within one engine's own directory.
+// react-aria), not just within one engine's own directory.
 import { ThaiAddressCascadeSelect } from './thai-address-cascade-select'
 import type { ThaiAddressCascadeSelectTexts } from './thai-address-cascade-select'
 

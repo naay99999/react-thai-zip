@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label'
 // separate coupling from the vanilla templates' own copy of the same pair — keep both in sync.
 // The coupling is now per-engine too: renaming this file or either export must be applied in
 // lockstep across the vanilla template and every `shadcn/<engine>/` directory (base, radix, and
-// eventually react-aria), not just within one engine's own directory.
+// react-aria), not just within one engine's own directory.
 import { ThaiAddressCascadeSelect } from './thai-address-cascade-select'
 import type { ThaiAddressCascadeSelectTexts } from './thai-address-cascade-select'
 
