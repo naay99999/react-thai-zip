@@ -4,7 +4,7 @@ import { cleanup, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { loadDefaultIndex } from 'thaizip/data'
 import type { ThaiAddressRecord } from 'thaizip'
-import { ThaiAddressAutocomplete } from '../templates/react/ts/shadcn/base/thai-address-autocomplete'
+import { ThaiAddressAutocomplete } from '../templates/react/ts/shadcn/radix/thai-address-autocomplete'
 import { describeAutocompleteBehaviour } from './shared/autocompleteBehaviour'
 
 if (!('ResizeObserver' in globalThis)) {
@@ -37,7 +37,7 @@ afterEach(() => {
   cleanup()
 })
 
-// Base UI's Popover trigger is a real <button>; the search field underneath is
+// Radix's Popover trigger is a real <button>; the search field underneath is
 // cmdk's role="combobox" input — the one genuinely engine-specific mechanic
 // the shared behaviour helper delegates to each engine's test file. See the
 // shared helper's doc comments.
@@ -49,8 +49,8 @@ async function openAndType(query: string) {
   await user.type(searchBox, query)
 }
 
-// cmdk's CommandItem renders role="option"; base-specific by design — see the
-// shared helper's `pickSuggestion` doc comment.
+// cmdk's CommandItem renders role="option"; radix-specific by design — see
+// the shared helper's `pickSuggestion` doc comment.
 async function pickSuggestion(labelPattern: RegExp) {
   const user = userEvent.setup()
   const option = await screen.findByText(labelPattern)
@@ -68,7 +68,7 @@ async function expectTriggerLabel(pattern: RegExp) {
 }
 
 describeAutocompleteBehaviour({
-  engine: 'base',
+  engine: 'radix',
   Component: ThaiAddressAutocomplete,
   openAndType,
   pickSuggestion,
