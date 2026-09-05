@@ -53,6 +53,11 @@ export const registryItems: RegistryItem[] = [
         dependencies: ['thaizip'],
         shadcnPrimitives: ['popover', 'command', 'button'],
       },
+      aria: {
+        files: [{ source: 'react/ts/shadcn/aria/thai-address-autocomplete.tsx', target: { dir: 'componentDir', file: 'thai-address-autocomplete.tsx' } }],
+        dependencies: ['thaizip'],
+        shadcnPrimitives: ['popover', 'command', 'button'],
+      },
     },
   },
   {
