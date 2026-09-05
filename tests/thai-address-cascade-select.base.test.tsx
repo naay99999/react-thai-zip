@@ -6,7 +6,7 @@ import userEvent from '@testing-library/user-event'
 import { loadDefaultIndex } from 'thaizip/data'
 import { listAmphures, listProvinces, listTambons } from 'thaizip'
 import type { AmphureSummary, ProvinceSummary, ResolvedThaiAddress, TambonSummary } from 'thaizip'
-import { ThaiAddressCascadeSelect } from '../templates/react/ts/shadcn/thai-address-cascade-select'
+import { ThaiAddressCascadeSelect } from '../templates/react/ts/shadcn/base/thai-address-cascade-select'
 
 // Same Base UI jsdom polyfills as tests/thai-address-cascade-select.test.tsx —
 // this is the identical Base UI Select/Popover machinery underneath shadcn's

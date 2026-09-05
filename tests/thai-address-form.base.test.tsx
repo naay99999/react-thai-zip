@@ -6,7 +6,7 @@ import userEvent from '@testing-library/user-event'
 import { loadDefaultIndex } from 'thaizip/data'
 import { listAmphures, listProvinces, listTambons } from 'thaizip'
 import type { AmphureSummary, ProvinceSummary, TambonSummary } from 'thaizip'
-import { ThaiAddressForm } from '../templates/react/ts/shadcn/thai-address-form'
+import { ThaiAddressForm } from '../templates/react/ts/shadcn/base/thai-address-form'
 
 if (!('ResizeObserver' in globalThis)) {
   class ResizeObserverStub {

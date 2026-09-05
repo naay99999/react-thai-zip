@@ -5,7 +5,7 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { loadDefaultIndex } from 'thaizip/data'
 import type { ThaiAddressRecord } from 'thaizip'
-import { ThaiAddressAutocomplete } from '../templates/react/ts/shadcn/thai-address-autocomplete'
+import { ThaiAddressAutocomplete } from '../templates/react/ts/shadcn/base/thai-address-autocomplete'
 
 if (!('ResizeObserver' in globalThis)) {
   class ResizeObserverStub {

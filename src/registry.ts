@@ -1,4 +1,4 @@
-import type { ComponentStyle } from './utils/config.js'
+import type { ComponentStyle, ShadcnBase } from './utils/config.js'
 
 export type RegistryItemType = 'component' | 'lib' | 'hook'
 export type TargetDirKey = 'componentDir' | 'libDir' | 'hooksDir'
@@ -18,10 +18,12 @@ export type RegistryItem = {
   // hint. Only needed when it can't be derived from the (possibly kebab-case) filename —
   // defaults to a basename derivation in add.ts when omitted.
   exportName?: string
-  // Base UI–backed shadcn composition, used instead of `files`/`dependencies`
-  // when the target project's style is 'shadcn' (see selectVariant below).
-  // Only the four components with an interactive primitive define this.
-  shadcn?: ShadcnVariant
+  // Per-component-library shadcn composition, used instead of the item's own
+  // `files`/`dependencies` when the target project's style is 'shadcn' and it
+  // has a variant for that project's base (see selectVariant below). A base
+  // with no entry falls back to the vanilla files, which is what keeps
+  // `address-display` (and the lib/hook items) unforked.
+  shadcn?: Partial<Record<ShadcnBase, ShadcnVariant>>
 }
 
 export type ShadcnVariant = {
@@ -41,9 +43,11 @@ export const registryItems: RegistryItem[] = [
     registryDependencies: ['utils', 'use-thai-address-index'],
     exportName: 'ThaiAddressAutocomplete',
     shadcn: {
-      files: [{ source: 'react/ts/shadcn/thai-address-autocomplete.tsx', target: { dir: 'componentDir', file: 'thai-address-autocomplete.tsx' } }],
-      dependencies: ['thaizip'],
-      shadcnPrimitives: ['popover', 'command', 'button'],
+      base: {
+        files: [{ source: 'react/ts/shadcn/base/thai-address-autocomplete.tsx', target: { dir: 'componentDir', file: 'thai-address-autocomplete.tsx' } }],
+        dependencies: ['thaizip'],
+        shadcnPrimitives: ['popover', 'command', 'button'],
+      },
     },
   },
   {
@@ -56,9 +60,11 @@ export const registryItems: RegistryItem[] = [
     registryDependencies: ['utils', 'use-thai-address-index', 'use-thai-address-cascade'],
     exportName: 'ThaiAddressCascadeSelect',
     shadcn: {
-      files: [{ source: 'react/ts/shadcn/thai-address-cascade-select.tsx', target: { dir: 'componentDir', file: 'thai-address-cascade-select.tsx' } }],
-      dependencies: ['thaizip'],
-      shadcnPrimitives: ['select', 'label', 'button', 'input'],
+      base: {
+        files: [{ source: 'react/ts/shadcn/base/thai-address-cascade-select.tsx', target: { dir: 'componentDir', file: 'thai-address-cascade-select.tsx' } }],
+        dependencies: ['thaizip'],
+        shadcnPrimitives: ['select', 'label', 'button', 'input'],
+      },
     },
   },
   {
@@ -71,9 +77,11 @@ export const registryItems: RegistryItem[] = [
     registryDependencies: ['utils', 'use-thai-address-index', 'cascade-select'],
     exportName: 'ThaiAddressForm',
     shadcn: {
-      files: [{ source: 'react/ts/shadcn/thai-address-form.tsx', target: { dir: 'componentDir', file: 'thai-address-form.tsx' } }],
-      dependencies: ['thaizip'],
-      shadcnPrimitives: ['input', 'label'],
+      base: {
+        files: [{ source: 'react/ts/shadcn/base/thai-address-form.tsx', target: { dir: 'componentDir', file: 'thai-address-form.tsx' } }],
+        dependencies: ['thaizip'],
+        shadcnPrimitives: ['input', 'label'],
+      },
     },
   },
   {
@@ -96,9 +104,11 @@ export const registryItems: RegistryItem[] = [
     registryDependencies: ['utils', 'use-thai-address-index', 'cascade-select'],
     exportName: 'ThaiAddressFormField',
     shadcn: {
-      files: [{ source: 'react/ts/shadcn/thai-address-form-field.tsx', target: { dir: 'componentDir', file: 'thai-address-form-field.tsx' } }],
-      dependencies: ['thaizip', 'react-hook-form'],
-      shadcnPrimitives: [],
+      base: {
+        files: [{ source: 'react/ts/shadcn/base/thai-address-form-field.tsx', target: { dir: 'componentDir', file: 'thai-address-form-field.tsx' } }],
+        dependencies: ['thaizip', 'react-hook-form'],
+        shadcnPrimitives: [],
+      },
     },
   },
   {
@@ -158,7 +168,10 @@ export function resolveWithDependencies(selected: RegistryItem[], registry: Regi
   return ordered
 }
 
-export function selectVariant(item: RegistryItem, style: ComponentStyle): ShadcnVariant {
-  if (style === 'shadcn' && item.shadcn) return item.shadcn
+export function selectVariant(item: RegistryItem, style: ComponentStyle, shadcnBase: ShadcnBase | ''): ShadcnVariant {
+  if (style === 'shadcn' && shadcnBase) {
+    const variant = item.shadcn?.[shadcnBase]
+    if (variant) return variant
+  }
   return { files: item.files, dependencies: item.dependencies, shadcnPrimitives: [] }
 }

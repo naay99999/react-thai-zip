@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form'
 import { loadDefaultIndex } from 'thaizip/data'
 import { listAmphures, listProvinces, listTambons } from 'thaizip'
 import type { AmphureSummary, ProvinceSummary, ResolvedThaiAddress, TambonSummary } from 'thaizip'
-import { ThaiAddressFormField } from '../templates/react/ts/shadcn/thai-address-form-field'
+import { ThaiAddressFormField } from '../templates/react/ts/shadcn/base/thai-address-form-field'
 
 if (!('ResizeObserver' in globalThis)) {
   class ResizeObserverStub {
@@ -39,8 +39,8 @@ beforeAll(async () => {
   tambon = listTambons(index, amphure.id)[0]
 })
 
-// Same full-cascade selection pattern as tests/thai-address-form.shadcn.test.tsx and
-// tests/thai-address-cascade-select.shadcn.test.tsx: the embedded cascade only resolves (and
+// Same full-cascade selection pattern as tests/thai-address-form.base.test.tsx and
+// tests/thai-address-cascade-select.base.test.tsx: the embedded cascade only resolves (and
 // calls back with) a non-null `ResolvedThaiAddress` once province, district, and sub-district
 // are all picked — the brief's original single-click-on-province assertion never observed a
 // full resolution, so `submitted` stayed `'null'` and the test hung until timeout.
