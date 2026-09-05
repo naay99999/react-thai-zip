@@ -5,11 +5,12 @@ import userEvent from '@testing-library/user-event'
 import { loadDefaultIndex } from 'thaizip/data'
 import { listAmphures, listProvinces, listTambons } from 'thaizip'
 import type { AmphureSummary, ProvinceSummary, TambonSummary } from 'thaizip'
-import { ThaiAddressFormField } from '../templates/react/ts/shadcn/base/thai-address-form-field'
-import { describeFormFieldBehaviour } from './shared/formFieldBehaviour'
+import { ThaiAddressForm } from '../templates/react/ts/shadcn/radix/thai-address-form'
+import { describeFormBehaviour } from './shared/formBehaviour'
 
-// Same Base UI jsdom polyfills as tests/thai-address-cascade-select.base.test.tsx — this is the
-// identical Base UI Select/Popover machinery underneath the embedded cascade select.
+// Radix needs the same jsdom polyfills as Base UI, for the same reasons — ResizeObserver,
+// pointer capture, and scrollIntoView are all exercised by its Select/Popover machinery
+// underneath the embedded cascade select.
 if (!('ResizeObserver' in globalThis)) {
   class ResizeObserverStub {
     observe() {}
@@ -44,11 +45,11 @@ afterEach(() => {
   cleanup()
 })
 
-// Same full-cascade selection pattern as tests/thai-address-form.base.test.tsx and
-// tests/thai-address-cascade-select.base.test.tsx: the embedded cascade only resolves (and
-// calls back with) a non-null `ResolvedThaiAddress` once province, district, and sub-district
-// are all picked. Base UI–specific by design; see the shared helper's `selectFullCascade` doc
-// comment.
+// The embedded cascade only resolves (and calls back with) a non-null selection once province,
+// district, and sub-district are all picked, and each downstream trigger stays disabled until
+// its own parent is chosen — Radix's SelectTrigger is a real `<button>`, so this waits on the
+// native `disabled` property between picks. Radix-specific by design; see the shared helper's
+// `selectFullCascade` doc comment.
 async function selectFullCascade(user: ReturnType<typeof userEvent.setup>) {
   const triggers = await screen.findAllByRole('combobox')
   await user.click(triggers[0])
@@ -65,8 +66,12 @@ async function selectFullCascade(user: ReturnType<typeof userEvent.setup>) {
   await user.click(await screen.findByRole('option', { name: tambon.nameTh }))
 }
 
-describeFormFieldBehaviour({
-  engine: 'base',
-  Component: ThaiAddressFormField,
+describeFormBehaviour({
+  engine: 'radix',
+  Component: ThaiAddressForm,
   selectFullCascade,
+  chain: () => ({
+    subdistrictName: tambon.nameTh,
+    zipCode: tambon.zipCode,
+  }),
 })

@@ -5,11 +5,12 @@ import userEvent from '@testing-library/user-event'
 import { loadDefaultIndex } from 'thaizip/data'
 import { listAmphures, listProvinces, listTambons } from 'thaizip'
 import type { AmphureSummary, ProvinceSummary, TambonSummary } from 'thaizip'
-import { ThaiAddressFormField } from '../templates/react/ts/shadcn/base/thai-address-form-field'
+import { ThaiAddressFormField } from '../templates/react/ts/shadcn/radix/thai-address-form-field'
 import { describeFormFieldBehaviour } from './shared/formFieldBehaviour'
 
-// Same Base UI jsdom polyfills as tests/thai-address-cascade-select.base.test.tsx — this is the
-// identical Base UI Select/Popover machinery underneath the embedded cascade select.
+// Radix needs the same jsdom polyfills as Base UI, for the same reasons — ResizeObserver,
+// pointer capture, and scrollIntoView are all exercised by its Select/Popover machinery
+// underneath the embedded cascade select.
 if (!('ResizeObserver' in globalThis)) {
   class ResizeObserverStub {
     observe() {}
@@ -44,10 +45,10 @@ afterEach(() => {
   cleanup()
 })
 
-// Same full-cascade selection pattern as tests/thai-address-form.base.test.tsx and
-// tests/thai-address-cascade-select.base.test.tsx: the embedded cascade only resolves (and
+// Same full-cascade selection pattern as tests/thai-address-form.radix.test.tsx and
+// tests/thai-address-cascade-select.radix.test.tsx: the embedded cascade only resolves (and
 // calls back with) a non-null `ResolvedThaiAddress` once province, district, and sub-district
-// are all picked. Base UI–specific by design; see the shared helper's `selectFullCascade` doc
+// are all picked. Radix-specific by design; see the shared helper's `selectFullCascade` doc
 // comment.
 async function selectFullCascade(user: ReturnType<typeof userEvent.setup>) {
   const triggers = await screen.findAllByRole('combobox')
@@ -66,7 +67,7 @@ async function selectFullCascade(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describeFormFieldBehaviour({
-  engine: 'base',
+  engine: 'radix',
   Component: ThaiAddressFormField,
   selectFullCascade,
 })

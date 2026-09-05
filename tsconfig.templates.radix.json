@@ -29,6 +29,8 @@
     "templates/react/ts/shadcn/radix/**/*.tsx",
     "templates/react/ts/shadcn/__fixtures__/radix/**/*.tsx",
     "tests/thai-address-cascade-select.radix.test.tsx",
-    "tests/thai-address-autocomplete.radix.test.tsx"
+    "tests/thai-address-autocomplete.radix.test.tsx",
+    "tests/thai-address-form.radix.test.tsx",
+    "tests/thai-address-form-field.radix.test.tsx"
   ]
 }

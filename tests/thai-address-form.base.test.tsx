@@ -1,13 +1,15 @@
 // @vitest-environment jsdom
-import * as React from 'react'
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { afterEach, beforeAll, expect } from 'vitest'
+import { cleanup, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { loadDefaultIndex } from 'thaizip/data'
 import { listAmphures, listProvinces, listTambons } from 'thaizip'
 import type { AmphureSummary, ProvinceSummary, TambonSummary } from 'thaizip'
 import { ThaiAddressForm } from '../templates/react/ts/shadcn/base/thai-address-form'
+import { describeFormBehaviour } from './shared/formBehaviour'
 
+// Same Base UI jsdom polyfills as tests/thai-address-cascade-select.base.test.tsx — this is the
+// identical Base UI Select/Popover machinery underneath the embedded cascade select.
 if (!('ResizeObserver' in globalThis)) {
   class ResizeObserverStub {
     observe() {}
@@ -42,6 +44,11 @@ afterEach(() => {
   cleanup()
 })
 
+// The embedded cascade only resolves (and calls back with) a non-null selection once province,
+// district, and sub-district are all picked, and each downstream trigger stays disabled until
+// its own parent is chosen — Base UI's SelectTrigger is a real `<button>`, so this waits on the
+// native `disabled` property between picks. Base UI–specific by design; see the shared helper's
+// `selectFullCascade` doc comment.
 async function selectFullCascade(user: ReturnType<typeof userEvent.setup>) {
   const triggers = await screen.findAllByRole('combobox')
   await user.click(triggers[0])
@@ -58,33 +65,12 @@ async function selectFullCascade(user: ReturnType<typeof userEvent.setup>) {
   await user.click(await screen.findByRole('option', { name: tambon.nameTh }))
 }
 
-describe('ThaiAddressForm (shadcn)', () => {
-  it('emits a FullThaiAddress once the cascade resolves and house number is filled in', async () => {
-    const user = userEvent.setup()
-    const onValueChange = vi.fn()
-    render(<ThaiAddressForm onValueChange={onValueChange} />)
-
-    await selectFullCascade(user)
-    await user.type(screen.getByLabelText('บ้านเลขที่'), '123/45')
-
-    await waitFor(() =>
-      expect(onValueChange).toHaveBeenLastCalledWith(
-        expect.objectContaining({ houseNo: '123/45', subdistrict: tambon.nameTh, zipCode: tambon.zipCode }),
-      ),
-    )
-  })
-
-  it('keeps moo/soi/street always-optional even when required is set', async () => {
-    const user = userEvent.setup()
-    const onValueChange = vi.fn()
-    render(<ThaiAddressForm required onValueChange={onValueChange} />)
-
-    expect((screen.getByLabelText('หมู่') as HTMLInputElement).required).toBe(false)
-    expect((screen.getByLabelText('บ้านเลขที่') as HTMLInputElement).required).toBe(true)
-
-    await selectFullCascade(user)
-    await user.type(screen.getByLabelText('บ้านเลขที่'), '99')
-
-    await waitFor(() => expect(onValueChange).toHaveBeenLastCalledWith(expect.objectContaining({ houseNo: '99' })))
-  })
+describeFormBehaviour({
+  engine: 'base',
+  Component: ThaiAddressForm,
+  selectFullCascade,
+  chain: () => ({
+    subdistrictName: tambon.nameTh,
+    zipCode: tambon.zipCode,
+  }),
 })
