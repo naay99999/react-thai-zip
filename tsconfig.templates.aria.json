@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": [],
+    "paths": {
+      "@/lib/utils": ["./templates/react/ts/lib/utils.ts"],
+      "@/hooks/use-thai-address-index": ["./templates/react/ts/hooks/use-thai-address-index.ts"],
+      "@/hooks/use-thai-address-cascade": ["./templates/react/ts/hooks/use-thai-address-cascade.ts"],
+      "@/components/ui/button": ["./templates/react/ts/shadcn/__fixtures__/aria/components/ui/button.tsx"],
+      "@/components/ui/input": ["./templates/react/ts/shadcn/__fixtures__/aria/components/ui/input.tsx"],
+      "@/components/ui/label": ["./templates/react/ts/shadcn/__fixtures__/aria/components/ui/label.tsx"],
+      "@/components/ui/popover": ["./templates/react/ts/shadcn/__fixtures__/aria/components/ui/popover.tsx"],
+      "@/components/ui/select": ["./templates/react/ts/shadcn/__fixtures__/aria/components/ui/select.tsx"],
+      "@/components/ui/command": ["./templates/react/ts/shadcn/__fixtures__/aria/components/ui/command.tsx"],
+      "@/components/ui/dialog": ["./templates/react/ts/shadcn/__fixtures__/aria/components/ui/dialog.tsx"],
+      "@/components/ui/input-group": ["./templates/react/ts/shadcn/__fixtures__/aria/components/ui/input-group.tsx"],
+      "@/components/ui/textarea": ["./templates/react/ts/shadcn/__fixtures__/aria/components/ui/textarea.tsx"]
+    }
+  },
+  "include": [
+    "templates/react/ts/lib/**/*.ts",
+    "templates/react/ts/hooks/**/*.ts",
+    "templates/react/ts/shadcn/aria/**/*.tsx",
+    "templates/react/ts/shadcn/__fixtures__/aria/**/*.tsx",
+    "tests/thai-address-autocomplete.aria.test.tsx",
+    "tests/thai-address-cascade-select.aria.test.tsx",
+    "tests/thai-address-form.aria.test.tsx",
+    "tests/thai-address-form-field.aria.test.tsx"
+  ]
+}

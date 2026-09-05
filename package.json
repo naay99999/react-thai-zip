@@ -16,7 +16,7 @@
     "build": "tsup",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "typecheck:templates": "tsc -p tsconfig.templates.json && tsc -p tsconfig.templates.base.json && tsc -p tsconfig.templates.radix.json",
+    "typecheck:templates": "tsc -p tsconfig.templates.json && tsc -p tsconfig.templates.base.json && tsc -p tsconfig.templates.radix.json && tsc -p tsconfig.templates.aria.json",
     "sandbox": "node scripts/sandbox.mjs"
   },
   "keywords": [
@@ -58,6 +58,7 @@
     "lucide-react": "^1.40.0",
     "radix-ui": "^1.6.7",
     "react": "^19.2.8",
+    "react-aria-components": "^1.21.1",
     "react-dom": "^19.2.8",
     "react-hook-form": "^7.87.0",
     "shadcn": "^4.20.1",

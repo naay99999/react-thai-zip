@@ -51,4 +51,5 @@ export default defineWorkspace([
   },
   shadcnProject('base'),
   shadcnProject('radix'),
+  shadcnProject('aria'),
 ])
