@@ -251,10 +251,17 @@ function ThaiAddressAutocompleteReady({
   // the only way to get a real `aria-invalid` attribute onto this engine's
   // trigger — for the shadcn fixture's own `aria-invalid:border-destructive`
   // Tailwind styling and for screen readers — is to set it on the DOM node
-  // directly.
+  // directly. This must be `useLayoutEffect`, not `useEffect`: the trigger
+  // button only exists once `index` finishes loading and this component
+  // mounts for the first time, so the attribute write lands on the very
+  // commit that inserts the node into the DOM. `useEffect` defers that write
+  // to a later, unbatched tick, leaving a real (if brief) window where the
+  // trigger is in the DOM without `aria-invalid` — observable by an assistive
+  // technology, and by a test's `findByRole`, which can resolve on that
+  // in-between state and read a stale/missing attribute.
   const isInvalid = ariaInvalid === true || ariaInvalid === 'true'
   const internalTriggerRef = React.useRef<HTMLButtonElement>(null)
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     const node = internalTriggerRef.current
     if (!node) return
     if (isInvalid) node.setAttribute('aria-invalid', 'true')
