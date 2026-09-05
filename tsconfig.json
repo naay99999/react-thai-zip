@@ -23,6 +23,8 @@
     "tests/thai-address-cascade-select.base.test.tsx",
     "tests/thai-address-autocomplete.base.test.tsx",
     "tests/thai-address-form.base.test.tsx",
-    "tests/thai-address-form-field.base.test.tsx"
+    "tests/thai-address-form-field.base.test.tsx",
+    "tests/thai-address-cascade-select.radix.test.tsx",
+    "tests/shared/**"
   ]
 }

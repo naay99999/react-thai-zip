@@ -5,12 +5,12 @@ import userEvent from '@testing-library/user-event'
 import { loadDefaultIndex } from 'thaizip/data'
 import { listAmphures, listProvinces, listTambons } from 'thaizip'
 import type { AmphureSummary, ProvinceSummary, ResolvedThaiAddress, TambonSummary } from 'thaizip'
-import { ThaiAddressCascadeSelect } from '../templates/react/ts/shadcn/base/thai-address-cascade-select'
+import { ThaiAddressCascadeSelect } from '../templates/react/ts/shadcn/radix/thai-address-cascade-select'
 import { describeCascadeSelectBehaviour } from './shared/cascadeSelectBehaviour'
 
-// Same Base UI jsdom polyfills as tests/thai-address-cascade-select.test.tsx —
-// this is the identical Base UI Select/Popover machinery underneath shadcn's
-// own wrapper components.
+// Radix needs the same jsdom polyfills as Base UI, for the same reasons —
+// ResizeObserver, pointer capture, and scrollIntoView are all exercised by its
+// Select/Popover machinery underneath shadcn's own wrapper components.
 if (!('ResizeObserver' in globalThis)) {
   class ResizeObserverStub {
     observe() {}
@@ -63,7 +63,7 @@ afterEach(() => {
   cleanup()
 })
 
-// Base UI's SelectTrigger is `aria-labelledby`-linked to the field's <Label>, so
+// Radix's SelectTrigger is `aria-labelledby`-linked to the field's <Label>, so
 // its accessible name is the label text — the one genuinely engine-specific
 // mechanic the shared behaviour helper delegates to each engine's test file.
 async function pick(labelText: string | RegExp, optionName: string) {
@@ -77,7 +77,7 @@ async function pick(labelText: string | RegExp, optionName: string) {
 }
 
 describeCascadeSelectBehaviour({
-  engine: 'base',
+  engine: 'radix',
   Component: ThaiAddressCascadeSelect,
   pick,
   chain: () => ({

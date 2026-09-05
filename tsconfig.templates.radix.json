@@ -27,6 +27,7 @@
     "templates/react/ts/lib/**/*.ts",
     "templates/react/ts/hooks/**/*.ts",
     "templates/react/ts/shadcn/radix/**/*.tsx",
-    "templates/react/ts/shadcn/__fixtures__/radix/**/*.tsx"
+    "templates/react/ts/shadcn/__fixtures__/radix/**/*.tsx",
+    "tests/thai-address-cascade-select.radix.test.tsx"
   ]
 }
