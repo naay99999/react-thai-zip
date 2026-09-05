@@ -357,7 +357,7 @@ describe('initProject', () => {
     expect(config).toMatchObject({ style: 'shadcn', shadcnBase: 'radix' })
   })
 
-  it('prints the base in the detection summary', async () => {
+  it('prints the base in the detection summary and records it for an aria project', async () => {
     const cwd = await shadcnProject('aria-nova')
     mockedPrompts.mockResolvedValueOnce({})
 
@@ -365,5 +365,8 @@ describe('initProject', () => {
 
     const logged = vi.mocked(console.log).mock.calls.map((call) => String(call[0])).join('\n')
     expect(logged).toContain('Component style: shadcn (components.json, style: aria-nova, base: aria)')
+
+    const config = JSON.parse(await readFile(path.join(cwd, 'thaizip.config.json'), 'utf8'))
+    expect(config).toMatchObject({ style: 'shadcn', shadcnBase: 'aria' })
   })
 })

@@ -35,7 +35,7 @@ export type ShadcnVariant = {
 export const registryItems: RegistryItem[] = [
   {
     name: 'autocomplete',
-    description: 'Free-text Thai address autocomplete (Base UI Combobox)',
+    description: 'Free-text Thai address autocomplete with a suggestion dropdown',
     aliases: ['autocomplete', 'thai-address-autocomplete', 'ThaiAddressAutocomplete'],
     type: 'component',
     files: [{ source: 'react/ts/thai-address-autocomplete.tsx', target: { dir: 'componentDir', file: 'thai-address-autocomplete.tsx' } }],
@@ -62,7 +62,7 @@ export const registryItems: RegistryItem[] = [
   },
   {
     name: 'cascade-select',
-    description: 'Province > district > sub-district select flow (Base UI Select)',
+    description: 'Province > district > sub-district select flow',
     aliases: ['cascade', 'cascade-select', 'thai-address-cascade-select', 'ThaiAddressCascadeSelect'],
     type: 'component',
     files: [{ source: 'react/ts/thai-address-cascade-select.tsx', target: { dir: 'componentDir', file: 'thai-address-cascade-select.tsx' } }],

@@ -44,12 +44,39 @@ function reachableShadcnPrimitives(item: RegistryItem, base: ShadcnBase): Set<st
   return primitives
 }
 
+// Authoring-only packages that the radix/aria/base shadcn fixtures import to
+// typecheck/test against (see CLAUDE.md's "Build details" section) but that
+// must never be installed into a user's target project — a shadcn-style
+// component calls into the *target project's own already-installed*
+// shadcn/ui primitives, never our vendored engine. This is the whole point
+// of the shadcn variant existing at all: the vanilla variant legitimately
+// depends on '@base-ui/react' (that's what its templates import), so this
+// list is checked only against each item's `shadcn` variants, never its
+// top-level (vanilla) `dependencies`.
+const AUTHORING_ONLY_PACKAGES = ['@base-ui/react', 'radix-ui', 'react-aria-components', 'cn']
+
 describe('registry <-> shadcn template consistency', () => {
-  it('sanity check: the four known shadcn-backed items each define a base variant', () => {
-    const itemsWithBaseVariant = registryItems.filter((item) => item.shadcn?.base)
-    expect(itemsWithBaseVariant.map((item) => item.name).sort()).toEqual(
-      ['address-form', 'address-form-field', 'autocomplete', 'cascade-select'].sort(),
-    )
+  it('sanity check: the four known shadcn-backed items each define all three base variants', () => {
+    const knownShadcnItems = ['address-form', 'address-form-field', 'autocomplete', 'cascade-select']
+    const itemsWithAllBases = registryItems.filter((item) => SHADCN_BASES.every((base) => item.shadcn?.[base]))
+    expect(itemsWithAllBases.map((item) => item.name).sort()).toEqual(knownShadcnItems.sort())
+  })
+
+  it('no shadcn variant of any registry item depends on an authoring-only primitive package', () => {
+    const offenders: string[] = []
+    for (const item of registryItems) {
+      if (!item.shadcn) continue
+      for (const base of SHADCN_BASES) {
+        const variant = item.shadcn[base]
+        if (!variant) continue
+        for (const pkg of AUTHORING_ONLY_PACKAGES) {
+          if (variant.dependencies.includes(pkg)) {
+            offenders.push(`${item.name}/shadcn/${base} depends on '${pkg}'`)
+          }
+        }
+      }
+    }
+    expect(offenders).toEqual([])
   })
 
   const pairs = registryItems.flatMap((item) =>

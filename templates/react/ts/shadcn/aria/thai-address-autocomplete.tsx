@@ -318,7 +318,17 @@ function ThaiAddressAutocompleteReady({
             <div ref={setInputContainerRef}>
               <CommandInput placeholder={texts.placeholder} required={required} />
             </div>
-            <CommandList onAction={(key) => commitSelection(suggestionsById.get(String(key))!)}>
+            <CommandList
+              onAction={(key) => {
+                // A stale onAction can fire after `suggestions` (and this
+                // map) have already moved on — e.g. a debounced query
+                // lands between the press and this handler running. Look
+                // the id up and no-op rather than asserting it's still
+                // there, so a race never throws inside the host app.
+                const item = suggestionsById.get(String(key))
+                if (item) commitSelection(item)
+              }}
+            >
               {suggestions.map((item) => (
                 <CommandItem
                   key={item.id}
