@@ -1,16 +1,17 @@
 // @vitest-environment jsdom
 import { afterEach, beforeAll, expect } from 'vitest'
-import { cleanup, screen } from '@testing-library/react'
+import { cleanup, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { loadDefaultIndex } from 'thaizip/data'
 import { listAmphures, listProvinces, listTambons } from 'thaizip'
 import type { AmphureSummary, ProvinceSummary, ResolvedThaiAddress, TambonSummary } from 'thaizip'
-import { ThaiAddressCascadeSelect } from '../templates/react/ts/shadcn/base/thai-address-cascade-select'
+import { ThaiAddressCascadeSelect } from '../templates/react/ts/shadcn/aria/thai-address-cascade-select'
 import { describeCascadeSelectBehaviour } from './shared/cascadeSelectBehaviour'
 
-// Same Base UI jsdom polyfills as tests/thai-address-cascade-select.test.tsx —
-// this is the identical Base UI Select/Popover machinery underneath shadcn's
-// own wrapper components.
+// React Aria needs the same jsdom polyfills as Base UI and Radix, for the
+// same reasons — ResizeObserver, pointer capture, and scrollIntoView are all
+// exercised by its Select/Popover machinery underneath shadcn's own wrapper
+// components.
 if (!('ResizeObserver' in globalThis)) {
   class ResizeObserverStub {
     observe() {}
@@ -63,16 +64,27 @@ afterEach(() => {
   cleanup()
 })
 
-// Base UI's SelectTrigger is `aria-labelledby`-linked to the field's <Label>, so
-// its accessible name is the label text — the one genuinely engine-specific
-// mechanic the shared behaviour helper delegates to each engine's test file.
+// React Aria's SelectTrigger renders a RAC `Button`, not a `<button
+// role="combobox">` — its accessible name is computed from the Select's
+// internal `aria-labelledby` wiring (the current value's text plus the
+// field's own <Label>), so a plain exact match on the label text alone
+// doesn't work. Matching a RegExp built from the label text instead finds it
+// as a substring of that concatenated name.
+function triggerPattern(labelText: string | RegExp): RegExp {
+  return typeof labelText === 'string' ? new RegExp(labelText) : labelText
+}
+
+// RAC renders options as `role="option"` inside a `role="listbox"` — opening
+// a Select mounts that listbox (in a portal), so the option lookup is scoped
+// to it rather than the whole document.
 async function pick(labelText: string | RegExp, optionName: string) {
   const user = userEvent.setup()
   // The index loads asynchronously, so the trigger for a given label may not
   // exist (or may still be the disabled loading-state button) on first render.
-  const trigger = await screen.findByRole('combobox', { name: labelText })
+  const trigger = await screen.findByRole('button', { name: triggerPattern(labelText) })
   await user.click(trigger)
-  const option = await screen.findByRole('option', { name: optionName })
+  const listbox = await screen.findByRole('listbox')
+  const option = within(listbox).getByRole('option', { name: optionName })
   await user.click(option)
 }
 
@@ -82,23 +94,26 @@ const labels = {
   subdistrict: 'ตำบล/แขวง',
 } as const
 
-// Base UI's SelectTrigger is a real `<button>`; disabled state is the native
-// `disabled` property. This lookup is base-specific by design — see the
-// shared helper's `expectDownstreamReset` doc comment.
+// RAC's SelectTrigger renders a real, native `<button>` under the hood
+// (react-aria-components' Button primitive); `isDisabled` reflects as the
+// native `disabled` property. This lookup is aria-specific by design — see
+// the shared helper's `expectDownstreamReset` doc comment.
 async function expectDownstreamReset() {
-  const subdistrictTrigger = await screen.findByRole('combobox', { name: labels.subdistrict })
+  const subdistrictTrigger = await screen.findByRole('button', { name: new RegExp(labels.subdistrict) })
   expect((subdistrictTrigger as HTMLButtonElement).disabled).toBe(true)
 }
 
-// Base UI's triggers render `role="combobox"` only once the index has loaded
-// and the real controls (as opposed to the disabled loading-state
-// placeholders) have mounted.
+// The index loads asynchronously, and the disabled loading-state
+// placeholders are plain `<Button isDisabled>` elements too — so waiting for
+// a `role="button"` doesn't distinguish "still loading" from "ready". Wait
+// for the province trigger's accessible name to actually contain the
+// province label before proceeding.
 async function waitForLoad() {
-  await screen.findAllByRole('combobox')
+  await screen.findByRole('button', { name: new RegExp(labels.province) })
 }
 
 describeCascadeSelectBehaviour({
-  engine: 'base',
+  engine: 'aria',
   Component: ThaiAddressCascadeSelect,
   pick,
   chain: () => ({

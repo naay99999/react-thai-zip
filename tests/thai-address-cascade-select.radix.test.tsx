@@ -90,6 +90,13 @@ async function expectDownstreamReset() {
   expect((subdistrictTrigger as HTMLButtonElement).disabled).toBe(true)
 }
 
+// Radix's triggers render `role="combobox"` only once the index has loaded
+// and the real controls (as opposed to the disabled loading-state
+// placeholders) have mounted.
+async function waitForLoad() {
+  await screen.findAllByRole('combobox')
+}
+
 describeCascadeSelectBehaviour({
   engine: 'radix',
   Component: ThaiAddressCascadeSelect,
@@ -103,4 +110,5 @@ describeCascadeSelectBehaviour({
   }),
   labels,
   expectDownstreamReset,
+  waitForLoad,
 })

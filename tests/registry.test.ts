@@ -180,6 +180,10 @@ describe('selectVariant', () => {
 
 describe('selectVariant across bases', () => {
   const cascade = registryItems.find((item) => item.name === 'cascade-select')!
+  // autocomplete has no `aria` shadcn variant yet, unlike cascade-select —
+  // keep exercising the "no variant yet" fallback against an item that
+  // genuinely lacks one.
+  const autocomplete = registryItems.find((item) => item.name === 'autocomplete')!
 
   it('returns the base variant for a base project', () => {
     expect(selectVariant(cascade, 'shadcn', 'base').files[0].source).toBe(
@@ -187,8 +191,14 @@ describe('selectVariant across bases', () => {
     )
   })
 
+  it('returns the aria variant for an aria project', () => {
+    expect(selectVariant(cascade, 'shadcn', 'aria').files[0].source).toBe(
+      'react/ts/shadcn/aria/thai-address-cascade-select.tsx',
+    )
+  })
+
   it('falls back to the vanilla files for a base with no variant yet', () => {
-    expect(selectVariant(cascade, 'shadcn', 'aria').files[0].source).toBe(cascade.files[0].source)
+    expect(selectVariant(autocomplete, 'shadcn', 'aria').files[0].source).toBe(autocomplete.files[0].source)
   })
 
   it('ignores the base entirely for a vanilla project', () => {

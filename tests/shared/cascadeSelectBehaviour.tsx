@@ -44,10 +44,18 @@ export type CascadeBehaviourOptions = {
    * the shared helper itself never queries for `role="combobox"` directly.
    */
   expectDownstreamReset: () => Promise<void> | void
+  /**
+   * Resolves once the index has loaded and the cascade's real controls have
+   * mounted (as opposed to the disabled loading-state placeholders). Base UI
+   * and Radix both render a real `<button role="combobox">` for this; React
+   * Aria's `SelectTrigger` renders a RAC `Button` with no such role, so the
+   * wait lives with each engine's test file rather than hardcoded here.
+   */
+  waitForLoad: () => Promise<unknown>
 }
 
 export function describeCascadeSelectBehaviour(options: CascadeBehaviourOptions): void {
-  const { engine, Component, pick, chain, labels, expectDownstreamReset } = options
+  const { engine, Component, pick, chain, labels, expectDownstreamReset, waitForLoad } = options
 
   describe(`ThaiAddressCascadeSelect (${engine}) — shared behaviour`, () => {
     it('emits the resolved address after the full chain is picked', async () => {
@@ -86,7 +94,7 @@ export function describeCascadeSelectBehaviour(options: CascadeBehaviourOptions)
       // The index loads asynchronously (useThaiAddressIndex resolves via a
       // promise), and the hidden inputs render only once it has — wait for the
       // triggers, which land in the same post-load render, before asserting.
-      await screen.findAllByRole('combobox')
+      await waitForLoad()
 
       for (const [suffix, expected] of [
         ['subdistrict', address.subdistrict],

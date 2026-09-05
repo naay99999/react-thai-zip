@@ -75,6 +75,11 @@ export const registryItems: RegistryItem[] = [
         dependencies: ['thaizip'],
         shadcnPrimitives: ['select', 'label', 'button', 'input'],
       },
+      aria: {
+        files: [{ source: 'react/ts/shadcn/aria/thai-address-cascade-select.tsx', target: { dir: 'componentDir', file: 'thai-address-cascade-select.tsx' } }],
+        dependencies: ['thaizip'],
+        shadcnPrimitives: ['select', 'label', 'button', 'input'],
+      },
     },
   },
   {
