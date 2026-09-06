@@ -38,6 +38,7 @@ async function tempShadcnJsProject() {
       packageManager: 'npm',
       tailwind: { version: 4, css: 'app/globals.css' },
       style: 'shadcn',
+      shadcnBase: 'base',
       shadcnUiAlias: '@/components/ui',
       shadcnUiDir: 'components/ui',
       registryVersion: '0.1.0',

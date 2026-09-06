@@ -35,6 +35,7 @@ async function tempProjectWithConfigV2(
     registryVersion?: string
     typescript?: boolean
     style?: 'vanilla' | 'shadcn'
+    shadcnBase?: 'base' | 'radix' | 'aria'
     shadcnUiAlias?: string
     shadcnUiDir?: string
   } = {},
@@ -67,6 +68,7 @@ async function tempProjectWithConfigV2(
       packageManager: 'npm',
       tailwind: { version: 4, css: 'app/globals.css' },
       style: options.style ?? 'vanilla',
+      shadcnBase: (options.style ?? 'vanilla') === 'shadcn' ? (options.shadcnBase ?? 'base') : '',
       shadcnUiAlias: options.shadcnUiAlias ?? '',
       shadcnUiDir: options.shadcnUiDir ?? '',
       registryVersion: options.registryVersion ?? '0.1.0',
@@ -165,6 +167,7 @@ describe('addComponents', () => {
         packageManager: 'npm',
         tailwind: { version: 4, css: 'app/globals.css' },
         style: 'vanilla',
+        shadcnBase: '',
         shadcnUiAlias: '',
         shadcnUiDir: '',
         registryVersion: '0.1.0',
@@ -201,11 +204,13 @@ describe('addComponents', () => {
     const cwd = await tempProjectWithConfigV2()
     await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
     const content = await readFile(path.join(cwd, 'app/components', 'thai-address-cascade-select.tsx'), 'utf8')
-    expect(content).toContain("provinceLabel: 'Province'")
-    expect(content).toContain("districtLabel: 'District'")
-    expect(content).toContain("subdistrictLabel: 'Sub-district'")
-    expect(content).toContain("zipLabel: 'Postal code'")
     expect(content).toContain('texts?: Partial<ThaiAddressCascadeSelectTexts>')
+    // The default label text records live in the shared cascade hook now, not the component file.
+    const hookContent = await readFile(path.join(cwd, 'hooks', 'use-thai-address-cascade.ts'), 'utf8')
+    expect(hookContent).toContain("provinceLabel: 'Province'")
+    expect(hookContent).toContain("districtLabel: 'District'")
+    expect(hookContent).toContain("subdistrictLabel: 'Sub-district'")
+    expect(hookContent).toContain("zipLabel: 'Postal code'")
   })
 
   it('CascadeSelect uses htmlFor to associate labels with selects', async () => {
@@ -220,8 +225,11 @@ describe('addComponents', () => {
     const cwd = await tempProjectWithConfigV2()
     await addComponents({ cwd, targets: ['ThaiAddressCascadeSelect'] })
     const content = await readFile(path.join(cwd, 'app/components', 'thai-address-cascade-select.tsx'), 'utf8')
-    expect(content).toContain('onValueChange?.(null)')
     expect(content).not.toContain('onClear')
+    // The reset-downstream state machine lives in the shared cascade hook now, not the component file.
+    const hookContent = await readFile(path.join(cwd, 'hooks', 'use-thai-address-cascade.ts'), 'utf8')
+    expect(hookContent).toContain('onValueChange?.(null)')
+    expect(hookContent).not.toContain('onClear')
   })
 
   it('cascade-select scaffolds the shared lib/hook files alongside the component', async () => {
@@ -230,6 +238,7 @@ describe('addComponents', () => {
     expect(await pathExists(path.join(cwd, 'app/components/thai-address-cascade-select.tsx'))).toBe(true)
     expect(await pathExists(path.join(cwd, 'lib/utils.ts'))).toBe(true)
     expect(await pathExists(path.join(cwd, 'hooks/use-thai-address-index.ts'))).toBe(true)
+    expect(await pathExists(path.join(cwd, 'hooks/use-thai-address-cascade.ts'))).toBe(true)
   })
 
   it('blocks scaffolding and explains why when thaizip is declared below the version required for the cascade/enumeration API', async () => {
@@ -522,7 +531,7 @@ describe('addComponents', () => {
     expect(logged).toContain("import { ThaiAddressAutocomplete } from './app/components/thai-address-autocomplete'")
   })
 
-  it('address-form writes itself plus its transitive registryDependencies (cascade-select, lib/utils, the index hook) from an empty project', async () => {
+  it('address-form writes itself plus its transitive registryDependencies (cascade-select, lib/utils, both hooks) from an empty project', async () => {
     const cwd = await tempProjectWithConfigV2()
     await addComponents({ cwd, targets: ['address-form'], yes: true })
 
@@ -531,6 +540,7 @@ describe('addComponents', () => {
       'app/components/thai-address-cascade-select.tsx',
       'lib/utils.ts',
       'hooks/use-thai-address-index.ts',
+      'hooks/use-thai-address-cascade.ts',
     ]
     for (const relativePath of written) {
       expect(await pathExists(path.join(cwd, relativePath))).toBe(true)
@@ -577,6 +587,7 @@ describe('addComponents', () => {
         packageManager: 'npm',
         tailwind: { version: 4, css: 'app/globals.css' },
         style: 'vanilla',
+        shadcnBase: '',
         shadcnUiAlias: '',
         shadcnUiDir: '',
         registryVersion: '0.1.0',
@@ -790,6 +801,62 @@ describe('addComponents — shadcn style', () => {
     } finally {
       console.error = originalError
     }
+  })
+
+  // First end-to-end scaffold assertion for a `shadcnBase: 'radix'` config.
+  // `address-form` has no content of its own that differs between engines (it's a byte-for-byte
+  // copy across `shadcn/base/` and `shadcn/radix/`), so this targets it anyway and inspects the
+  // transitively-written `cascade-select` registryDependency instead — that file's `value ===
+  // null ? '' : String(value)` / `next === ''` mapping is the real base-vs-radix divergence (the
+  // base template uses `null` there, not `''`; see thai-address-cascade-select.tsx's own
+  // Radix-vs-Base-UI comment). A `selectVariant` resolution bug that fell back to the base
+  // variant for a radix-configured project would still produce syntactically valid TSX here, so
+  // asserting on this marker — rather than just "a file was written" — is what makes the test
+  // fail on a wrong-engine regression instead of passing vacuously.
+  it('resolves the radix cascade template (not base) end to end when scaffolding address-form for a radix-base project', async () => {
+    const cwd = await tempProjectWithConfigV2({
+      style: 'shadcn',
+      shadcnBase: 'radix',
+      shadcnUiAlias: '@/components/ui',
+      shadcnUiDir: 'components/ui',
+    })
+
+    await addComponents({ cwd, targets: ['address-form'], yes: true })
+
+    const cascadeContent = await readFile(path.join(cwd, 'app/components', 'thai-address-cascade-select.tsx'), 'utf8')
+    expect(cascadeContent).toMatch(/--radix-popover-trigger-width|next === ''/)
+    expect(cascadeContent).not.toMatch(/next === null/)
+
+    expect(mockedEnsureShadcnPrimitives).toHaveBeenCalledTimes(1)
+    const [primitives] = mockedEnsureShadcnPrimitives.mock.calls[0]
+    // address-form's own ['input', 'label'] plus cascade-select's ['select', 'label', 'button', 'input'] (deduped).
+    expect(new Set(primitives)).toEqual(new Set(['input', 'label', 'select', 'button']))
+  })
+
+  // Mirrors the radix case immediately above, for a `shadcnBase: 'aria'` config. `address-form`
+  // is byte-for-byte identical across all three `shadcn/<engine>/` directories, so this too
+  // targets the transitively-written `cascade-select` registryDependency, whose React Aria
+  // variant is the one file in this dependency chain with real engine-specific content
+  // (`selectedKey` — RAC's own controlled-selection prop on `<Select>`, absent from both the
+  // base and radix templates, which use `value`/`onValueChange` instead).
+  it('resolves the aria cascade template (not base or radix) end to end when scaffolding address-form for an aria-base project', async () => {
+    const cwd = await tempProjectWithConfigV2({
+      style: 'shadcn',
+      shadcnBase: 'aria',
+      shadcnUiAlias: '@/components/ui',
+      shadcnUiDir: 'components/ui',
+    })
+
+    await addComponents({ cwd, targets: ['address-form'], yes: true })
+
+    const cascadeContent = await readFile(path.join(cwd, 'app/components', 'thai-address-cascade-select.tsx'), 'utf8')
+    expect(cascadeContent).toMatch(/selectedKey/)
+    expect(cascadeContent).not.toMatch(/--radix-popover-trigger-width/)
+
+    expect(mockedEnsureShadcnPrimitives).toHaveBeenCalledTimes(1)
+    const [primitives] = mockedEnsureShadcnPrimitives.mock.calls[0]
+    // address-form's own ['input', 'label'] plus cascade-select's ['select', 'label', 'button', 'input'] (deduped).
+    expect(new Set(primitives)).toEqual(new Set(['input', 'label', 'select', 'button']))
   })
 })
 

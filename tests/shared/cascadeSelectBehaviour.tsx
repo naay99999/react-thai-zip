@@ -1,0 +1,141 @@
+import * as React from 'react'
+import { describe, expect, it, vi } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import type { ResolvedThaiAddress } from 'thaizip'
+
+export type CascadeBehaviourOptions = {
+  /** Label for the describe block, e.g. 'radix'. */
+  engine: string
+  Component: React.ComponentType<{
+    value?: ResolvedThaiAddress | null
+    defaultValue?: ResolvedThaiAddress | null
+    onValueChange?: (address: ResolvedThaiAddress | null) => void
+    name?: string
+    locale?: 'th' | 'en'
+    disabled?: boolean
+    required?: boolean
+    'aria-invalid'?: boolean | 'true' | 'false'
+  }>
+  /** Opens the select whose accessible label matches, then clicks the named option. */
+  pick: (labelText: string | RegExp, optionName: string) => Promise<void>
+  /** The fixture chain, resolved once in the caller's beforeAll. */
+  chain: () => {
+    provinceName: string
+    districtName: string
+    subdistrictName: string
+    address: ResolvedThaiAddress
+    /**
+     * A second, distinct province name. Radix's `Select` treats re-picking the
+     * already-selected item as a no-op (it never calls `onValueChange` — the
+     * same native-`<select>`-style behavior; Base UI's `Select` does fire it),
+     * so "the province changes" must pick a genuinely different option to
+     * exercise the reset-downstream/null-emit path on every engine.
+     */
+    otherProvinceName: string
+  }
+  labels: { province: string | RegExp; district: string | RegExp; subdistrict: string | RegExp }
+  /**
+   * Asserts that the sub-district select has reset to its disabled,
+   * awaiting-a-district state. Called right after a province change that
+   * follows a full pick, to verify the cascade actually cleared its
+   * downstream selection — not merely that `onValueChange(null)` fired.
+   * Each engine supplies its own trigger lookup/disabled check here (Base UI
+   * and Radix both render a real `<button role="combobox">`, but a future
+   * React Aria variant may expose a different role/attribute), which is why
+   * the shared helper itself never queries for `role="combobox"` directly.
+   */
+  expectDownstreamReset: () => Promise<void> | void
+  /**
+   * Resolves once the index has loaded and the cascade's real controls have
+   * mounted (as opposed to the disabled loading-state placeholders). Base UI
+   * and Radix both render a real `<button role="combobox">` for this; React
+   * Aria's `SelectTrigger` renders a RAC `Button` with no such role, so the
+   * wait lives with each engine's test file rather than hardcoded here.
+   */
+  waitForLoad: () => Promise<unknown>
+  /**
+   * Resolves to the province/district/subdistrict triggers, in that order,
+   * once the index has loaded. Base UI and Radix both render a real
+   * `<button role="combobox">` for each; React Aria's `SelectTrigger`
+   * renders a RAC `Button` with no such role, so — same rationale as
+   * `waitForLoad` — the lookup lives with each engine's test file rather
+   * than a hardcoded `role` query here.
+   */
+  getTriggers: () => Promise<HTMLElement[]>
+}
+
+export function describeCascadeSelectBehaviour(options: CascadeBehaviourOptions): void {
+  const { engine, Component, pick, chain, labels, expectDownstreamReset, waitForLoad, getTriggers } = options
+
+  describe(`ThaiAddressCascadeSelect (${engine}) — shared behaviour`, () => {
+    it('emits the resolved address after the full chain is picked', async () => {
+      const onValueChange = vi.fn()
+      render(<Component onValueChange={onValueChange} />)
+      const { provinceName, districtName, subdistrictName, address } = chain()
+
+      await pick(labels.province, provinceName)
+      await pick(labels.district, districtName)
+      await pick(labels.subdistrict, subdistrictName)
+
+      expect(onValueChange).toHaveBeenLastCalledWith(address)
+    })
+
+    it('emits null and resets downstream when the province changes after a full pick', async () => {
+      const onValueChange = vi.fn()
+      render(<Component onValueChange={onValueChange} />)
+      const { provinceName, districtName, subdistrictName, otherProvinceName } = chain()
+
+      await pick(labels.province, provinceName)
+      await pick(labels.district, districtName)
+      await pick(labels.subdistrict, subdistrictName)
+      onValueChange.mockClear()
+
+      await pick(labels.province, otherProvinceName)
+      expect(onValueChange).toHaveBeenCalledWith(null)
+      // onValueChange(null) alone doesn't prove the downstream selection was
+      // actually cleared — assert the sub-district select itself reset back
+      // to its disabled, awaiting-a-district state.
+      await expectDownstreamReset()
+    })
+
+    it('renders the four hidden inputs under the given name', async () => {
+      const { address } = chain()
+      const { container } = render(<Component name="addr" defaultValue={address} />)
+      // The index loads asynchronously (useThaiAddressIndex resolves via a
+      // promise), and the hidden inputs render only once it has — wait for the
+      // triggers, which land in the same post-load render, before asserting.
+      await waitForLoad()
+
+      for (const [suffix, expected] of [
+        ['subdistrict', address.subdistrict],
+        ['district', address.district],
+        ['province', address.province],
+        ['zipcode', address.zipCode],
+      ] as const) {
+        const input = container.querySelector<HTMLInputElement>(`input[type="hidden"][name="addr-${suffix}"]`)
+        expect(input, `missing hidden input addr-${suffix}`).not.toBeNull()
+        expect(input!.value).toBe(expected)
+      }
+    })
+
+    it('renders no hidden inputs without a name', () => {
+      const { address } = chain()
+      const { container } = render(<Component defaultValue={address} />)
+      expect(container.querySelectorAll('input[type="hidden"]')).toHaveLength(0)
+    })
+
+    it('shows English labels under locale="en"', () => {
+      render(<Component locale="en" />)
+      expect(screen.getByText('Province')).toBeTruthy()
+      expect(screen.getByText('Postal code')).toBeTruthy()
+    })
+
+    it('applies aria-invalid to all three triggers', async () => {
+      render(<Component aria-invalid />)
+      const triggers = await getTriggers()
+      for (const trigger of triggers) {
+        expect(trigger.getAttribute('aria-invalid')).toBe('true')
+      }
+    })
+  })
+}

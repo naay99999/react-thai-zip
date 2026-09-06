@@ -72,7 +72,7 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
   }
 
   const resolved = resolveWithDependencies(selected, registry)
-  const variants = resolved.map((item) => ({ item, variant: selectVariant(item, config.style) }))
+  const variants = resolved.map((item) => ({ item, variant: selectVariant(item, config.style, config.shadcnBase) }))
 
   const dependencies = variants.flatMap(({ variant }) => variant.dependencies)
   const missingDependencies = await getMissingDependencies(cwd, dependencies)

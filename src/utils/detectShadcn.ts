@@ -1,11 +1,24 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
+import type { ShadcnBase } from './config.js'
 import { pathExists } from './fs.js'
 
 export type ShadcnDetection =
-  | { present: true; supported: true; style: string; uiAlias: string; uiDir: string }
+  | { present: true; supported: true; style: string; base: ShadcnBase; uiAlias: string; uiDir: string }
   | { present: true; supported: false; style: string }
   | { present: false }
+
+// `default` and `new-york` predate the shadcn CLI's 3-way `-b/--base` split,
+// when shadcn/ui was Radix-only — so they are Radix, not "unrecognized".
+const LEGACY_RADIX_STYLES = new Set(['default', 'new-york'])
+
+function baseFromStyle(style: string): ShadcnBase | null {
+  if (style.startsWith('base-')) return 'base'
+  if (style.startsWith('radix-')) return 'radix'
+  if (style.startsWith('aria-')) return 'aria'
+  if (LEGACY_RADIX_STYLES.has(style)) return 'radix'
+  return null
+}
 
 const DEFAULT_UI_ALIAS = '@/components/ui'
 
@@ -55,7 +68,8 @@ export async function detectShadcn(cwd = process.cwd()): Promise<ShadcnDetection
   if (!componentsJson) return { present: false }
 
   const style = typeof componentsJson.style === 'string' ? componentsJson.style : ''
-  if (!style.startsWith('base-')) {
+  const base = baseFromStyle(style)
+  if (!base) {
     return { present: true, supported: false, style }
   }
 
@@ -63,5 +77,5 @@ export async function detectShadcn(cwd = process.cwd()): Promise<ShadcnDetection
   const uiAlias = typeof aliases?.ui === 'string' ? aliases.ui : DEFAULT_UI_ALIAS
   const uiDir = await resolveAliasDir(cwd, uiAlias)
 
-  return { present: true, supported: true, style, uiAlias, uiDir }
+  return { present: true, supported: true, style, base, uiAlias, uiDir }
 }

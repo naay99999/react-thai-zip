@@ -54,10 +54,10 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
   console.log(`  Tailwind: v${version}${cssPath ? ` (${cssPath})` : ' (no global CSS file found)'}`)
 
   if (shadcnDetection.present && shadcnDetection.supported) {
-    console.log(`  Component style: shadcn (components.json, style: ${shadcnDetection.style})`)
+    console.log(`  Component style: shadcn (components.json, style: ${shadcnDetection.style}, base: ${shadcnDetection.base})`)
   } else if (shadcnDetection.present) {
     console.log(
-      `  Component style: vanilla Tailwind (components.json found, style: ${shadcnDetection.style || '(none)'}, not yet supported — see CLAUDE.md)`,
+      `  Component style: vanilla Tailwind (components.json found, style: ${shadcnDetection.style || '(none)'}, unrecognized component library — see CLAUDE.md)`,
     )
   } else {
     console.log('  Component style: vanilla Tailwind (no components.json found)')
@@ -144,6 +144,7 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
       packageManager: pm,
       tailwind: { version, css: cssPath ?? '' },
       style: shadcnDetection.present && shadcnDetection.supported ? 'shadcn' : 'vanilla',
+      shadcnBase: shadcnDetection.present && shadcnDetection.supported ? shadcnDetection.base : '',
       shadcnUiAlias: shadcnDetection.present && shadcnDetection.supported ? shadcnDetection.uiAlias : '',
       shadcnUiDir: shadcnDetection.present && shadcnDetection.supported ? shadcnDetection.uiDir : '',
       registryVersion,

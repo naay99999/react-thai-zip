@@ -10,6 +10,9 @@ import { Label } from '@/components/ui/label'
 // `ThaiAddressCascadeSelect`/`ThaiAddressCascadeSelectTexts` export names are relied on by
 // this import, and by thai-address-form-field.tsx's own import of the same file. This is a
 // separate coupling from the vanilla templates' own copy of the same pair — keep both in sync.
+// The coupling is now per-engine too: renaming this file or either export must be applied in
+// lockstep across the vanilla template and every `shadcn/<engine>/` directory (base, radix, and
+// react-aria), not just within one engine's own directory.
 import { ThaiAddressCascadeSelect } from './thai-address-cascade-select'
 import type { ThaiAddressCascadeSelectTexts } from './thai-address-cascade-select'
 

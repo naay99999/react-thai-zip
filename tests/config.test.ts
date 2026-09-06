@@ -9,6 +9,7 @@ import {
   getConfigPath,
   migrateLegacyConfig,
   migrateV2Config,
+  migrateV3Config,
   readConfig,
   validateConfig,
   writeConfig,
@@ -41,6 +42,7 @@ describe('config', () => {
       packageManager: 'npm' as const,
       tailwind: { version: 4 as const, css: '' },
       style: 'vanilla' as const,
+      shadcnBase: '' as const,
       shadcnUiAlias: '',
       shadcnUiDir: '',
       registryVersion: '0.1.0',
@@ -62,6 +64,7 @@ const baseConfig = {
   packageManager: 'npm',
   tailwind: { version: 4, css: 'app/globals.css' },
   style: 'vanilla',
+  shadcnBase: '',
   shadcnUiAlias: '',
   shadcnUiDir: '',
   registryVersion: '1.0.0',
@@ -102,6 +105,7 @@ describe('validateConfig', () => {
     const result = validateConfig({
       ...baseConfig,
       style: 'shadcn',
+      shadcnBase: 'base',
       shadcnUiAlias: '@/components/ui',
       shadcnUiDir: 'app/components/ui',
     })
@@ -138,7 +142,7 @@ describe('migrateLegacyConfig', () => {
     expect(migrateLegacyConfig(legacy, { version: 3, css: 'src/index.css' })).toEqual({
       typescript: true, componentDir: 'src/components', libDir: 'lib', hooksDir: 'hooks',
       packageManager: 'pnpm', tailwind: { version: 3, css: 'src/index.css' },
-      style: 'vanilla', shadcnUiAlias: '', shadcnUiDir: '',
+      style: 'vanilla', shadcnBase: '', shadcnUiAlias: '', shadcnUiDir: '',
       registryVersion: '0.2.1',
     })
   })
@@ -153,7 +157,7 @@ describe('migrateV2Config', () => {
       typescript: true, componentDir: 'app/components', libDir: 'lib', hooksDir: 'hooks',
       packageManager: 'npm', tailwind: { version: 4, css: 'app/globals.css' }, registryVersion: '1.0.0',
     }
-    expect(migrateV2Config(v2)).toEqual({ ...v2, style: 'vanilla', shadcnUiAlias: '', shadcnUiDir: '' })
+    expect(migrateV2Config(v2)).toEqual({ ...v2, style: 'vanilla', shadcnBase: '', shadcnUiAlias: '', shadcnUiDir: '' })
   })
   it('returns null when style is already present', () => {
     expect(migrateV2Config({ ...baseConfig })).toBeNull()
@@ -276,5 +280,61 @@ describe('readConfig rejects an unsafe config on disk', () => {
     await writeFile(getConfigPath(cwd), JSON.stringify({ ...baseConfig, libDir: '../../../../tmp/pwned' }), 'utf8')
 
     await expect(readConfig(cwd)).rejects.toThrow(/libDir/)
+  })
+})
+
+describe('config v4 shadcnBase', () => {
+  const v4 = {
+    typescript: true,
+    componentDir: 'src/components',
+    libDir: 'src/lib',
+    hooksDir: 'src/hooks',
+    packageManager: 'npm',
+    tailwind: { version: 4, css: 'src/app/globals.css' },
+    style: 'shadcn',
+    shadcnBase: 'radix',
+    shadcnUiAlias: '@/components/ui',
+    shadcnUiDir: 'src/components/ui',
+    registryVersion: '0.4.0',
+  }
+
+  it('accepts each of the three bases', () => {
+    for (const base of ['base', 'radix', 'aria'] as const) {
+      expect(validateConfig({ ...v4, shadcnBase: base }).ok).toBe(true)
+    }
+  })
+
+  it('rejects an unknown base', () => {
+    const result = validateConfig({ ...v4, shadcnBase: 'svelte' })
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.errors.join()).toContain('shadcnBase')
+  })
+
+  it('rejects style shadcn with an empty base', () => {
+    const result = validateConfig({ ...v4, shadcnBase: '' })
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.errors.join()).toContain('shadcnBase')
+  })
+
+  it('rejects style vanilla with a non-empty base', () => {
+    const result = validateConfig({ ...v4, style: 'vanilla', shadcnBase: 'radix', shadcnUiAlias: '', shadcnUiDir: '' })
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.errors.join()).toContain('shadcnBase')
+  })
+
+  it('migrates a v3 shadcn config to base', () => {
+    const { shadcnBase: _drop, ...v3 } = v4
+    const migrated = migrateV3Config(v3)
+    expect(migrated?.shadcnBase).toBe('base')
+  })
+
+  it('migrates a v3 vanilla config to an empty base', () => {
+    const { shadcnBase: _drop, ...v3 } = v4
+    const migrated = migrateV3Config({ ...v3, style: 'vanilla', shadcnUiAlias: '', shadcnUiDir: '' })
+    expect(migrated?.shadcnBase).toBe('')
+  })
+
+  it('does not claim a config that already has shadcnBase', () => {
+    expect(migrateV3Config(v4)).toBeNull()
   })
 })

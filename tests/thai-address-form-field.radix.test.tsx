@@ -1,13 +1,16 @@
 // @vitest-environment jsdom
-import * as React from 'react'
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { afterEach, beforeAll, expect } from 'vitest'
+import { cleanup, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { loadDefaultIndex } from 'thaizip/data'
 import { listAmphures, listProvinces, listTambons } from 'thaizip'
 import type { AmphureSummary, ProvinceSummary, TambonSummary } from 'thaizip'
-import { ThaiAddressForm } from '../templates/react/ts/shadcn/thai-address-form'
+import { ThaiAddressFormField } from '../templates/react/ts/shadcn/radix/thai-address-form-field'
+import { describeFormFieldBehaviour } from './shared/formFieldBehaviour'
 
+// Radix needs the same jsdom polyfills as Base UI, for the same reasons — ResizeObserver,
+// pointer capture, and scrollIntoView are all exercised by its Select/Popover machinery
+// underneath the embedded cascade select.
 if (!('ResizeObserver' in globalThis)) {
   class ResizeObserverStub {
     observe() {}
@@ -42,6 +45,11 @@ afterEach(() => {
   cleanup()
 })
 
+// Same full-cascade selection pattern as tests/thai-address-form.radix.test.tsx and
+// tests/thai-address-cascade-select.radix.test.tsx: the embedded cascade only resolves (and
+// calls back with) a non-null `ResolvedThaiAddress` once province, district, and sub-district
+// are all picked. Radix-specific by design; see the shared helper's `selectFullCascade` doc
+// comment.
 async function selectFullCascade(user: ReturnType<typeof userEvent.setup>) {
   const triggers = await screen.findAllByRole('combobox')
   await user.click(triggers[0])
@@ -58,33 +66,8 @@ async function selectFullCascade(user: ReturnType<typeof userEvent.setup>) {
   await user.click(await screen.findByRole('option', { name: tambon.nameTh }))
 }
 
-describe('ThaiAddressForm (shadcn)', () => {
-  it('emits a FullThaiAddress once the cascade resolves and house number is filled in', async () => {
-    const user = userEvent.setup()
-    const onValueChange = vi.fn()
-    render(<ThaiAddressForm onValueChange={onValueChange} />)
-
-    await selectFullCascade(user)
-    await user.type(screen.getByLabelText('บ้านเลขที่'), '123/45')
-
-    await waitFor(() =>
-      expect(onValueChange).toHaveBeenLastCalledWith(
-        expect.objectContaining({ houseNo: '123/45', subdistrict: tambon.nameTh, zipCode: tambon.zipCode }),
-      ),
-    )
-  })
-
-  it('keeps moo/soi/street always-optional even when required is set', async () => {
-    const user = userEvent.setup()
-    const onValueChange = vi.fn()
-    render(<ThaiAddressForm required onValueChange={onValueChange} />)
-
-    expect((screen.getByLabelText('หมู่') as HTMLInputElement).required).toBe(false)
-    expect((screen.getByLabelText('บ้านเลขที่') as HTMLInputElement).required).toBe(true)
-
-    await selectFullCascade(user)
-    await user.type(screen.getByLabelText('บ้านเลขที่'), '99')
-
-    await waitFor(() => expect(onValueChange).toHaveBeenLastCalledWith(expect.objectContaining({ houseNo: '99' })))
-  })
+describeFormFieldBehaviour({
+  engine: 'radix',
+  Component: ThaiAddressFormField,
+  selectFullCascade,
 })

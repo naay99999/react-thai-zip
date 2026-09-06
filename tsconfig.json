@@ -11,17 +11,27 @@
     "resolveJsonModule": true,
     "types": ["node", "vitest/globals"]
   },
-  "include": ["src", "tests", "tsup.config.ts", "vitest.config.ts"],
+  "include": ["src", "tests", "tsup.config.ts", "vitest.config.ts", "vitest.workspace.ts"],
   "exclude": [
     "tests/thai-address-autocomplete.test.tsx",
     "tests/thai-address-cascade-select.test.tsx",
+    "tests/use-thai-address-cascade.test.tsx",
     "tests/thai-address-autocomplete-loading.test.tsx",
     "tests/thai-address-display.test.tsx",
     "tests/thai-address-form.test.tsx",
     "tests/thai-address-form-field.test.tsx",
-    "tests/thai-address-cascade-select.shadcn.test.tsx",
-    "tests/thai-address-autocomplete.shadcn.test.tsx",
-    "tests/thai-address-form.shadcn.test.tsx",
-    "tests/thai-address-form-field.shadcn.test.tsx"
+    "tests/thai-address-cascade-select.base.test.tsx",
+    "tests/thai-address-autocomplete.base.test.tsx",
+    "tests/thai-address-form.base.test.tsx",
+    "tests/thai-address-form-field.base.test.tsx",
+    "tests/thai-address-cascade-select.radix.test.tsx",
+    "tests/thai-address-autocomplete.radix.test.tsx",
+    "tests/thai-address-form.radix.test.tsx",
+    "tests/thai-address-form-field.radix.test.tsx",
+    "tests/thai-address-cascade-select.aria.test.tsx",
+    "tests/thai-address-autocomplete.aria.test.tsx",
+    "tests/thai-address-form.aria.test.tsx",
+    "tests/thai-address-form-field.aria.test.tsx",
+    "tests/shared/**"
   ]
 }
