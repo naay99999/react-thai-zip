@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.3.7](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.6...react-thaizip-v0.3.7) (2026-09-06)
+
+
+### Features
+
+* add a radix-backed autocomplete template ([4e453fc](https://github.com/naay99999/react-thai-zip/commit/4e453fc1d896122a716c65ef3a9324cbc1b9ab30))
+* add a radix-backed cascade select template ([c0a0134](https://github.com/naay99999/react-thai-zip/commit/c0a0134d579e6984110a2da29801f48e580d8422))
+* add a react-aria-backed autocomplete template ([fb03359](https://github.com/naay99999/react-thai-zip/commit/fb033595f15f87471403ce28581b8f9f200d7fc1))
+* add a react-aria-backed cascade select template ([b990828](https://github.com/naay99999/react-thai-zip/commit/b99082867243fb49fdf87bb0fa09bd5ce81a8f60))
+* add radix-backed form and form-field templates ([2c7dd0c](https://github.com/naay99999/react-thai-zip/commit/2c7dd0ce8ce133d1b1bbcdfdbbe430ba9208dccc))
+* add react-aria-backed form and form-field templates ([ecef6bd](https://github.com/naay99999/react-thai-zip/commit/ecef6bdb69be39b63ebcf1da30989615c4e12f5c))
+* add shadcnBase to thaizip.config.json with a v3 to v4 migration ([346c4dd](https://github.com/naay99999/react-thai-zip/commit/346c4dd5e979bd01953fd0a75bd5be612e349724))
+* compose scaffolded components against all three shadcn/ui component libraries ([0a362a3](https://github.com/naay99999/react-thai-zip/commit/0a362a3ec3af34981bc6587bca3515d665712f76))
+* detect radix and react-aria backed shadcn projects ([0688111](https://github.com/naay99999/react-thai-zip/commit/0688111f377326cfabc8866821af6eee3607d851))
+* record the detected shadcn component library at init ([ab1034e](https://github.com/naay99999/react-thai-zip/commit/ab1034e116093e5d60b0b1c96f93a1207ac9ae6c))
+
+
+### Bug Fixes
+
+* apply aria-invalid synchronously on the aria engine's triggers ([c83df64](https://github.com/naay99999/react-thai-zip/commit/c83df646396815dd1d3573de962cdd033d04f840))
+* close review gaps in shadcn multi-engine consistency guards ([f1f9a46](https://github.com/naay99999/react-thai-zip/commit/f1f9a463328b5b18beb6130be3d7f5411280f755))
+* restore the downstream-reset assertion lost in the cascade helper extraction ([221e2e7](https://github.com/naay99999/react-thai-zip/commit/221e2e791902953db8bae17b0259e70a4855b80f))
+* set aria-invalid on the RAC cascade select's real trigger DOM node ([e63ccaa](https://github.com/naay99999/react-thai-zip/commit/e63ccaae1f56a753e90b7ae4e88a6d902404a992))
+
 ## [0.3.6](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.5...react-thaizip-v0.3.6) (2026-09-04)
 
 
