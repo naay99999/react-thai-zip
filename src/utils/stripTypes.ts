@@ -1,4 +1,14 @@
-import ts from 'typescript'
+import { createRequire } from 'node:module'
+
+// `typescript` is ~22.8 MB and costs ~107 ms to load, but it is only needed for
+// JS-target scaffolds (config.typescript === false). Requiring it lazily keeps
+// it off the startup path of every other command — including --help/--version.
+// createRequire (not `await import`) so stripTypes stays synchronous.
+let cachedTs: typeof import('typescript') | undefined
+function loadTypeScript(): typeof import('typescript') {
+  cachedTs ??= createRequire(import.meta.url)('typescript') as typeof import('typescript')
+  return cachedTs
+}
 
 /**
  * Strips TypeScript syntax from `code` while leaving JSX, comments, string
@@ -8,6 +18,7 @@ import ts from 'typescript'
  * === false); TS-target scaffolds copy the .tsx/.ts source unmodified.
  */
 export function stripTypes(code: string, fileName: string): string {
+  const ts = loadTypeScript()
   const result = ts.transpileModule(code, {
     compilerOptions: {
       module: ts.ModuleKind.Preserve,
