@@ -28,8 +28,19 @@ async function readCandidate(cwd: string, candidate: string): Promise<string | n
 }
 
 export async function detectTailwind(cwd = process.cwd()): Promise<TailwindDetection> {
+  // Both the v4 (`@import "tailwindcss"`) and v3 (`@tailwind`) probes below read the
+  // same `globalCssCandidates` files, so read each candidate exactly once, concurrently,
+  // and let both probes consult this map instead of hitting the filesystem again. This
+  // does slightly more I/O than the old v4 loop's first-match short-circuit in the best
+  // case, but it's all in flight at once, so wall-clock time is lower either way.
+  const cssContents = new Map<string, string | null>(
+    await Promise.all(
+      globalCssCandidates.map(async (candidate) => [candidate, await readCandidate(cwd, candidate)] as const),
+    ),
+  )
+
   for (const candidate of globalCssCandidates) {
-    const content = await readCandidate(cwd, candidate)
+    const content = cssContents.get(candidate) ?? null
     if (content && (content.includes('@import "tailwindcss"') || content.includes("@import 'tailwindcss'"))) {
       return { version: 4, cssPath: candidate }
     }
@@ -47,7 +58,7 @@ export async function detectTailwind(cwd = process.cwd()): Promise<TailwindDetec
     if (await pathExists(path.join(cwd, configFile))) {
       let cssPath: string | null = null
       for (const candidate of globalCssCandidates) {
-        const content = await readCandidate(cwd, candidate)
+        const content = cssContents.get(candidate) ?? null
         if (content && content.includes('@tailwind')) {
           cssPath = candidate
           break
