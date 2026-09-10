@@ -12,6 +12,11 @@ import type {
 
 export type AddressLocale = 'th' | 'en'
 
+// Constructing an Intl.Collator is not free, so build one per locale at module
+// load instead of inside each memo (the core library caches its own collator
+// for the same reason — see thaizip's enumerate.ts).
+const COLLATORS = { th: new Intl.Collator('th'), en: new Intl.Collator('en') } as const
+
 export type ThaiAddressCascadeSelectTexts = {
   provinceLabel: string
   districtLabel: string
@@ -164,17 +169,17 @@ export function useThaiAddressCascade({
   }, [isControlled, index, value])
 
   const provinces = React.useMemo(() => {
-    const collator = new Intl.Collator(locale === 'en' ? 'en' : 'th')
+    const collator = COLLATORS[locale === 'en' ? 'en' : 'th']
     return [...listProvinces(index)].sort((a, b) => collator.compare(optionName(a, locale), optionName(b, locale)))
   }, [index, locale])
   const amphures = React.useMemo(() => {
     if (provinceId === null) return []
-    const collator = new Intl.Collator(locale === 'en' ? 'en' : 'th')
+    const collator = COLLATORS[locale === 'en' ? 'en' : 'th']
     return [...listAmphures(index, provinceId)].sort((a, b) => collator.compare(optionName(a, locale), optionName(b, locale)))
   }, [index, provinceId, locale])
   const tambons = React.useMemo(() => {
     if (amphureId === null) return []
-    const collator = new Intl.Collator(locale === 'en' ? 'en' : 'th')
+    const collator = COLLATORS[locale === 'en' ? 'en' : 'th']
     return [...listTambons(index, amphureId)].sort((a, b) => collator.compare(optionName(a, locale), optionName(b, locale)))
   }, [index, amphureId, locale])
 
