@@ -43,7 +43,7 @@ describe('initProject', () => {
     await mkdir(path.join(cwd, 'app'))
     await writeFile(path.join(cwd, 'tsconfig.json'), '{}')
     await writeFile(path.join(cwd, 'tailwind.config.ts'), '')
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.5' } }))
     mockedPrompts.mockResolvedValueOnce({})
 
     await initProject({ cwd })
@@ -67,7 +67,7 @@ describe('initProject', () => {
   it('detects src/lib + src/hooks (not root lib/hooks) when the project has no app/ or pages/ directory', async () => {
     const cwd = await tempProject()
     await writeFile(path.join(cwd, 'tailwind.config.ts'), '')
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.5' } }))
 
     await initProject({ cwd, yes: true })
 
@@ -91,7 +91,7 @@ describe('initProject', () => {
     const cwd = await tempProject()
     await mkdir(path.join(cwd, 'app'), { recursive: true })
     await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.5' } }))
 
     await initProject({ cwd, yes: true })
 
@@ -113,7 +113,7 @@ describe('initProject', () => {
 
     expect(process.exitCode).toBe(1)
     const logged = consoleError.mock.calls.map((call) => call.join(' ')).join('\n')
-    expect(logged).toContain('thaizip@>=0.7.0')
+    expect(logged).toContain('thaizip@>=0.7.5')
     expect(await pathExists(path.join(cwd, 'thaizip.config.json'))).toBe(false)
     consoleError.mockRestore()
   })
@@ -123,7 +123,7 @@ describe('initProject', () => {
     await mkdir(path.join(cwd, 'app'), { recursive: true })
     await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
     await writeFile(path.join(cwd, 'package-lock.json'), '{}')
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.5' } }))
     mockedPrompts.mockResolvedValueOnce({})
 
     await initProject({ cwd })
@@ -159,7 +159,7 @@ describe('initProject', () => {
     await mkdir(path.join(cwd, 'app'), { recursive: true })
     await writeFile(path.join(cwd, 'tailwind.config.ts'), '')
     await writeFile(path.join(cwd, 'app/globals.css'), '@tailwind base;\n@tailwind components;\n@tailwind utilities;\n')
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.5' } }))
 
     await initProject({ cwd, yes: true })
 
@@ -183,7 +183,7 @@ describe('initProject', () => {
     const cwd = await tempProject()
     await mkdir(path.join(cwd, 'app'), { recursive: true })
     await writeFile(path.join(cwd, 'tailwind.config.ts'), '')
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.5' } }))
 
     await initProject({ cwd, yes: true })
 
@@ -205,7 +205,7 @@ describe('initProject', () => {
     const cwd = await tempProject()
     await mkdir(path.join(cwd, 'app'), { recursive: true })
     await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.5' } }))
 
     await initProject({ cwd, yes: true })
 
@@ -222,7 +222,7 @@ describe('initProject', () => {
     await mkdir(path.join(cwd, 'app'), { recursive: true })
     await writeFile(path.join(cwd, 'tsconfig.json'), '{}')
     await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.5' } }))
 
     await initProject({ cwd, yes: true })
 
@@ -234,7 +234,7 @@ describe('initProject', () => {
     const cwd = await tempProject()
     await mkdir(path.join(cwd, 'app'), { recursive: true })
     await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.5' } }))
 
     await initProject({ cwd, yes: true })
 
@@ -247,7 +247,7 @@ describe('initProject', () => {
     await mkdir(path.join(cwd, 'app'), { recursive: true })
     await writeFile(path.join(cwd, 'tsconfig.json'), '{}')
     await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.5' } }))
     mockedPrompts.mockResolvedValueOnce({})
 
     await initProject({ cwd })
@@ -262,7 +262,7 @@ describe('initProject', () => {
     const cwd = await tempProject()
     await mkdir(path.join(cwd, 'app'), { recursive: true })
     await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.5' } }))
     mockedPrompts.mockResolvedValueOnce({})
 
     await initProject({ cwd })
@@ -279,7 +279,7 @@ describe('initProject', () => {
     await writeFile(path.join(cwd, 'tsconfig.json'), '{}')
     await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
     await writeFile(path.join(cwd, 'package-lock.json'), '{}')
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.5' } }))
     mockedPrompts.mockResolvedValueOnce({})
 
     await initProject({ cwd })
@@ -294,7 +294,7 @@ describe('initProject', () => {
     const cwd = await tempProject()
     await mkdir(path.join(cwd, 'app'), { recursive: true })
     await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.5' } }))
     await writeFile(path.join(cwd, 'components.json'), JSON.stringify({ style: 'base-nova', aliases: { ui: '@/components/ui' } }))
     await writeFile(path.join(cwd, 'tsconfig.json'), JSON.stringify({ compilerOptions: { paths: { '@/*': ['./*'] } } }))
 
@@ -311,7 +311,7 @@ describe('initProject', () => {
     const cwd = await tempProject()
     await mkdir(path.join(cwd, 'app'), { recursive: true })
     await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.5' } }))
     await writeFile(path.join(cwd, 'components.json'), JSON.stringify({ style: 'solid-nova' }))
 
     await initProject({ cwd, yes: true })
@@ -328,7 +328,7 @@ describe('initProject', () => {
     const cwd = await tempProject()
     await mkdir(path.join(cwd, 'app'), { recursive: true })
     await writeFile(path.join(cwd, 'app/globals.css'), '@import "tailwindcss";\n')
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.5' } }))
 
     await initProject({ cwd, yes: true })
 
@@ -342,7 +342,7 @@ describe('initProject', () => {
     const cwd = await tempProject()
     await writeFile(path.join(cwd, 'tsconfig.json'), '{}')
     await writeFile(path.join(cwd, 'tailwind.config.ts'), '')
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.5' } }))
     await writeFile(path.join(cwd, 'components.json'), JSON.stringify({ style, aliases: { ui: '@/components/ui' } }))
     return cwd
   }

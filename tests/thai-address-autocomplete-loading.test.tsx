@@ -6,7 +6,10 @@ import { ThaiAddressAutocomplete } from '../templates/react/ts/thai-address-auto
 // Module-wide mock: this file exercises the loading and error branches only,
 // so it must NOT share a module graph with the real-index tests.
 const loadDefaultIndex = vi.hoisted(() => vi.fn())
-vi.mock('thaizip/data', () => ({ loadDefaultIndex }))
+// The hook seeds its initial state from getDefaultIndexIfLoaded(), so this factory
+// has to supply it too — returning null keeps every assertion here on the cold path.
+const getDefaultIndexIfLoaded = vi.hoisted(() => vi.fn(() => null))
+vi.mock('thaizip/data', () => ({ loadDefaultIndex, getDefaultIndexIfLoaded }))
 
 afterEach(() => {
   cleanup()

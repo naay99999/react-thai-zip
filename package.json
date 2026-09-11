@@ -64,7 +64,7 @@
     "react-hook-form": "^7.87.0",
     "shadcn": "^4.20.1",
     "tailwind-merge": "^3.6.0",
-    "thaizip": "^0.7.2",
+    "thaizip": "^0.7.5",
     "tsup": "^8.3.5",
     "vitest": "^2.1.8"
   }

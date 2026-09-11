@@ -27,7 +27,7 @@ async function tempShadcnJsProject() {
   const cwd = await tempDir()
   await writeFile(
     path.join(cwd, 'package.json'),
-    JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }),
+    JSON.stringify({ dependencies: { thaizip: '^0.7.5' } }),
   )
   await writeConfig(
     {

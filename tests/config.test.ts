@@ -26,7 +26,7 @@ describe('config', () => {
     expect(extractVersionAnchor(CORE_PACKAGE_VERSION)).not.toBeNull()
   })
 
-  it('CORE_PACKAGE_VERSION is at least the version whose cascade/enumeration API and bilingual labels the templates rely on (0.7.0)', () => {
+  it('CORE_PACKAGE_VERSION is at least the version whose APIs the templates rely on (0.7.5: cascade/enumeration, bilingual labels, getDefaultIndexIfLoaded)', () => {
     const anchor = extractVersionAnchor(CORE_PACKAGE_VERSION)
     expect(anchor).not.toBeNull()
     expect(isVersionAtLeast(anchor as string, MINIMUM_THAIZIP_VERSION)).toBe(true)
