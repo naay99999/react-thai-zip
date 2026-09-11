@@ -249,7 +249,7 @@ Fumadocs on Next.js, deployed as its own Vercel project (Root Directory `apps/do
 
 ## Releasing
 
-release-please (`release-please-config.json` + `.release-please-manifest.json`, single package at `.`) drives versioning from Conventional Commits, with `bump-minor-pre-major` while pre-1.0. `package.json`'s `version` and `CHANGELOG.md` are bot-managed — never bump them by hand; land `feat:`/`fix:` commits on `main` and merge the release PR to publish.
+release-please (`release-please-config.json` + `.release-please-manifest.json`, single package at `.`) drives versioning from Conventional Commits, with `bump-minor-pre-major` while pre-1.0. `package.json`'s `version` and `CHANGELOG.md` are bot-managed — never bump them by hand; land `feat:`/`fix:`/`perf:` commits on `main` and merge the release PR to publish. (`perf:` is part of the `node` release-type's default set — it lands under "Performance Improvements" and bumps a patch, same as `fix:`.)
 
 ## Key constants (`src/utils/config.ts`)
 
