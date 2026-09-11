@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.3.8](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.7...react-thaizip-v0.3.8) (2026-09-11)
+
+
+### Bug Fixes
+
+* stop publishing the CLI source map ([aa4b5bc](https://github.com/naay99999/react-thai-zip/commit/aa4b5bcddd30536440d97a072ab8a24f0f3afee2))
+
+
+### Performance Improvements
+
+* build the cascade hook's Intl.Collator once per locale ([0675c91](https://github.com/naay99999/react-thai-zip/commit/0675c9191834b17004dd6f46cc3010659f507197))
+* load typescript lazily so it stays off the CLI startup path ([29d5865](https://github.com/naay99999/react-thai-zip/commit/29d5865c347fed7c47539c56b168144b47453255))
+* read each candidate CSS file once in detectTailwind ([f3750a8](https://github.com/naay99999/react-thai-zip/commit/f3750a8648c75989b5de666869ad19e246a680ca))
+* read package.json once when resolving missing dependencies ([6d6a9dc](https://github.com/naay99999/react-thai-zip/commit/6d6a9dcbdaf10c09c422ce55a381bd6c8584e06c))
+* replace execa with cross-spawn for package-manager invocations ([0cd7257](https://github.com/naay99999/react-thai-zip/commit/0cd7257d881f28e4a3548440ec6846cc4ffeb169))
+* seed the index hook from thaizip's synchronous cache ([1362c7b](https://github.com/naay99999/react-thai-zip/commit/1362c7bc47fa2e31477887119706781ba939ed36))
+
 ## [0.3.7](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.6...react-thaizip-v0.3.7) (2026-09-06)
 
 
