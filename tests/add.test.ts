@@ -41,7 +41,7 @@ async function tempProjectWithConfigV2(
   } = {},
 ) {
   const cwd = await tempDir()
-  const thaizipRange = options.thaizipRange ?? '^0.7.0'
+  const thaizipRange = options.thaizipRange ?? '^0.7.5'
   // Pre-declare every npm dependency the registry items can pull in (thaizip,
   // Base UI, utils' clsx/tailwind-merge, and address-form-field's
   // react-hook-form) so getMissingDependencies finds nothing to install —
@@ -155,7 +155,7 @@ describe('addComponents', () => {
     expect(logged).toContain('Skipped app/components/thai-address-autocomplete.tsx')
   })
 
-  it('installs the missing thaizip dependency with the pinned >=0.7.0 range while leaving other packages bare', async () => {
+  it('installs the missing thaizip dependency with the pinned >=0.7.5 range while leaving other packages bare', async () => {
     const cwd = await tempDir()
     await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: {} }))
     await writeConfig(
@@ -179,7 +179,7 @@ describe('addComponents', () => {
 
     expect(mockedInstallPackage).toHaveBeenCalledTimes(1)
     const [specs, options] = mockedInstallPackage.mock.calls[0]
-    expect(specs).toContain('thaizip@>=0.7.0')
+    expect(specs).toContain('thaizip@>=0.7.5')
     expect(specs).not.toContain('thaizip')
     expect(specs).toEqual(expect.arrayContaining(['clsx', 'tailwind-merge', '@base-ui/react']))
     expect(options).toEqual({ cwd, pm: 'npm' })
@@ -249,12 +249,12 @@ describe('addComponents', () => {
 
     expect(process.exitCode).toBe(1)
     await expect(pathExists(path.join(cwd, 'app/components', 'thai-address-autocomplete.tsx'))).resolves.toBe(false)
-    expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('>=0.7.0'))
+    expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('>=0.7.5'))
     expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('found 0.4.0'))
   })
 
   it('scaffolds normally when thaizip satisfies the required version', async () => {
-    const cwd = await tempProjectWithConfigV2({ thaizipRange: '^0.7.0' })
+    const cwd = await tempProjectWithConfigV2({ thaizipRange: '^0.7.5' })
 
     await addComponents({ cwd, targets: ['autocomplete'] })
 
@@ -262,7 +262,7 @@ describe('addComponents', () => {
   })
 
   it('prefers the version actually installed under node_modules over the declared range', async () => {
-    const cwd = await tempProjectWithConfigV2({ thaizipRange: '^0.7.0' })
+    const cwd = await tempProjectWithConfigV2({ thaizipRange: '^0.7.5' })
     // package.json declares a satisfying range, but the version actually
     // resolved on disk is older — node_modules should win since that's
     // what will actually be imported at build time.
@@ -399,7 +399,7 @@ describe('addComponents', () => {
     expect(config.registryVersion).toBe('0.0.1')
   })
 
-  it('gates on thaizip 0.7.0', async () => {
+  it('gates on thaizip 0.7.5', async () => {
     const cwd = await tempProjectWithConfigV2({ thaizipRange: '^0.6.2' })
     await addComponents({ cwd, targets: ['autocomplete'], yes: true })
     expect(process.exitCode).toBe(1)
@@ -422,7 +422,7 @@ describe('addComponents', () => {
       path.join(cwd, 'package.json'),
       JSON.stringify({
         dependencies: {
-          thaizip: '^0.7.0',
+          thaizip: '^0.7.5',
           '@base-ui/react': '^1.0.0',
           clsx: '^2.0.0',
           'tailwind-merge': '^2.0.0',
@@ -448,7 +448,7 @@ describe('addComponents', () => {
 
   it('migrates a legacy config with typescript: false, and a subsequent add scaffolds .jsx/.js files from it', async () => {
     const cwd = await tempDir()
-    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.0' } }))
+    await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: { thaizip: '^0.7.5' } }))
     await mkdir(path.join(cwd, 'app'), { recursive: true })
     await writeFile(path.join(cwd, 'app', 'globals.css'), '@import "tailwindcss";\n')
     await writeFile(
@@ -600,7 +600,7 @@ describe('addComponents', () => {
     expect(mockedInstallPackage).toHaveBeenCalledTimes(1)
     const [specs, options] = mockedInstallPackage.mock.calls[0]
     expect(specs).toEqual(
-      expect.arrayContaining(['thaizip@>=0.7.0', '@base-ui/react', 'clsx', 'tailwind-merge', 'react-hook-form']),
+      expect.arrayContaining(['thaizip@>=0.7.5', '@base-ui/react', 'clsx', 'tailwind-merge', 'react-hook-form']),
     )
     expect(options).toEqual({ cwd, pm: 'npm' })
   })

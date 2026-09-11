@@ -15,7 +15,7 @@ import {
   writeConfig,
 } from '../utils/config.js'
 import { detectTailwind } from '../utils/detectTailwind.js'
-import { getInstalledPackageVersion, getPackageDependencyRange, hasPackageDependency } from '../utils/packageJson.js'
+import { getInstalledPackageVersion, getPackageDependencyRange, readPackageJson } from '../utils/packageJson.js'
 import { confirm } from '../utils/prompt.js'
 import { compareVersions, extractVersionAnchor, isVersionAtLeast } from '../utils/semver.js'
 import { rewriteTemplateImports } from '../utils/rewriteImports.js'
@@ -267,15 +267,21 @@ async function checkCorePackageVersion(cwd: string): Promise<CorePackageVersionC
 
 async function getMissingDependencies(cwd: string, dependencies: string[]): Promise<string[]> {
   const uniqueDependencies = Array.from(new Set(dependencies))
-  const missingDependencies: string[] = []
 
-  for (const dependency of uniqueDependencies) {
-    if (!(await hasPackageDependency(dependency, cwd))) {
-      missingDependencies.push(dependency)
-    }
-  }
+  // Read package.json once instead of once per dependency (hasPackageDependency
+  // would otherwise stat/read/parse the same unchanged file N times sequentially).
+  const packageJson = await readPackageJson(cwd)
 
-  return missingDependencies
+  return uniqueDependencies.filter((dependency) => {
+    if (!packageJson) return true
+
+    const isPresent = Boolean(
+      packageJson.dependencies?.[dependency] ??
+        packageJson.devDependencies?.[dependency] ??
+        packageJson.peerDependencies?.[dependency],
+    )
+    return !isPresent
+  })
 }
 
 async function selectComponents(targets: string[], registry: RegistryItem[]): Promise<RegistryItem[]> {

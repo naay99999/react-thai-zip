@@ -6,7 +6,9 @@ export default defineConfig({
   target: 'node18',
   clean: true,
   dts: false,
-  sourcemap: true,
+  // Excluded from the published tarball: the map was 42.7% of the gzip download,
+  // and a CLI run via npx has no devtools attached to read it.
+  sourcemap: false,
   splitting: false,
   banner: {
     js: '#!/usr/bin/env node',

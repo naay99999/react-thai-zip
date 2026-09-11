@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { loadDefaultIndex } from 'thaizip/data'
+import { getDefaultIndexIfLoaded, loadDefaultIndex } from 'thaizip/data'
 import type { TrigramIndex } from 'thaizip'
 
 /**
@@ -14,7 +14,11 @@ export function useThaiAddressIndex(): {
   isLoading: boolean
   retry: () => void
 } {
-  const [index, setIndex] = useState<TrigramIndex | null>(null)
+  // Seed from the cache synchronously: loadDefaultIndex() is async even on a hit,
+  // so without this every remount of an already-warm page renders one frame of
+  // loading skeleton before settling. Null on a cold start, so the effect below
+  // still does the real work.
+  const [index, setIndex] = useState<TrigramIndex | null>(() => getDefaultIndexIfLoaded())
   const [error, setError] = useState<Error | null>(null)
   const [generation, setGeneration] = useState(0)
 
