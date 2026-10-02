@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getPageMarkdownUrl, renderDocsIndex, renderFullDocs, renderPageMarkdown } from '../apps/docs/lib/docs-markdown'
+import { getPageMarkdownUrl, renderDocsIndex, renderFullDocs, renderPageMarkdown } from '../apps/docs/lib/docs-markdown.js'
 
 function page(url: string, title: string, locale: string, body: string) {
   return {
