@@ -52,7 +52,7 @@ export async function runPackageManagerExec(
   await run(command, options.cwd)
 }
 
-// Fetches-and-runs a remote package spec once (e.g. `shadcn@latest add ...`)
+// Fetches-and-runs a remote package spec once (e.g. `shadcn@4.21.0 add ...`)
 // via the project's own package manager — `npx`/`pnpm dlx`/`yarn dlx`/`bunx`.
 // Distinct from runPackageManagerExec above, which only resolves a locally
 // installed node_modules/.bin binary and cannot fetch an unlisted package.

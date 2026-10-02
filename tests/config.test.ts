@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, writeFile } from 'node:fs/promises'
+import { mkdtemp, readFile, symlink, writeFile } from 'node:fs/promises'
 import os, { tmpdir } from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -15,12 +15,23 @@ import {
   writeConfig,
 } from '../src/utils/config.js'
 import { extractVersionAnchor, isVersionAtLeast } from '../src/utils/semver.js'
+import type { ThaiZipConfig } from '../src/utils/config.js'
 
 async function tempDir() {
   return mkdtemp(path.join(os.tmpdir(), 'react-thaizip-'))
 }
 
 describe('config', () => {
+  it('refuses to write a config through a symlink outside the project', async () => {
+    const cwd = await tempDir()
+    const outside = await tempDir()
+    const externalConfig = path.join(outside, 'config.json')
+    await writeFile(externalConfig, '{}')
+    await symlink(externalConfig, getConfigPath(cwd))
+
+    await expect(writeConfig(baseConfig as ThaiZipConfig, cwd)).rejects.toThrow(/outside the project/i)
+    expect(await readFile(externalConfig, 'utf8')).toBe('{}')
+  })
   it('CORE_PACKAGE_VERSION is a valid, parseable semver range', () => {
     expect(CORE_PACKAGE_VERSION).toMatch(/^[\^~>=<]*\d+\.\d+\.\d+$/)
     expect(extractVersionAnchor(CORE_PACKAGE_VERSION)).not.toBeNull()

@@ -18,6 +18,7 @@ vi.mock('../src/utils/install.js', () => ({
 }))
 
 vi.mock('../src/utils/shadcnPrimitives.js', () => ({
+  SHADCN_CLI_SPEC: 'shadcn@4.21.0',
   ensureShadcnPrimitives: vi.fn().mockResolvedValue(undefined),
 }))
 
@@ -796,7 +797,7 @@ describe('addComponents — shadcn style', () => {
 
       const logged = (console.error as ReturnType<typeof vi.fn>).mock.calls.map((call) => call.join(' ')).join('\n')
       expect(logged).toContain('Failed to install shadcn primitives')
-      expect(logged).toContain('npx shadcn@latest add')
+      expect(logged).toContain('npx shadcn@4.21.0 add')
       expect(logged).toContain('network error')
     } finally {
       console.error = originalError

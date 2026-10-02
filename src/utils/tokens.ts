@@ -1,4 +1,5 @@
-import { readFile, writeFile } from 'node:fs/promises'
+import { readFile } from 'node:fs/promises'
+import { assertPathInsideRoot, assertRealPathInsideRoot, writeFileInsideRoot } from './pathSafety.js'
 
 export function hasShadcnTokens(css: string): boolean {
   return /--background\s*:/.test(css) && /--input\s*:/.test(css)
@@ -121,13 +122,15 @@ colors: {
 borderRadius: { lg: 'var(--radius)', md: 'calc(var(--radius) - 2px)', sm: 'calc(var(--radius) - 4px)' },`
 }
 
-export async function ensureTokens(cssAbsolutePath: string, version: 3 | 4): Promise<'written' | 'skipped'> {
+export async function ensureTokens(cssAbsolutePath: string, version: 3 | 4, projectRoot: string): Promise<'written' | 'skipped'> {
+  assertPathInsideRoot(cssAbsolutePath, projectRoot)
+  await assertRealPathInsideRoot(cssAbsolutePath, projectRoot)
   const content = await readFile(cssAbsolutePath, 'utf8')
 
   if (hasShadcnTokens(content)) {
     return 'skipped'
   }
 
-  await writeFile(cssAbsolutePath, content + '\n' + buildTokenBlock(version) + '\n')
+  await writeFileInsideRoot(cssAbsolutePath, projectRoot, content + '\n' + buildTokenBlock(version) + '\n')
   return 'written'
 }

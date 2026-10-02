@@ -33,11 +33,11 @@ npx react-thaizip init
 
 **วิธีแก้:** นำ `theme.extend` snippet ที่ `init` พิมพ์ไปเพิ่มใต้ `theme.extend` ใน `tailwind.config.js` หรือ `tailwind.config.ts` แล้ว restart dev server ถ้ากำลังทำงานอยู่
 
-## `thaizip` ต่ำกว่า `0.7.0`
+## `thaizip` ต่ำกว่า `0.7.5`
 
-**ปัญหา:** `add` รายงานเวอร์ชันที่พบและต้องการ `thaizip >=0.7.0` แล้วหยุดก่อน scaffold
+**ปัญหา:** `add` รายงานเวอร์ชันที่พบและต้องการ `thaizip >=0.7.5` แล้วหยุดก่อน scaffold
 
-**สาเหตุ:** Template ต้องใช้ cascade/enumeration API และป้ายกำกับสองภาษาที่เริ่มใช้ใน `0.7.0`
+**สาเหตุ:** Template ใช้ cascade/enumeration API และป้ายกำกับสองภาษาที่เริ่มใช้ใน `0.7.0` รวมถึง API อ่าน index cache แบบ synchronous ที่มีตั้งแต่ `0.7.5`
 
 **วิธีแก้:** อัปเกรดแล้วรันคำสั่ง `add` เดิมอีกครั้ง:
 
@@ -54,14 +54,16 @@ npx react-thaizip add autocomplete
 
 **สาเหตุ:** package manager จบด้วย error เช่น registry, network หรือ lockfile มีปัญหา CLI จะหยุดโดยไม่เขียนคอมโพเนนต์
 
-**วิธีแก้:** ติดตั้งรายการที่ error พิมพ์ด้วย package manager ของโปรเจกต์ แล้วรันคำสั่งเดิมอีกครั้ง ตัวอย่างสำหรับรายการเต็มของ autocomplete:
+**วิธีแก้:** ติดตั้งรายการที่ error พิมพ์ด้วย package manager ของโปรเจกต์ แล้วรันคำสั่งเดิมอีกครั้ง ตัวอย่างสำหรับรายการเต็มของ autocomplete แบบ vanilla:
 
 ```bash
-npm i 'thaizip@>=0.7.0' @base-ui/react clsx tailwind-merge
+npm i 'thaizip@>=0.7.5' @base-ui/react clsx tailwind-merge
 npx react-thaizip add autocomplete
 ```
 
 ถ้า `init` ล้มเหลวตอนติดตั้ง `thaizip` ให้ติดตั้งแพ็กเกจนั้นก่อน แล้วรัน `npx react-thaizip init` ใหม่
+
+ในโปรเจกต์ shadcn/ui ที่รองรับ `add` ใช้ primitives ของโปรเจกต์แทนการติดตั้ง `@base-ui/react` โดยตรง ให้ทำตามคำสั่งติดตั้ง dependency หรือ shadcn CLI ที่แสดงในรอบที่ล้มเหลว
 
 ## มีไฟล์คอมโพเนนต์อยู่แล้ว
 

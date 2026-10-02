@@ -26,7 +26,7 @@ npx react-thaizip init
 
 `init` performs these steps in order:
 
-1. Detects the package manager, project structure, and Tailwind CSS v3 or v4 (which must already be installed), then prints a detection summary before asking anything.
+1. Detects the package manager, project structure, TypeScript, shadcn/ui style, and Tailwind CSS v3 or v4 (which must already be installed), then prints a detection summary before asking anything.
 2. Lets you confirm or change `componentDir` unless `--yes` is present.
 3. Adds design tokens to a global stylesheet, if one was found.
 4. Offers to install `thaizip` when it is missing.
@@ -39,8 +39,12 @@ Sample output at the start of a run:
 ```text
 Detected project settings:
   Components directory: app/components
+  Lib directory: lib
+  Hooks directory: hooks
   Package manager: npm
+  Language: TypeScript
   Tailwind: v4 (app/globals.css)
+  Component style: vanilla Tailwind (no components.json found)
 ```
 
 Tailwind is always detected before the `componentDir` prompt, so a project without Tailwind installed stops immediately, before any question is asked.
@@ -79,9 +83,9 @@ Name matching is case-insensitive.
 | `ThaiAddressDisplay` | `address-display`, `thai-address-display`, `ThaiAddressDisplay` |
 | `ThaiAddressFormField` | `address-form-field`, `thai-address-form-field`, `ThaiAddressFormField` |
 
-Each component automatically pulls in `utils` and the address-index hook as registry dependencies. These internal items are not shown in the multiselect or `--help`, and you do not need to name them.
+`add` pulls in each target's shared files automatically: all components use `utils`; address-index consumers also use the index hook, and cascade-based components use the cascade hook and select. These internal dependencies are not shown in the multiselect or `--help`, and you do not need to name them.
 
-Before writing files, `add` checks that an existing `thaizip` is at least `0.7.0`, offers to install missing dependencies, and writes files to the directories in `thaizip.config.json`.
+Before writing files, `add` checks that an existing `thaizip` is at least `0.7.5`, offers to install missing dependencies, and writes files to the directories in `thaizip.config.json`. The selected component style comes from `init`: vanilla interactive components use Base UI; supported shadcn/ui projects use their Base, Radix, or React Aria primitives, with missing primitives installed by the shadcn CLI.
 
 ## Flags
 

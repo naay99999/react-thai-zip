@@ -13,7 +13,7 @@ import CascadeSelectDemo from '../../../../components/demos/CascadeSelectDemo'
 npx react-thaizip add cascade-select
 ```
 
-The command adds the component plus `utils` and the address-index loading hook to the directories recorded in [`thaizip.config.json`](/en/docs/reference/config).
+The command adds the component, `utils`, the address-index loading hook, and the cascade-state hook to the directories recorded in [`thaizip.config.json`](/en/docs/reference/config).
 
 ## Basic usage
 
@@ -37,11 +37,21 @@ export function AddressField() {
 
 Use `locale="en"` for English labels and options.
 
+```tsx
+<ThaiAddressCascadeSelect locale="en" onValueChange={(address) => console.log(address)} />
+```
+
 <CascadeSelectDemo client:visible locale="en" />
 
 ## Controlled value
 
 Pass `value` to control the full selection, or `defaultValue` to seed the selected address. This example includes a clear button and shows the callback value.
+
+```tsx
+const [address, setAddress] = useState<ResolvedThaiAddress | null>(null)
+
+<ThaiAddressCascadeSelect value={address} onValueChange={setAddress} />
+```
 
 <CascadeSelectDemo client:visible locale="th" mode="controlled" showOutput />
 

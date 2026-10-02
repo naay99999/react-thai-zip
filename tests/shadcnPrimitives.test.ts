@@ -38,7 +38,7 @@ describe('ensureShadcnPrimitives', () => {
 
     expect(mockedDlx).toHaveBeenCalledTimes(1)
     expect(mockedDlx).toHaveBeenCalledWith(
-      ['shadcn@latest', 'add', 'label', 'button', '-y'],
+      ['shadcn@4.21.0', 'add', 'label', 'button', '-y'],
       { cwd, pm: 'npm' },
     )
   })
@@ -49,7 +49,7 @@ describe('ensureShadcnPrimitives', () => {
     mockedDlx.mockClear()
     await ensureShadcnPrimitives(['popover'], { cwd, pm: 'pnpm', uiDir: 'src/components/ui', yes: false, typescript: true })
 
-    expect(mockedDlx).toHaveBeenCalledWith(['shadcn@latest', 'add', 'popover'], { cwd, pm: 'pnpm' })
+    expect(mockedDlx).toHaveBeenCalledWith(['shadcn@4.21.0', 'add', 'popover'], { cwd, pm: 'pnpm' })
   })
 
   it('goes through runPackageManagerDlx (not a local-bin exec) for npm', async () => {
@@ -58,7 +58,7 @@ describe('ensureShadcnPrimitives', () => {
     mockedDlx.mockClear()
     await ensureShadcnPrimitives(['input'], { cwd, pm: 'npm', uiDir: 'components/ui', yes: true, typescript: true })
 
-    expect(mockedDlx).toHaveBeenCalledWith(['shadcn@latest', 'add', 'input', '-y'], { cwd, pm: 'npm' })
+    expect(mockedDlx).toHaveBeenCalledWith(['shadcn@4.21.0', 'add', 'input', '-y'], { cwd, pm: 'npm' })
   })
 
   it('goes through runPackageManagerDlx (not a local-bin exec) for pnpm', async () => {
@@ -67,7 +67,7 @@ describe('ensureShadcnPrimitives', () => {
     mockedDlx.mockClear()
     await ensureShadcnPrimitives(['input'], { cwd, pm: 'pnpm', uiDir: 'components/ui', yes: true, typescript: true })
 
-    expect(mockedDlx).toHaveBeenCalledWith(['shadcn@latest', 'add', 'input', '-y'], { cwd, pm: 'pnpm' })
+    expect(mockedDlx).toHaveBeenCalledWith(['shadcn@4.21.0', 'add', 'input', '-y'], { cwd, pm: 'pnpm' })
   })
 
   it('treats a dangling symlink at the expected path as present (no exec) — same never-follow rule as add.ts', async () => {
@@ -93,7 +93,7 @@ describe('ensureShadcnPrimitives', () => {
       mockedDlx.mockClear()
       await ensureShadcnPrimitives(['select'], { cwd, pm: 'npm', uiDir: 'components/ui', yes: true, typescript: true })
 
-      expect(mockedDlx).toHaveBeenCalledWith(['shadcn@latest', 'add', 'select', '-y'], { cwd, pm: 'npm' })
+      expect(mockedDlx).toHaveBeenCalledWith(['shadcn@4.21.0', 'add', 'select', '-y'], { cwd, pm: 'npm' })
     })
 
     it('checks for .jsx when typescript is false, recognizing an existing .jsx file as present', async () => {
@@ -118,7 +118,7 @@ describe('ensureShadcnPrimitives', () => {
       mockedDlx.mockClear()
       await ensureShadcnPrimitives(['select'], { cwd, pm: 'npm', uiDir: 'components/ui', yes: true, typescript: false })
 
-      expect(mockedDlx).toHaveBeenCalledWith(['shadcn@latest', 'add', 'select', '-y'], { cwd, pm: 'npm' })
+      expect(mockedDlx).toHaveBeenCalledWith(['shadcn@4.21.0', 'add', 'select', '-y'], { cwd, pm: 'npm' })
     })
   })
 })

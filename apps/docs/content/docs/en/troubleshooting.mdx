@@ -33,11 +33,11 @@ npx react-thaizip init
 
 **Recovery:** Add the `theme.extend` snippet printed by `init` under `theme.extend` in `tailwind.config.js` or `tailwind.config.ts`, then restart a running development server.
 
-## `thaizip` is older than `0.7.0`
+## `thaizip` is older than `0.7.5`
 
-**Problem:** `add` reports the version it found, requires `thaizip >=0.7.0`, and stops before scaffolding.
+**Problem:** `add` reports the version it found, requires `thaizip >=0.7.5`, and stops before scaffolding.
 
-**Cause:** The templates use the cascade/enumeration API and bilingual labels introduced in `0.7.0`.
+**Cause:** The templates use the cascade/enumeration API and bilingual labels introduced in `0.7.0`, plus the synchronous index-cache API available from `0.7.5`.
 
 **Recovery:** Upgrade the package, then rerun the original `add` command:
 
@@ -54,14 +54,16 @@ Use the equivalent add command for yarn, pnpm, or bun, and replace the second-li
 
 **Cause:** The package manager exited with an error, for example because of a registry, network, or lockfile problem. The CLI stops without writing components.
 
-**Recovery:** Install the printed list with the project's package manager, then rerun the original command. For example, the full autocomplete dependency set with npm is:
+**Recovery:** Install the printed list with the project's package manager, then rerun the original command. For example, the full vanilla autocomplete dependency set with npm is:
 
 ```bash
-npm i 'thaizip@>=0.7.0' @base-ui/react clsx tailwind-merge
+npm i 'thaizip@>=0.7.5' @base-ui/react clsx tailwind-merge
 npx react-thaizip add autocomplete
 ```
 
 If `init` failed while installing `thaizip`, install that package first and rerun `npx react-thaizip init`.
+
+In a supported shadcn/ui project, `add` uses the project's primitives instead of installing `@base-ui/react` directly. Follow the dependency or shadcn CLI command printed by the failed run.
 
 ## A component file already exists
 

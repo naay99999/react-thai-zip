@@ -77,7 +77,7 @@ describe('addComponents — shadcn style x JS-target, end-to-end through the rea
     await addComponents({ cwd, targets: ['autocomplete'], yes: true })
 
     expect(mockedDlx).toHaveBeenCalledTimes(1)
-    expect(mockedDlx).toHaveBeenCalledWith(['shadcn@latest', 'add', 'button', '-y'], { cwd, pm: 'npm' })
+    expect(mockedDlx).toHaveBeenCalledWith(['shadcn@4.21.0', 'add', 'button', '-y'], { cwd, pm: 'npm' })
   })
 
   it('a .tsx primitive file left over from a prior TS-target run does not count as present under typescript: false', async () => {
@@ -92,7 +92,7 @@ describe('addComponents — shadcn style x JS-target, end-to-end through the rea
 
     expect(mockedDlx).toHaveBeenCalledTimes(1)
     expect(mockedDlx).toHaveBeenCalledWith(
-      expect.arrayContaining(['shadcn@latest', 'add', 'popover', 'command', 'button']),
+      expect.arrayContaining(['shadcn@4.21.0', 'add', 'popover', 'command', 'button']),
       { cwd, pm: 'npm' },
     )
   })

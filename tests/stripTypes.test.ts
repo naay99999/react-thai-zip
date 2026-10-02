@@ -37,7 +37,7 @@ export function MyComponent() {
   return <Controller />
 }`
     const out = stripTypes(code, 'test.tsx')
-    expect(out).toContain('import { Controller }')
+    expect(out).toMatch(/import \{ Controller,? \}/)
     expect(out).not.toContain('type Control')
   })
 
@@ -132,7 +132,7 @@ export function MyComponent() {
   it('throws on malformed, unparseable TS syntax instead of silently emitting broken output', () => {
     const code = `export function broken(: string) {\n  return 1\n}`
     expect(() => stripTypes(code, 'broken.ts')).toThrow(/broken\.ts/)
-    expect(() => stripTypes(code, 'broken.ts')).toThrow(/Parameter declaration expected/)
+    expect(() => stripTypes(code, 'broken.ts')).toThrow(/Unexpected token/)
   })
 })
 

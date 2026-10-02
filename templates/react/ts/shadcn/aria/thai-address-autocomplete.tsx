@@ -4,7 +4,7 @@ import * as React from 'react'
 import { useThaiAddressAutocomplete } from 'thaizip/react'
 import type { ResolvedThaiAddress, ThaiAddressSuggestion, TrigramIndex } from 'thaizip'
 import { cn } from '@/lib/utils'
-import { useThaiAddressIndex } from '@/hooks/use-thai-address-index'
+import { useThaiAddressIndex, type ThaiAddressIndexLoad } from '@/hooks/use-thai-address-index'
 import { Popover, PopoverTrigger } from '@/components/ui/popover'
 import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Button } from '@/components/ui/button'
@@ -31,6 +31,8 @@ export type ThaiAddressAutocompleteProps = {
   /** Drives suggestion labels and the default texts. Defaults to `'th'`. */
   locale?: AddressLocale
   texts?: Partial<ThaiAddressAutocompleteTexts>
+  /** Load the address data on mount, or when this field enters the viewport. */
+  indexLoad?: ThaiAddressIndexLoad
   limit?: number
   debounce?: number
   threshold?: number
@@ -84,6 +86,7 @@ function addressLabel(address: ResolvedThaiAddress, locale: AddressLocale): stri
 }
 
 export function ThaiAddressAutocomplete({
+  indexLoad = 'mount',
   locale = 'th',
   texts,
   disabled = false,
@@ -98,7 +101,7 @@ export function ThaiAddressAutocomplete({
     [locale, texts],
   )
 
-  const { index, error, retry } = useThaiAddressIndex()
+  const { index, error, retry, observe } = useThaiAddressIndex(indexLoad)
 
   React.useEffect(() => {
     if (error) onError?.(error)
@@ -125,7 +128,7 @@ export function ThaiAddressAutocomplete({
   // rationale as the vanilla template (see its own comment).
   if (!index) {
     return (
-      <div className={cn('relative w-full', className)}>
+      <div ref={observe} className={cn('relative w-full', className)}>
         <Button
           variant="outline"
           isDisabled

@@ -37,11 +37,21 @@ export function AddressField() {
 
 Use `locale="en"` for English labels, placeholders, and suggestions. The returned data still includes Thai and English names.
 
+```tsx
+<ThaiAddressAutocomplete locale="en" onValueChange={(address) => console.log(address)} />
+```
+
 <AutocompleteDemo client:visible locale="en" />
 
 ## Controlled value
 
 Pass `value` to control the selection, or `defaultValue` to seed uncontrolled state. This example includes a clear button for the controlled value and shows the callback output.
+
+```tsx
+const [address, setAddress] = useState<ResolvedThaiAddress | null>(null)
+
+<ThaiAddressAutocomplete value={address} onValueChange={setAddress} />
+```
 
 <AutocompleteDemo client:visible locale="th" mode="controlled" showOutput />
 

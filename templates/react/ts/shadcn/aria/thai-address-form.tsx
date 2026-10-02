@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label'
 // lockstep across the vanilla template and every `shadcn/<engine>/` directory (base, radix, and
 // react-aria), not just within one engine's own directory.
 import { ThaiAddressCascadeSelect } from './thai-address-cascade-select'
-import type { ThaiAddressCascadeSelectTexts } from './thai-address-cascade-select'
+import type { ThaiAddressCascadeSelectProps, ThaiAddressCascadeSelectTexts } from './thai-address-cascade-select'
 
 type AddressLocale = 'th' | 'en'
 
@@ -52,7 +52,9 @@ export type ThaiAddressFormProps = {
   locale?: AddressLocale
   texts?: Partial<ThaiAddressFormTexts>
   /** Forwarded as the embedded `ThaiAddressCascadeSelect`'s own `texts` prop. */
-  cascadeTexts?: Partial<ThaiAddressCascadeSelectTexts>
+ cascadeTexts?: Partial<ThaiAddressCascadeSelectTexts>
+  /** Forwarded to the embedded cascade's address-index loader. */
+  indexLoad?: ThaiAddressCascadeSelectProps['indexLoad']
   disabled?: boolean
   required?: boolean
   /** Blur handler for the house-number input specifically. */
@@ -117,6 +119,7 @@ export function ThaiAddressForm({
   texts,
   cascadeTexts,
   disabled = false,
+  indexLoad,
   required = false,
   onBlur,
   onError,
@@ -191,6 +194,7 @@ export function ThaiAddressForm({
         locale={locale}
         texts={cascadeTexts}
         disabled={disabled}
+        indexLoad={indexLoad}
         required={required}
         onError={onError}
         aria-invalid={ariaInvalid}

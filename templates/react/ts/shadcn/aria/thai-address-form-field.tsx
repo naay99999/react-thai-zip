@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils'
 // lockstep across the vanilla template and every `shadcn/<engine>/` directory (base, radix, and
 // react-aria), not just within one engine's own directory.
 import { ThaiAddressCascadeSelect } from './thai-address-cascade-select'
-import type { ThaiAddressCascadeSelectTexts } from './thai-address-cascade-select'
+import type { ThaiAddressCascadeSelectProps, ThaiAddressCascadeSelectTexts } from './thai-address-cascade-select'
 
 type AddressLocale = 'th' | 'en'
 
@@ -31,7 +31,9 @@ export type ThaiAddressFormFieldProps<TFieldValues extends FieldValues = FieldVa
   >
   /** Drives the embedded cascade's option labels and default texts. Defaults to `'th'`. */
   locale?: AddressLocale
-  texts?: Partial<ThaiAddressCascadeSelectTexts>
+ texts?: Partial<ThaiAddressCascadeSelectTexts>
+  /** Forwarded to the embedded cascade's address-index loader. */
+  indexLoad?: ThaiAddressCascadeSelectProps['indexLoad']
   disabled?: boolean
   /** Applied to the wrapper `<div>` around the cascade and its validation message. */
   className?: string
@@ -55,6 +57,7 @@ export function ThaiAddressFormField<TFieldValues extends FieldValues = FieldVal
   locale,
   texts,
   disabled,
+  indexLoad,
   className,
   labelClassName,
   triggerClassName,
@@ -77,6 +80,7 @@ export function ThaiAddressFormField<TFieldValues extends FieldValues = FieldVal
             locale={locale}
             texts={texts}
             disabled={disabled}
+            indexLoad={indexLoad}
             aria-invalid={fieldState.invalid || undefined}
             labelClassName={labelClassName}
             triggerClassName={triggerClassName}

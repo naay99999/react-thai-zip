@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react'
 import { ThaiAddressAutocomplete } from '../templates/react/ts/thai-address-autocomplete'
 
 // Module-wide mock: this file exercises the loading and error branches only,
@@ -14,9 +14,25 @@ vi.mock('thaizip/data', () => ({ loadDefaultIndex, getDefaultIndexIfLoaded }))
 afterEach(() => {
   cleanup()
   loadDefaultIndex.mockReset()
+  vi.unstubAllGlobals()
 })
 
 describe('ThaiAddressAutocomplete — index loading states', () => {
+  it('does not request data before a visible-mode field enters the viewport', async () => {
+    let notify: IntersectionObserverCallback | undefined
+    vi.stubGlobal('IntersectionObserver', class {
+      constructor(callback: IntersectionObserverCallback) { notify = callback }
+      observe = vi.fn()
+      disconnect = vi.fn()
+    })
+    loadDefaultIndex.mockReturnValue(new Promise(() => {}))
+    render(<ThaiAddressAutocomplete indexLoad="visible" />)
+
+    expect(loadDefaultIndex).not.toHaveBeenCalled()
+    act(() => notify?.([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver))
+    await waitFor(() => expect(loadDefaultIndex).toHaveBeenCalledTimes(1))
+  })
+
   it('renders a disabled aria-busy input while the index loads', async () => {
     loadDefaultIndex.mockReturnValue(new Promise(() => {})) // never settles
     render(<ThaiAddressAutocomplete />)

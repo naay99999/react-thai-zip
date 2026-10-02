@@ -3,7 +3,7 @@
 import * as React from 'react'
 import type { ResolvedThaiAddress, TrigramIndex } from 'thaizip'
 import { cn } from '@/lib/utils'
-import { useThaiAddressIndex } from '@/hooks/use-thai-address-index'
+import { useThaiAddressIndex, type ThaiAddressIndexLoad } from '@/hooks/use-thai-address-index'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -34,6 +34,8 @@ export type ThaiAddressCascadeSelectProps = {
   /** Drives option labels and the default texts. Defaults to `'th'`. */
   locale?: AddressLocale
   texts?: Partial<ThaiAddressCascadeSelectTexts>
+  /** Load the address data on mount, or when this field enters the viewport. */
+  indexLoad?: ThaiAddressIndexLoad
   disabled?: boolean
   required?: boolean
   /** Blur handler for the province trigger (the cascade's primary control). */
@@ -52,6 +54,7 @@ export type ThaiAddressCascadeSelectProps = {
 }
 
 export function ThaiAddressCascadeSelect({
+  indexLoad = 'mount',
   locale = 'th',
   texts,
   disabled = false,
@@ -67,7 +70,7 @@ export function ThaiAddressCascadeSelect({
     [locale, texts],
   )
 
-  const { index, error, retry } = useThaiAddressIndex()
+  const { index, error, retry, observe } = useThaiAddressIndex(indexLoad)
 
   React.useEffect(() => {
     if (error) onError?.(error)
@@ -94,7 +97,7 @@ export function ThaiAddressCascadeSelect({
   // subtree only once `index` is final and stable.
   if (!index) {
     return (
-      <div aria-busy="true" className={cn('grid w-full grid-cols-1 gap-4 sm:grid-cols-2', className)}>
+      <div ref={observe} aria-busy="true" className={cn('grid w-full grid-cols-1 gap-4 sm:grid-cols-2', className)}>
         {[resolvedTexts.provinceLabel, resolvedTexts.districtLabel, resolvedTexts.subdistrictLabel, resolvedTexts.zipLabel].map(
           (label) => (
             <div key={label} className="flex flex-col gap-1.5">

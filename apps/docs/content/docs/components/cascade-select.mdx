@@ -13,7 +13,7 @@ import CascadeSelectDemo from '../../../components/demos/CascadeSelectDemo'
 npx react-thaizip add cascade-select
 ```
 
-คำสั่งจะเพิ่มคอมโพเนนต์ รวมถึง `utils` และ hook สำหรับโหลดดัชนีที่อยู่ลงในตำแหน่งที่บันทึกไว้ใน [`thaizip.config.json`](/docs/reference/config)
+คำสั่งจะเพิ่มคอมโพเนนต์, `utils`, hook โหลดดัชนี และ hook จัดการการเลือกแบบลำดับชั้นลงในตำแหน่งที่บันทึกไว้ใน [`thaizip.config.json`](/docs/reference/config)
 
 ## ใช้งานพื้นฐาน
 
@@ -37,11 +37,21 @@ export function AddressField() {
 
 ใช้ `locale="en"` เพื่อแสดงป้ายและตัวเลือกเป็นภาษาอังกฤษ
 
+```tsx
+<ThaiAddressCascadeSelect locale="en" onValueChange={(address) => console.log(address)} />
+```
+
 <CascadeSelectDemo client:visible locale="en" />
 
 ## ควบคุมค่าจากภายนอก
 
 ส่ง `value` เพื่อควบคุมค่าทั้งชุด หรือ `defaultValue` เพื่อตั้งลำดับที่เลือกไว้ตอนเริ่มต้น ตัวอย่างนี้แสดงค่า callback และมีปุ่มล้างค่า
+
+```tsx
+const [address, setAddress] = useState<ResolvedThaiAddress | null>(null)
+
+<ThaiAddressCascadeSelect value={address} onValueChange={setAddress} />
+```
 
 <CascadeSelectDemo client:visible locale="th" mode="controlled" showOutput />
 

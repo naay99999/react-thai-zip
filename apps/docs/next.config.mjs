@@ -12,6 +12,12 @@ const config = {
     root: repositoryRoot,
   },
   outputFileTracingRoot: repositoryRoot,
+  async rewrites() {
+    return [
+      { source: '/en/docs/:slug*.md', destination: '/api/docs-markdown/en/:slug*' },
+      { source: '/docs/:slug*.md', destination: '/api/docs-markdown/th/:slug*' },
+    ];
+  },
 };
 
 const withMDX = createMDX();

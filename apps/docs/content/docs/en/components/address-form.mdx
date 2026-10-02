@@ -13,7 +13,7 @@ import AddressFormDemo from '../../../../components/demos/AddressFormDemo'
 npx react-thaizip add address-form
 ```
 
-The command adds the component, the embedded `thai-address-cascade-select.tsx` file, `utils`, and the address-index loading hook to the directories recorded in [`thaizip.config.json`](/en/docs/reference/config).
+The command adds the component, the embedded `thai-address-cascade-select.tsx` file, `utils`, the address-index loading hook, and the cascade-state hook to the directories recorded in [`thaizip.config.json`](/en/docs/reference/config).
 
 ## Basic usage
 
@@ -42,6 +42,10 @@ Use `locale="en"` for English labels and options, for both the free-text fields 
 ## Controlled value
 
 Pass `value` to control the whole address, or `defaultValue` to seed it. An in-progress, not-yet-complete cascade selection is never cleared, even while the controlled `value` is `null`.
+
+```tsx
+<ThaiAddressForm name="address" value={address} onValueChange={setAddress} />
+```
 
 <AddressFormDemo client:visible locale="th" mode="controlled" showOutput />
 

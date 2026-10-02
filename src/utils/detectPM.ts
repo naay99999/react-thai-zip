@@ -12,7 +12,7 @@ export type PackageManagerCommands = {
   exec: (args: string[]) => string[]
   // Fetches-and-runs a *remote* package spec once (npx/dlx-style), without
   // requiring it be a project dependency first. This is what a one-off
-  // invocation like `shadcn@latest add ...` needs — `exec` above only ever
+  // invocation like `shadcn@4.21.0 add ...` needs — `exec` above only ever
   // resolves to node_modules/.bin and can't fetch a package on demand.
   dlx: (args: string[]) => string[]
 }

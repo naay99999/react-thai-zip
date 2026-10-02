@@ -37,6 +37,10 @@ export function OrderAddress({ address }: { address: ThaiAddressDisplayValue | n
 
 Use `mode="multi-line"` to render the house-number/moo/soi/street portion and the sub-district/district/province portion as separate rows.
 
+```tsx
+<ThaiAddressDisplay value={address} mode="multi-line" />
+```
+
 <AddressDisplayDemo client:visible locale="en" mode="multi-line" variant="full" />
 
 ## Thai output

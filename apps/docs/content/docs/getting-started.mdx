@@ -17,6 +17,8 @@ npx react-thaizip init
 
 คำสั่งนี้ตรวจสอบโครงสร้างโปรเจกต์และ Tailwind เลือก package manager แล้วสร้าง `thaizip.config.json` ไฟล์นี้บันทึกตำแหน่งคอมโพเนนต์, hook และ `lib` ที่คำสั่ง `add` จะใช้ ดูทุกฟิลด์และกฎการตรวจหาได้ที่ [ข้อมูลอ้างอิงการตั้งค่า](/docs/reference/config)
 
+ถ้าโปรเจกต์มี `components.json` ของ shadcn/ui แบบที่รองรับ `init` จะบันทึกด้วยว่า primitives ใช้ Base UI, Radix หรือ React Aria หากไม่มีจะเลือกคอมโพเนนต์แบบ vanilla Base UI
+
 `init` เพิ่ม design tokens แบบ CSS custom properties ลงใน global stylesheet ด้วย สำหรับ Tailwind v3 จะพิมพ์ `theme.extend` snippet ที่ต้องนำไปเพิ่มในไฟล์ตั้งค่า Tailwind เอง
 
 ## เพิ่ม autocomplete
@@ -37,6 +39,8 @@ lib/
 ```
 
 คำสั่งยังติดตั้ง dependency ที่คอมโพเนนต์ต้องใช้หากยังไม่มี ดู targets, aliases และ flags เพิ่มเติมได้ที่ [ข้อมูลอ้างอิง CLI](/docs/reference/cli)
+
+ใช้ import path ที่ `add` พิมพ์ให้ เพราะ path นั้นตรงกับ directory ที่เลือกตอน `init` ตัวอย่างต่อไปนี้สมมติว่ามี `components/` ที่รากโปรเจกต์
 
 ## ใช้คอมโพเนนต์ครั้งแรก
 

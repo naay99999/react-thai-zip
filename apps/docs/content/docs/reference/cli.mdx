@@ -26,7 +26,7 @@ npx react-thaizip init
 
 `init` ทำงานตามลำดับนี้:
 
-1. ตรวจหา package manager, โครงสร้างโปรเจกต์ และ Tailwind CSS v3 หรือ v4 (ต้องติดตั้งไว้ก่อนแล้ว) แล้วพิมพ์สรุปผลตรวจก่อนถามคำถามใด ๆ
+1. ตรวจหา package manager, โครงสร้างโปรเจกต์, TypeScript, สไตล์ shadcn/ui และ Tailwind CSS v3 หรือ v4 (ต้องติดตั้งไว้ก่อนแล้ว) แล้วพิมพ์สรุปผลตรวจก่อนถามคำถามใด ๆ
 2. ให้ยืนยันหรือแก้ `componentDir` ถ้าไม่ได้ส่ง `--yes`
 3. เพิ่ม design tokens ลง global CSS ถ้าเจอไฟล์
 4. เสนอให้ติดตั้ง `thaizip` ถ้ายังไม่มี
@@ -39,8 +39,12 @@ npx react-thaizip init
 ```text
 Detected project settings:
   Components directory: app/components
+  Lib directory: lib
+  Hooks directory: hooks
   Package manager: npm
+  Language: TypeScript
   Tailwind: v4 (app/globals.css)
+  Component style: vanilla Tailwind (no components.json found)
 ```
 
 Tailwind จะถูกตรวจก่อนถามเรื่อง `componentDir` เสมอ ดังนั้นโปรเจกต์ที่ยังไม่ได้ติดตั้ง Tailwind จะหยุดทำงานทันทีโดยไม่ถามคำถามใด ๆ ก่อน
@@ -79,9 +83,9 @@ npx react-thaizip add
 | `ThaiAddressDisplay` | `address-display`, `thai-address-display`, `ThaiAddressDisplay` |
 | `ThaiAddressFormField` | `address-form-field`, `thai-address-form-field`, `ThaiAddressFormField` |
 
-แต่ละคอมโพเนนต์ดึง `utils` และ hook สำหรับโหลดดัชนีมาเป็น registry dependencies โดยอัตโนมัติ รายการภายในเหล่านี้ไม่แสดงใน multiselect หรือ `--help` และไม่ต้องระบุชื่อเอง
+`add` ดึงไฟล์ช่วยเหลือที่แต่ละ target ต้องใช้โดยอัตโนมัติ: ทุกคอมโพเนนต์ใช้ `utils`; ตัวที่ใช้ดัชนีที่อยู่จะดึง index hook และตัวที่ใช้ cascade จะดึง cascade hook และ select ด้วย รายการภายในไม่แสดงใน multiselect หรือ `--help` และไม่ต้องระบุชื่อเอง
 
-ก่อนเขียนไฟล์ `add` จะตรวจว่า `thaizip` ที่มีอยู่เป็นเวอร์ชัน `0.7.0` ขึ้นไป ติดตั้ง dependencies ที่ขาดเมื่อได้รับการยืนยัน แล้วเขียนไฟล์ตามตำแหน่งใน `thaizip.config.json`
+ก่อนเขียนไฟล์ `add` จะตรวจว่า `thaizip` ที่มีอยู่เป็นเวอร์ชัน `0.7.5` ขึ้นไป ติดตั้ง dependencies ที่ขาดเมื่อได้รับการยืนยัน แล้วเขียนไฟล์ตามตำแหน่งใน `thaizip.config.json` สไตล์คอมโพเนนต์มาจาก `init`: แบบ vanilla interactive ใช้ Base UI ส่วนโปรเจกต์ shadcn/ui ที่รองรับจะใช้ primitives ของ Base, Radix หรือ React Aria และให้ shadcn CLI ติดตั้ง primitives ที่ขาด
 
 ## Flags
 

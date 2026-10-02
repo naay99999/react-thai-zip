@@ -8,6 +8,8 @@ A CLI that scaffolds ready-to-use Thai address React components — powered by [
 
 📚 **[Documentation and live component demos](https://react-thai-zip.vercel.app)**
 
+Using a coding agent? Start with the [AI usage guide](https://react-thai-zip.vercel.app/en/docs/guides/using-with-ai) or provide it the site's [`llms.txt`](https://react-thai-zip.vercel.app/llms.txt).
+
 | Thai input | English input (romanization alias) |
 |---|---|
 | ![react-thaizip demo — typing "ลาดพร้าว" in the scaffolded ThaiAddressAutocomplete component](.github/assets/demo.png) | ![react-thaizip demo — typing "ladprao" and matching the same Thai suggestions](.github/assets/demo-en.png) |
@@ -20,7 +22,7 @@ npx react-thaizip add autocomplete
 ```
 
 - `init` detects your project structure, package manager, and Tailwind version, then writes a `thaizip.config.json` used by `add`.
-- `add autocomplete` installs `thaizip`, `@base-ui/react`, `clsx`, and `tailwind-merge`, then scaffolds 3 files into your project: the component plus its two shared dependencies (`lib/utils.ts` and `hooks/use-thai-address-index.ts`). `add address-form-field` additionally installs `react-hook-form`.
+- `add autocomplete` scaffolds the component plus its shared dependencies (`lib/utils.ts` and `hooks/use-thai-address-index.ts`). It installs missing packages: `thaizip`, `clsx`, and `tailwind-merge`, plus `@base-ui/react` for the vanilla style. In supported shadcn/ui projects it uses the project's Base, Radix, or React Aria primitives instead. `add address-form-field` additionally installs `react-hook-form`.
 
 ```tsx
 import { ThaiAddressAutocomplete } from '@/components/thai-address-autocomplete'
@@ -35,8 +37,8 @@ import { ThaiAddressAutocomplete } from '@/components/thai-address-autocomplete'
 
 ## Components
 
-- **`autocomplete`** (`ThaiAddressAutocomplete`) — free-text address search built on [Base UI](https://base-ui.com/react/components/combobox)'s `Combobox`.
-- **`cascade-select`** (`ThaiAddressCascadeSelect`) — province > district > sub-district cascade built on [Base UI](https://base-ui.com/react/components/select)'s `Select` (×3).
+- **`autocomplete`** (`ThaiAddressAutocomplete`) — free-text address search. The vanilla variant uses [Base UI](https://base-ui.com/react/components/combobox)'s `Combobox`.
+- **`cascade-select`** (`ThaiAddressCascadeSelect`) — province > district > sub-district cascade. The vanilla variant uses [Base UI](https://base-ui.com/react/components/select)'s `Select` (×3).
 - **`address-form`** (`ThaiAddressForm`) — house number + optional moo/soi/street free text, layered directly on top of `ThaiAddressCascadeSelect` (embedded by file, not by npm import).
 - **`address-display`** (`ThaiAddressDisplay`) — read-only address renderer; no `onValueChange`/`name`/hidden inputs, just formats a `ThaiAddressDisplayValue` you hand it.
 - **`address-form-field`** (`ThaiAddressFormField`) — [react-hook-form](https://react-hook-form.com/) `Controller` wrapper around `ThaiAddressCascadeSelect`.
@@ -51,7 +53,9 @@ npx react-thaizip add address-form-field      # or: ThaiAddressFormField
 npx react-thaizip add autocomplete cascade-select  # multiple at once
 ```
 
-Each `add` also requires `thaizip` >= 0.7.0 (the version that added the cascade/enumeration API and bilingual labels the templates rely on) — an older installed version makes `add` exit without writing files.
+Each `add` also requires `thaizip` >= 0.7.5 (which includes the cascade/enumeration, bilingual-label, and synchronous index-cache APIs used by the templates) — an older installed version makes `add` exit without writing files.
+
+`init` selects a component style from the project's `components.json`: `base-*`, `radix-*`, and `aria-*` choose the corresponding shadcn/ui variant; legacy `default` and `new-york` choose Radix. Other or absent styles use the vanilla Base UI variant. The choice is recorded in `thaizip.config.json` v4. See the [configuration reference](https://react-thai-zip.vercel.app/docs/reference/config) for all fields and migration behavior.
 
 `autocomplete`, `cascade-select`, and `address-form` share the same shape:
 
@@ -65,6 +69,8 @@ Each `add` also requires `thaizip` >= 0.7.0 (the version that added the cascade/
 
 `address-form-field` takes react-hook-form's own `control` / `name` / `rules` instead of `value` / `onValueChange`, and renders no hidden inputs — submission goes through react-hook-form's own `handleSubmit`, which reads the form state directly.
 
+Interactive components load the address index on mount by default. Set `indexLoad="visible"` on autocomplete, cascade select, address form, or address form field when the field starts below the viewport; loading begins when it enters view. Browsers without `IntersectionObserver` use mount loading.
+
 <details>
 <summary><strong>Full prop reference</strong></summary>
 
@@ -76,6 +82,7 @@ Each `add` also requires `thaizip` >= 0.7.0 (the version that added the cascade/
 | `name` | When set, renders 4 hidden inputs: `${name}-subdistrict`, `-district`, `-province`, `-zipcode` |
 | `locale` | `'th'` (default) or `'en'` — drives suggestion labels and default `texts` |
 | `texts` | `Partial<Texts>` — override any subset of the default labels/status messages |
+| `indexLoad` | `'mount'` (default) or `'visible'` — when to begin loading the address index |
 | `limit` / `debounce` / `threshold` | Passed through to the underlying search hook |
 | `disabled` / `required` / `onBlur` / `onError` | Standard field wiring; `onError` fires if the bundled address index fails to load |
 | `className` / `inputClassName` / `popupClassName` / `itemClassName` | Class-name slots for the wrapper, input, popup, and each suggestion item |
@@ -89,6 +96,7 @@ Each `add` also requires `thaizip` >= 0.7.0 (the version that added the cascade/
 | `name` | When set, renders 4 hidden inputs: `${name}-subdistrict`, `-district`, `-province`, `-zipcode` |
 | `locale` | `'th'` (default) or `'en'` — drives option labels and default `texts` |
 | `texts` | `Partial<Texts>` — override any subset of the default labels/status messages |
+| `indexLoad` | `'mount'` (default) or `'visible'` — when to begin loading the address index |
 | `disabled` / `required` / `onBlur` / `onError` / `aria-invalid` | Standard field wiring; `onError` fires if the bundled address index fails to load |
 | `className` / `labelClassName` / `triggerClassName` / `popupClassName` / `itemClassName` | Class-name slots for the wrapper, labels, each select trigger, popup, and each option item |
 | `ref` | Forwarded to the province select's trigger button |
@@ -102,6 +110,7 @@ Each `add` also requires `thaizip` >= 0.7.0 (the version that added the cascade/
 | `locale` | `'th'` (default) or `'en'` — drives this component's own labels and the embedded cascade's |
 | `texts` | `Partial<ThaiAddressFormTexts>` — override the house-number/moo/soi/street labels and placeholders |
 | `cascadeTexts` | `Partial<Texts>` forwarded to the embedded `ThaiAddressCascadeSelect`'s own `texts` prop |
+| `indexLoad` | Forwarded to the embedded cascade (`'mount'` or `'visible'`) |
 | `disabled` / `required` / `onBlur` / `onError` / `aria-invalid` | Standard field wiring; `onBlur` fires on the house-number input specifically; `onError` fires if the bundled address index fails to load (delegated to the embedded cascade); `aria-invalid` marks the 4 text inputs and the embedded cascade's triggers invalid |
 | `className` / `labelClassName` / `inputClassName` / `triggerClassName` / `popupClassName` / `itemClassName` | Class-name slots for the wrapper, labels, the 4 text inputs, and the embedded cascade's own trigger/popup/item slots |
 | `ref` | Forwarded to the house-number `<input>` |
@@ -127,6 +136,7 @@ Each `add` also requires `thaizip` >= 0.7.0 (the version that added the cascade/
 | `rules` | react-hook-form validation rules, e.g. `{ required: 'Please select an address' }` — forwarded to `Controller` |
 | `locale` | `'th'` (default) or `'en'` — drives the embedded cascade's option labels and default `texts` |
 | `texts` | `Partial<Texts>` forwarded to the embedded `ThaiAddressCascadeSelect`'s own `texts` prop |
+| `indexLoad` | Forwarded to the embedded cascade (`'mount'` or `'visible'`) |
 | `disabled` | Forwarded to the embedded cascade's triggers |
 | `className` / `labelClassName` / `triggerClassName` / `popupClassName` / `itemClassName` | Class-name slots for the wrapper, and the embedded cascade's own label/trigger/popup/item slots |
 | `errorClassName` | Class name for the `role="alert"` validation message shown when `rules` fails |

@@ -82,7 +82,7 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
   const manualSteps: string[] = []
 
   if (cssPath) {
-    const result = await ensureTokens(path.join(cwd, cssPath), version)
+    const result = await ensureTokens(path.join(cwd, cssPath), version, cwd)
     console.log(
       result === 'written'
         ? `\nAdded design tokens to ${cssPath}.`

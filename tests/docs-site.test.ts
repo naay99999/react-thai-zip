@@ -13,6 +13,7 @@ const requiredDocSlugs = [
   'components/address-form-field.mdx',
   'guides/forms.mdx',
   'guides/customization.mdx',
+  'guides/using-with-ai.md',
   'reference/cli.mdx',
   'reference/config.mdx',
   'troubleshooting.mdx',

@@ -1,13 +1,13 @@
 ---
 title: Configuration reference
-description: thaizip.config.json v2 and directory, package-manager, and Tailwind detection rules
+description: thaizip.config.json v4, component styles, and project detection rules
 ---
 
 `npx react-thaizip init` writes `thaizip.config.json` at the project root. The `add` command reads it to locate component and shared-file destinations.
 
-## v2 shape
+## v4 shape
 
-This example shows every v2 field. Actual values depend on the project and the CLI version that created the file.
+This example shows every v4 field for a project without a supported shadcn/ui configuration. Paths and the recorded CLI version depend on your project.
 
 ```json
 {
@@ -20,7 +20,11 @@ This example shows every v2 field. Actual values depend on the project and the C
     "version": 4,
     "css": "app/globals.css"
   },
-  "registryVersion": "0.2.1"
+  "style": "vanilla",
+  "shadcnBase": "",
+  "shadcnUiAlias": "",
+  "shadcnUiDir": "",
+  "registryVersion": "0.3.7"
 }
 ```
 
@@ -29,15 +33,25 @@ This example shows every v2 field. Actual values depend on the project and the C
 | `typescript` | `true` or `false` | Auto-detected by `init` from the presence of `tsconfig.json` (no prompt). Determines whether `add` writes `.tsx`/`.ts` output as authored (`true`) or strips TypeScript syntax and writes `.jsx`/`.js` output instead (`false`). |
 | `componentDir` | non-empty string | Component destination relative to the project root. |
 | `libDir` | non-empty string | Destination for `utils.ts`; `init` defaults to `lib`. |
-| `hooksDir` | non-empty string | Destination for `use-thai-address-index.ts`; defaults to `hooks`. |
+| `hooksDir` | non-empty string | Destination for shared hooks; defaults to `hooks`. |
 | `packageManager` | `npm`, `yarn`, `pnpm`, `bun` | Package manager used by `add` for dependency installation. |
 | `tailwind.version` | `3` or `4` | Detected Tailwind major version. |
 | `tailwind.css` | string | Project-relative global CSS path, or `""` when no file was found. |
+| `style` | `vanilla` or `shadcn` | Selects the authored Tailwind/Base UI templates or templates composed from the project's shadcn/ui primitives. Auto-detected by `init`. |
+| `shadcnBase` | `""`, `base`, `radix`, or `aria` | `""` with `vanilla`; otherwise the component library behind the project's shadcn/ui primitives. |
+| `shadcnUiAlias` | string | Import prefix from `components.json` `aliases.ui`; `""` with `vanilla`. |
+| `shadcnUiDir` | string | Project-relative directory resolved from that alias; `""` with `vanilla`. |
 | `registryVersion` | non-empty string | CLI version recorded the last time files were written; registry metadata, not the `thaizip` dependency version. |
 
 Every path is resolved from the working directory where the CLI runs. Run `init` and `add` from the same project root that contains the config file.
 
 `registryVersion` is more than bookkeeping: `add` uses it to detect stale protected `lib`/hook files. When `add` skips one of those files because it already exists (protected), and the recorded `registryVersion` is older than the running CLI's own version, it prints a warning that the file may be stale along with the exact command to refresh it, for example `npx react-thaizip add utils --overwrite`. Whenever `add` actually writes at least one file — component, `lib`, or hook — it automatically bumps `registryVersion` in `thaizip.config.json` to the running CLI's version.
+
+## Component-style detection
+
+`init` reads `components.json` when present. A `style` beginning with `base-`, `radix-`, or `aria-` selects the corresponding shadcn/ui template; legacy `default` and `new-york` select Radix. An absent or unrecognized style selects `vanilla`. For a recognized shadcn/ui project, `add` installs any missing UI primitives through the shadcn CLI. Vanilla interactive components use Base UI directly. `ThaiAddressDisplay` needs no UI primitives.
+
+The selected `style` and `shadcnBase` are saved in the config. To change them after `init`, edit the config consistently and rerun `add` with `--overwrite` only after reviewing the files it would replace.
 
 ## Project-structure detection
 
@@ -83,6 +97,6 @@ Existing `lib` and hook files are protected by default, even with `--yes`, and a
 
 ## Legacy configuration
 
-When `add` reads a recognized v1 config, it migrates the file in place to v2 by adding `libDir`, `hooksDir`, and detected Tailwind metadata. If Tailwind detection fails, migration uses version `4` with an empty CSS path. A v1 config with `typescript: false` migrates the same way (the `typescript` value carries over as-is, or defaults to `true` when the field is missing). Only a config with an invalid shape fails to migrate; run `npx react-thaizip init` again to generate a valid file.
+When `add` reads a recognized v1, v2, or v3 config, it migrates it in place to v4. The v1 migration fills in `libDir`, `hooksDir`, and Tailwind metadata (using Tailwind v4 with an empty CSS path if detection fails), while preserving `typescript: false` when present. v1/v2 configs become `vanilla`; an existing v3 `shadcn` config gains `shadcnBase: "base"`, since v3 only recognized Base UI-backed shadcn styles. Migration does not re-detect the project's current shadcn style. If the resulting config is invalid, rerun `npx react-thaizip init` to regenerate it.
 
 If paths or metadata do not match the project, follow the recovery steps in [Troubleshooting](/en/docs/troubleshooting).

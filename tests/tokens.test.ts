@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, writeFile } from 'node:fs/promises'
+import { mkdtemp, readFile, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -27,10 +27,21 @@ describe('tokens', () => {
     const dir = await mkdtemp(path.join(tmpdir(), 'thaizip-tokens-'))
     const css = path.join(dir, 'globals.css')
     await writeFile(css, '@import "tailwindcss";\n')
-    expect(await ensureTokens(css, 4)).toBe('written')
-    expect(await ensureTokens(css, 4)).toBe('skipped')
+    expect(await ensureTokens(css, 4, dir)).toBe('written')
+    expect(await ensureTokens(css, 4, dir)).toBe('skipped')
     const content = await readFile(css, 'utf8')
     expect(content.match(/react-thaizip design tokens/g)).toHaveLength(1)
     expect(content.endsWith('\n')).toBe(true)
+  })
+
+  it('refuses to append tokens through a symlink outside the project', async () => {
+    const root = await mkdtemp(path.join(tmpdir(), 'thaizip-tokens-root-'))
+    const outside = await mkdtemp(path.join(tmpdir(), 'thaizip-tokens-outside-'))
+    const externalCss = path.join(outside, 'globals.css')
+    await writeFile(externalCss, '@import "tailwindcss";\n')
+    await symlink(externalCss, path.join(root, 'globals.css'))
+
+    await expect(ensureTokens(path.join(root, 'globals.css'), 4, root)).rejects.toThrow(/outside the project/i)
+    expect(await readFile(externalCss, 'utf8')).toBe('@import "tailwindcss";\n')
   })
 })

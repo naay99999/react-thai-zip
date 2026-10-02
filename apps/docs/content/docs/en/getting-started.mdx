@@ -17,6 +17,8 @@ npx react-thaizip init
 
 This command checks the project structure and Tailwind setup, chooses the package manager, and creates `thaizip.config.json`. That file records the component, hook, and `lib` directories used by `add`. See every field and detection rule in the [configuration reference](/en/docs/reference/config).
 
+If your project has a supported shadcn/ui `components.json`, `init` also records whether its primitives use Base UI, Radix, or React Aria. Otherwise it selects the vanilla Base UI component style.
+
 `init` also adds CSS custom-property design tokens to the global stylesheet. With Tailwind v3, it prints a `theme.extend` snippet that you add to your Tailwind configuration yourself.
 
 ## Add autocomplete
@@ -37,6 +39,8 @@ lib/
 ```
 
 The command also installs any component dependencies that are not already present. See the [CLI reference](/en/docs/reference/cli) for more targets, aliases, and flags.
+
+Follow the import path printed by `add`; it reflects the directory you chose during `init`. The example below assumes a `components/` directory at the project root.
 
 ## Use your first component
 

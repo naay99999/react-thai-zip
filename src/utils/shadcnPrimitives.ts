@@ -3,6 +3,9 @@ import type { PackageManager } from './detectPM.js'
 import { pathExistsNoFollow } from './fs.js'
 import { runPackageManagerDlx } from './install.js'
 
+// Match the version used to generate the committed shadcn template fixtures.
+export const SHADCN_CLI_SPEC = 'shadcn@4.21.0'
+
 export type EnsureShadcnPrimitivesOptions = {
   cwd: string
   pm: PackageManager
@@ -17,7 +20,7 @@ export type EnsureShadcnPrimitivesOptions = {
 
 /**
  * Ensures every named shadcn primitive (e.g. 'select', 'popover') has a file
- * under the project's shadcn ui directory, running `shadcn@latest add` (via
+ * under the project's shadcn ui directory, running the pinned shadcn CLI (via
  * the project's package manager's fetch-and-run command — `npx`/`pnpm dlx`/
  * `yarn dlx`/`bunx`, see runPackageManagerDlx) for whatever's missing before
  * this CLI writes its own component files.
@@ -44,8 +47,9 @@ export async function ensureShadcnPrimitives(primitives: string[], options: Ensu
 
   if (missing.length === 0) return
 
+  console.log(`\nRunning ${SHADCN_CLI_SPEC} add ${missing.join(' ')}${options.yes ? ' -y' : ''}`)
   await runPackageManagerDlx(
-    ['shadcn@latest', 'add', ...missing, ...(options.yes ? ['-y'] : [])],
+    [SHADCN_CLI_SPEC, 'add', ...missing, ...(options.yes ? ['-y'] : [])],
     { cwd: options.cwd, pm: options.pm },
   )
 }

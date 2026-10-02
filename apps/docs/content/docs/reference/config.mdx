@@ -1,13 +1,13 @@
 ---
 title: การตั้งค่า
-description: รูปแบบ thaizip.config.json v2 และกฎการตรวจหา directory, package manager และ Tailwind
+description: รูปแบบ thaizip.config.json v4, สไตล์คอมโพเนนต์ และกฎการตรวจหาโปรเจกต์
 ---
 
 `npx react-thaizip init` สร้าง `thaizip.config.json` ที่รากโปรเจกต์ คำสั่ง `add` อ่านไฟล์นี้เพื่อหาตำแหน่งเขียนคอมโพเนนต์และไฟล์ช่วยเหลือ
 
-## รูปแบบ v2
+## รูปแบบ v4
 
-ตัวอย่างนี้แสดงทุกฟิลด์ของ config v2 ค่าจริงขึ้นอยู่กับโปรเจกต์และเวอร์ชัน CLI ที่ใช้สร้างไฟล์
+ตัวอย่างนี้แสดงทุกฟิลด์ของ config v4 สำหรับโปรเจกต์ที่ไม่มี shadcn/ui แบบที่รองรับ path และเวอร์ชัน CLI ที่บันทึกจริงขึ้นอยู่กับโปรเจกต์
 
 ```json
 {
@@ -20,7 +20,11 @@ description: รูปแบบ thaizip.config.json v2 และกฎการ�
     "version": 4,
     "css": "app/globals.css"
   },
-  "registryVersion": "0.2.1"
+  "style": "vanilla",
+  "shadcnBase": "",
+  "shadcnUiAlias": "",
+  "shadcnUiDir": "",
+  "registryVersion": "0.3.7"
 }
 ```
 
@@ -29,15 +33,25 @@ description: รูปแบบ thaizip.config.json v2 และกฎการ�
 | `typescript` | `true` หรือ `false` | ตรวจพบอัตโนมัติตอน `init` จากการมีไฟล์ `tsconfig.json` (ไม่มีการถามผู้ใช้) กำหนดว่า `add` จะเขียนไฟล์เป็น `.tsx`/`.ts` ตามต้นฉบับ (`true`) หรือตัด syntax ของ TypeScript ออกแล้วเขียนเป็น `.jsx`/`.js` แทน (`false`) |
 | `componentDir` | string ที่ไม่ว่าง | ตำแหน่งเขียนไฟล์คอมโพเนนต์ เทียบจากรากโปรเจกต์ |
 | `libDir` | string ที่ไม่ว่าง | ตำแหน่งเขียน `utils.ts`; ค่าเริ่มต้นจาก `init` คือ `lib` |
-| `hooksDir` | string ที่ไม่ว่าง | ตำแหน่งเขียน `use-thai-address-index.ts`; ค่าเริ่มต้นคือ `hooks` |
+| `hooksDir` | string ที่ไม่ว่าง | ตำแหน่งเขียน shared hooks; ค่าเริ่มต้นคือ `hooks` |
 | `packageManager` | `npm`, `yarn`, `pnpm`, `bun` | package manager ที่ `add` ใช้ติดตั้ง dependencies |
 | `tailwind.version` | `3` หรือ `4` | major version ของ Tailwind ที่ตรวจพบ |
 | `tailwind.css` | string | path ของ global CSS เทียบจากรากโปรเจกต์ หรือ `""` เมื่อหาไฟล์ไม่พบ |
+| `style` | `vanilla` หรือ `shadcn` | เลือก template แบบ Tailwind/Base UI หรือแบบที่ประกอบจาก shadcn/ui primitives ของโปรเจกต์; `init` ตรวจหาอัตโนมัติ |
+| `shadcnBase` | `""`, `base`, `radix` หรือ `aria` | เป็น `""` เมื่อใช้ `vanilla`; กรณี shadcn ระบุไลบรารีของ UI primitives |
+| `shadcnUiAlias` | string | import prefix จาก `components.json` `aliases.ui`; เป็น `""` เมื่อใช้ `vanilla` |
+| `shadcnUiDir` | string | directory เทียบจากรากโปรเจกต์ที่ resolve จาก alias; เป็น `""` เมื่อใช้ `vanilla` |
 | `registryVersion` | string ที่ไม่ว่าง | เวอร์ชัน CLI ที่บันทึกตอนเขียนไฟล์ครั้งล่าสุด; เป็น metadata ของ registry ไม่ใช่เวอร์ชัน `thaizip` |
 
 Path ทุกค่าถูกตีความจาก working directory ที่เรียก CLI จึงควรรัน `init` และ `add` ที่รากโปรเจกต์เดียวกับไฟล์ config
 
 `registryVersion` ไม่ใช่แค่ metadata เฉย ๆ: `add` ใช้ค่านี้ตรวจความเก่าของไฟล์ `lib`/hook ที่ถูกป้องกันไว้ ถ้า `add` ข้ามไฟล์เหล่านั้นเพราะมีอยู่แล้ว (protected) และ `registryVersion` ที่บันทึกไว้เก่ากว่าเวอร์ชันของ CLI ที่กำลังรัน จะพิมพ์คำเตือนว่าไฟล์นั้นอาจล้าสมัย พร้อมคำสั่งสำหรับ refresh เช่น `npx react-thaizip add utils --overwrite` ทุกครั้งที่ `add` เขียนไฟล์จริงอย่างน้อยหนึ่งไฟล์ (ไม่ว่าจะเป็น component, `lib` หรือ hook) `registryVersion` ใน `thaizip.config.json` จะถูกอัปเดตเป็นเวอร์ชันของ CLI ที่รันอยู่โดยอัตโนมัติ
+
+## การตรวจหาสไตล์คอมโพเนนต์
+
+`init` อ่าน `components.json` ถ้ามี ค่า `style` ที่ขึ้นต้นด้วย `base-`, `radix-` หรือ `aria-` จะเลือก template shadcn/ui ของไลบรารีนั้น ส่วนค่าเก่า `default` และ `new-york` จะเลือก Radix ถ้าไม่มีหรือไม่รู้จัก style จะเลือก `vanilla` สำหรับ shadcn/ui ที่รองรับ `add` จะติดตั้ง UI primitives ที่ยังขาดผ่าน shadcn CLI ส่วนคอมโพเนนต์ interactive แบบ vanilla ใช้ Base UI โดยตรง `ThaiAddressDisplay` ไม่ต้องใช้ UI primitives
+
+ค่า `style` และ `shadcnBase` ถูกบันทึกใน config หากต้องการเปลี่ยนหลัง `init` ให้แก้ฟิลด์ที่เกี่ยวข้องให้สอดคล้องกัน แล้วตรวจไฟล์ก่อนรัน `add --overwrite` เพราะคำสั่งจะเขียนทับซอร์สเดิม
 
 ## การตรวจหาโครงสร้างโปรเจกต์
 
@@ -83,6 +97,6 @@ Template คอมโพเนนต์ถูกเขียนต้นฉบ�
 
 ## Config รุ่นเก่า
 
-เมื่อ `add` อ่าน config v1 ที่รองรับได้ จะย้ายไฟล์เป็น v2 ในตำแหน่งเดิม โดยเติม `libDir`, `hooksDir` และ Tailwind metadata ที่ตรวจพบ หากตรวจ Tailwind ไม่ได้ migration จะใช้ version `4` และ CSS path ว่าง config v1 ที่มี `typescript: false` ก็ถูกย้ายได้ตามปกติเช่นกัน (ค่า `typescript` จะถูกเก็บไว้ตามที่มีอยู่ หรือใช้ `true` เป็นค่าเริ่มต้นถ้าไม่มีฟิลด์นี้) มีเพียง config ที่มีรูปแบบไม่ถูกต้องเท่านั้นที่จะไม่ถูกย้าย ให้รัน `npx react-thaizip init` ใหม่เพื่อสร้างไฟล์ที่ถูกต้อง
+เมื่อ `add` อ่าน config v1, v2 หรือ v3 ที่รองรับได้ จะย้ายเป็น v4 ในตำแหน่งเดิม การย้ายจาก v1 เติม `libDir`, `hooksDir` และ Tailwind metadata (ใช้ Tailwind v4 กับ CSS path ว่างหากตรวจไม่พบ) และเก็บ `typescript: false` ไว้ถ้ามี v1/v2 จะได้ `style: "vanilla"`; v3 ที่เป็น `shadcn` จะได้ `shadcnBase: "base"` เพราะ v3 รองรับเฉพาะ shadcn ที่ใช้ Base UI การย้ายไฟล์ไม่ตรวจหาสไตล์ shadcn ปัจจุบันใหม่ หาก config ที่ได้ไม่ถูกต้อง ให้รัน `npx react-thaizip init` เพื่อสร้างใหม่
 
 หาก path หรือ metadata ไม่ตรงกับโปรเจกต์ ดูขั้นตอนกู้คืนที่ [การแก้ปัญหา](/docs/troubleshooting)

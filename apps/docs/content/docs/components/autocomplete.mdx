@@ -37,11 +37,21 @@ export function AddressField() {
 
 ใช้ `locale="en"` เพื่อแสดงป้ายกำกับ คำใบ้ และผลลัพธ์เป็นภาษาอังกฤษ ข้อมูลที่ส่งกลับยังมีชื่อทั้งไทยและอังกฤษ
 
+```tsx
+<ThaiAddressAutocomplete locale="en" onValueChange={(address) => console.log(address)} />
+```
+
 <AutocompleteDemo client:visible locale="en" />
 
 ## ควบคุมค่าจากภายนอก
 
 ส่ง `value` เพื่อควบคุมค่า หรือส่ง `defaultValue` เพื่อตั้งค่าเริ่มต้นสำหรับโหมด uncontrolled ปุ่มในตัวอย่างนี้ล้างค่าที่ควบคุมอยู่และแสดงผลลัพธ์ที่ callback ส่งกลับมา
+
+```tsx
+const [address, setAddress] = useState<ResolvedThaiAddress | null>(null)
+
+<ThaiAddressAutocomplete value={address} onValueChange={setAddress} />
+```
 
 <AutocompleteDemo client:visible locale="th" mode="controlled" showOutput />
 

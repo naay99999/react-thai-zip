@@ -37,6 +37,10 @@ export function OrderAddress({ address }: { address: ThaiAddressDisplayValue | n
 
 ใช้ `mode="multi-line"` เพื่อแยกส่วนบ้านเลขที่/หมู่/ซอย/ถนน กับส่วนตำบล-อำเภอ-จังหวัดออกเป็นคนละบรรทัด
 
+```tsx
+<ThaiAddressDisplay value={address} mode="multi-line" />
+```
+
 <AddressDisplayDemo client:visible locale="th" mode="multi-line" variant="full" />
 
 ## แสดงเป็นภาษาอังกฤษ

@@ -1,13 +1,11 @@
 import { createRequire } from 'node:module'
 
-// `typescript` is ~22.8 MB and costs ~107 ms to load, but it is only needed for
-// JS-target scaffolds (config.typescript === false). Requiring it lazily keeps
-// it off the startup path of every other command — including --help/--version.
-// createRequire (not `await import`) so stripTypes stays synchronous.
-let cachedTs: typeof import('typescript') | undefined
-function loadTypeScript(): typeof import('typescript') {
-  cachedTs ??= createRequire(import.meta.url)('typescript') as typeof import('typescript')
-  return cachedTs
+// Only JS-target scaffolds need a TSX syntax transform. Load the smaller
+// Sucrase package on demand so help/init and TS-target adds stay fast.
+let cachedTransform: typeof import('sucrase').transform | undefined
+function loadTransform(): typeof import('sucrase').transform {
+  cachedTransform ??= (createRequire(import.meta.url)('sucrase') as typeof import('sucrase')).transform
+  return cachedTransform
 }
 
 /**
@@ -18,23 +16,16 @@ function loadTypeScript(): typeof import('typescript') {
  * === false); TS-target scaffolds copy the .tsx/.ts source unmodified.
  */
 export function stripTypes(code: string, fileName: string): string {
-  const ts = loadTypeScript()
-  const result = ts.transpileModule(code, {
-    compilerOptions: {
-      module: ts.ModuleKind.Preserve,
-      target: ts.ScriptTarget.ESNext,
-      jsx: ts.JsxEmit.Preserve,
-    },
-    fileName,
-    reportDiagnostics: true,
-  })
-  if (result.diagnostics && result.diagnostics.length > 0) {
-    const messages = result.diagnostics
-      .map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, ' '))
-      .join('; ')
-    throw new Error(`Failed to strip types from ${fileName}: ${messages}`)
+  try {
+    return loadTransform()(code, {
+      transforms: ['typescript', 'jsx'],
+      jsxRuntime: 'preserve',
+      disableESTransforms: true,
+      filePath: fileName,
+    }).code
+  } catch (cause) {
+    throw new Error(`Failed to strip types from ${fileName}: ${cause instanceof Error ? cause.message : String(cause)}`)
   }
-  return result.outputText
 }
 
 /** Maps a template's authored `.tsx`/`.ts` filename to its JS-target extension. */

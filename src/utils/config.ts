@@ -1,5 +1,6 @@
-import { readFile, writeFile } from 'node:fs/promises'
+import { readFile } from 'node:fs/promises'
 import path from 'node:path'
+import { writeFileInsideRoot } from './pathSafety.js'
 import { fileURLToPath } from 'node:url'
 import type { PackageManager } from './detectPM.js'
 import { pathExists } from './fs.js'
@@ -251,7 +252,7 @@ export async function readConfig(cwd = process.cwd(), options?: { tailwind?: Tai
 }
 
 export async function writeConfig(config: ThaiZipConfig, cwd = process.cwd()): Promise<void> {
-  await writeFile(getConfigPath(cwd), `${JSON.stringify(config, null, 2)}\n`, 'utf8')
+  await writeFileInsideRoot(getConfigPath(cwd), cwd, `${JSON.stringify(config, null, 2)}\n`)
 }
 
 export async function getRegistryVersion(): Promise<string> {

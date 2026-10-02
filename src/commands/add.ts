@@ -21,7 +21,7 @@ import { compareVersions, extractVersionAnchor, isVersionAtLeast } from '../util
 import { rewriteTemplateImports } from '../utils/rewriteImports.js'
 import { assertPathInsideRoot, assertRealPathInsideRoot } from '../utils/pathSafety.js'
 import { registryItems, resolveRegistryItem, resolveWithDependencies, selectVariant, type RegistryItem } from '../registry.js'
-import { ensureShadcnPrimitives } from '../utils/shadcnPrimitives.js'
+import { ensureShadcnPrimitives, SHADCN_CLI_SPEC } from '../utils/shadcnPrimitives.js'
 import { initProject } from './init.js'
 
 type AddComponentsOptions = {
@@ -134,7 +134,7 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
         })
       } catch (error) {
         console.error(`\nFailed to install shadcn primitives (${shadcnPrimitives.join(', ')}).`)
-        console.error(`Run \`npx shadcn@latest add ${shadcnPrimitives.join(' ')}\` manually, then run this command again.`)
+        console.error(`Run \`npx ${SHADCN_CLI_SPEC} add ${shadcnPrimitives.join(' ')}\` manually, then run this command again.`)
         if (error instanceof Error) {
           console.error(`\n${error.message}`)
         }

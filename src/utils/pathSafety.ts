@@ -1,4 +1,5 @@
-import { lstat, readlink, realpath } from 'node:fs/promises'
+import { lstat, open, readlink, realpath } from 'node:fs/promises'
+import { constants } from 'node:fs'
 import path from 'node:path'
 
 /**
@@ -41,6 +42,22 @@ export async function assertRealPathInsideRoot(target: string, root: string): Pr
 
   if (!isPathInsideRoot(resolvedTarget, resolvedRoot)) {
     throw new Error(`Refusing to write outside the project: ${target} resolves to ${resolvedTarget}`)
+  }
+}
+
+/** Write a project file only after checking its resolved destination. */
+export async function writeFileInsideRoot(target: string, root: string, content: string): Promise<void> {
+  assertPathInsideRoot(target, root)
+  await assertRealPathInsideRoot(target, root)
+  // O_NOFOLLOW also rejects a last-component symlink swapped in after the check.
+  // Node has no portable openat API, so a concurrently swapped parent directory
+  // remains outside the protection of this static-checkout guard.
+  const flags = constants.O_WRONLY | constants.O_CREAT | constants.O_TRUNC | (constants.O_NOFOLLOW ?? 0)
+  const file = await open(target, flags, 0o666)
+  try {
+    await file.writeFile(content, 'utf8')
+  } finally {
+    await file.close()
   }
 }
 

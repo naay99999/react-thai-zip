@@ -13,7 +13,7 @@ import AddressFormDemo from '../../../components/demos/AddressFormDemo'
 npx react-thaizip add address-form
 ```
 
-คำสั่งจะเพิ่มคอมโพเนนต์ รวมถึงไฟล์ `thai-address-cascade-select.tsx` ที่ฝังอยู่ภายใน, `utils` และ hook สำหรับโหลดดัชนีที่อยู่ ลงในตำแหน่งที่บันทึกไว้ใน [`thaizip.config.json`](/docs/reference/config)
+คำสั่งจะเพิ่มคอมโพเนนต์ รวมถึงไฟล์ `thai-address-cascade-select.tsx` ที่ฝังอยู่ภายใน, `utils`, hook โหลดดัชนี และ hook จัดการการเลือกแบบลำดับชั้นลงในตำแหน่งที่บันทึกไว้ใน [`thaizip.config.json`](/docs/reference/config)
 
 ## ใช้งานพื้นฐาน
 
@@ -42,6 +42,10 @@ export function AddressField() {
 ## ควบคุมค่าจากภายนอก
 
 ส่ง `value` เพื่อควบคุมค่าทั้งชุด หรือ `defaultValue` เพื่อตั้งค่าเริ่มต้น การเลือกที่อยู่ตามลำดับชั้นที่ยังเลือกไม่ครบจะไม่ถูกล้าง แม้ `value` ที่ควบคุมอยู่จะเป็น `null`
+
+```tsx
+<ThaiAddressForm name="address" value={address} onValueChange={setAddress} />
+```
 
 <AddressFormDemo client:visible locale="th" mode="controlled" showOutput />
 
