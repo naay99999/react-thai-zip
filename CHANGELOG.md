@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.9](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.8...react-thaizip-v0.3.9) (2026-10-02)
+
+
+### Features
+
+* harden scaffolding and add AI-ready docs ([a13548c](https://github.com/naay99999/react-thai-zip/commit/a13548c5ca09c51f2de29a998416d3d2026a7a65))
+
+
+### Bug Fixes
+
+* use NodeNext import extension in docs test ([f394b78](https://github.com/naay99999/react-thai-zip/commit/f394b78c6ba7476a0a0f9e31047ee7fe4d4cfaaa))
+
 ## [0.3.8](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.7...react-thaizip-v0.3.8) (2026-09-11)
 
 
