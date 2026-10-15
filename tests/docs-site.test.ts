@@ -57,7 +57,7 @@ describe('documentation site structure', () => {
     const workflow = await read('.github/workflows/ci.yml')
 
     expect(workflow).toMatch(
-      /docs:[\s\S]*- run: npm ci\n[\s\S]*- run: npm ci\n\s*working-directory: apps\/docs\n[\s\S]*- run: npm run build\n\s*working-directory: apps\/docs/,
+      /docs:[\s\S]*- run: npm ci --ignore-scripts\n[\s\S]*- run: npm ci --ignore-scripts\n\s*working-directory: apps\/docs\n[\s\S]*- run: npm run build\n\s*working-directory: apps\/docs/,
     )
   })
 
