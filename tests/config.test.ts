@@ -355,3 +355,30 @@ describe('config v4 shadcnBase', () => {
     expect(migrateV3Config(v4)).toBeNull()
   })
 })
+
+describe('shadcnUiAlias validation', () => {
+  const shadcn = { ...baseConfig, style: 'shadcn', shadcnBase: 'base', shadcnUiDir: 'components/ui' }
+
+  it.each(['@/components/ui', '~/components/ui', '#components/ui', '@acme/ui'])('accepts %s', (alias) => {
+    expect(validateConfig({ ...shadcn, shadcnUiAlias: alias }).ok).toBe(true)
+  })
+
+  it.each(['../../elsewhere', '@/ui/../../x', 'https://evil.example/ui', "@/ui'; evil()", '/abs/ui', './ui'])(
+    'rejects %s',
+    (alias) => {
+      const result = validateConfig({ ...shadcn, shadcnUiAlias: alias })
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.errors.join('\n')).toMatch(/shadcnUiAlias/)
+    },
+  )
+})
+
+describe('writeConfig validation', () => {
+  it('refuses to write a config that readConfig would reject, and writes nothing', async () => {
+    const cwd = await tempDir()
+    await expect(writeConfig({ ...baseConfig, componentDir: '../outside' } as ThaiZipConfig, cwd)).rejects.toThrow(
+      /Refusing to write an invalid thaizip\.config\.json[\s\S]*componentDir/,
+    )
+    await expect(configExists(cwd)).resolves.toBe(false)
+  })
+})

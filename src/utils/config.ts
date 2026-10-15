@@ -88,7 +88,7 @@ const STRING_LITERAL_BREAKERS = /['"`\\\n\r\u2028\u2029]/
  * has to be rejected when the config is read rather than after a file lands
  * somewhere it shouldn't.
  */
-function describeUnsafeDirectory(value: string): string | null {
+export function describeUnsafeDirectory(value: string): string | null {
   if (path.isAbsolute(value) || WINDOWS_ABSOLUTE.test(value)) {
     return 'expected a project-relative path, not an absolute one'
   }
@@ -97,6 +97,19 @@ function describeUnsafeDirectory(value: string): string | null {
   }
   if (STRING_LITERAL_BREAKERS.test(value)) {
     return 'must not contain quote, backslash, or newline characters'
+  }
+  return null
+}
+
+// A bare module specifier prefix such as `@/components/ui`, `~/ui` or
+// `@acme/ui`. It is spliced into every scaffolded shadcn component's imports,
+// so anything else (a relative climb, a URL, a quote) is rejected rather than
+// silently pointing the user's components at an unexpected module.
+const IMPORT_ALIAS = /^(?:[@~#][\w.-]*|[\w.-]+)(?:\/[\w.-]+)*$/
+
+function describeUnsafeAlias(value: string): string | null {
+  if (!IMPORT_ALIAS.test(value) || value.split('/').some((segment) => segment === '.' || segment === '..')) {
+    return "expected an import alias such as '@/components/ui'"
   }
   return null
 }
@@ -148,6 +161,9 @@ export function validateConfig(value: unknown): { ok: true; config: ThaiZipConfi
   }
   if (typeof raw.shadcnUiAlias !== 'string') {
     errors.push('shadcnUiAlias: expected a string')
+  } else if (raw.shadcnUiAlias !== '') {
+    const problem = describeUnsafeAlias(raw.shadcnUiAlias)
+    if (problem) errors.push(`shadcnUiAlias: ${problem}`)
   }
   if (typeof raw.shadcnUiDir !== 'string') {
     errors.push('shadcnUiDir: expected a string')
@@ -256,6 +272,13 @@ export async function readConfig(cwd = process.cwd(), options?: { tailwind?: Tai
 }
 
 export async function writeConfig(config: ThaiZipConfig, cwd = process.cwd()): Promise<void> {
+  // Validate on the way out too, not only when `add` reads the file back: a
+  // bad directory typed at the `init` prompt or derived from tsconfig paths
+  // should fail here, at its source, instead of leaving an unusable config.
+  const validated = validateConfig(config)
+  if (!validated.ok) {
+    throw new Error(`Refusing to write an invalid thaizip.config.json:\n  - ${validated.errors.join('\n  - ')}`)
+  }
   await writeFileInsideRoot(getConfigPath(cwd), cwd, `${JSON.stringify(config, null, 2)}\n`)
 }
 

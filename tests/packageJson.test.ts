@@ -58,3 +58,11 @@ describe('getInstalledPackageVersion', () => {
     await expect(getInstalledPackageVersion('thaizip', cwd)).resolves.toBeNull()
   })
 })
+
+describe('readPackageJson', () => {
+  it('names the file in the error when package.json is not valid JSON', async () => {
+    const cwd = await tempDir()
+    await writeFile(path.join(cwd, 'package.json'), '{ "dependencies": ')
+    await expect(hasPackageDependency('thaizip', cwd)).rejects.toThrow(/Could not parse .*package\.json/)
+  })
+})
