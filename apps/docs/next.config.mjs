@@ -12,6 +12,11 @@ const config = {
     root: repositoryRoot,
   },
   outputFileTracingRoot: repositoryRoot,
+  // Example and template sources are read from disk at render time (Code tabs,
+  // manual install steps, page Markdown); ship them with any on-demand render.
+  outputFileTracingIncludes: {
+    '/**': ['./examples/**/*.tsx', '../../templates/**/*'],
+  },
   async rewrites() {
     return [
       { source: '/en/docs.md', destination: '/api/docs-markdown/en' },

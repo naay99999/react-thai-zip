@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { HomeLayout } from 'fumadocs-ui/layouts/home';
 import { baseOptions } from '~/lib/layout.shared';
 import { ComponentPreview } from '~/components/component-preview';
+import { i18n } from '~/lib/i18n';
 
 const copy = {
   th: {
@@ -54,4 +55,8 @@ export default async function HomePage({
       </section>
     </HomeLayout>
   );
+}
+
+export function generateStaticParams() {
+  return i18n.languages.map((lang) => ({ lang }));
 }
