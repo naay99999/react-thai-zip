@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.11](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.10...react-thaizip-v0.3.11) (2026-10-15)
+
+
+### Bug Fixes
+
+* prerender docs home and ship example sources with server renders ([2dcd93a](https://github.com/naay99999/react-thai-zip/commit/2dcd93a9bec8d6bbef4a843c2ac4964a9e88deca))
+
 ## [0.3.10](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.9...react-thaizip-v0.3.10) (2026-10-15)
 
 
