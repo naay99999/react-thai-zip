@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.12](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.11...react-thaizip-v0.3.12) (2026-10-15)
+
+
+### Bug Fixes
+
+* confirm before downloading and running the shadcn CLI ([c44da14](https://github.com/naay99999/react-thai-zip/commit/c44da14ad7f364da55439108d1e13f5fc2481c69))
+* harden the CLI write path and config validation ([d4cc1cb](https://github.com/naay99999/react-thai-zip/commit/d4cc1cbb328136618605d9ac4413aa997746f381))
+* install thaizip with a bounded ^0.7.5 range instead of &gt;=0.7.5 ([b0f29a7](https://github.com/naay99999/react-thai-zip/commit/b0f29a703f568e5f0a5546b2c98e80c51c923da9))
+
 ## [0.3.11](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.10...react-thaizip-v0.3.11) (2026-10-15)
 
 
