@@ -3,17 +3,13 @@ title: เลือกที่อยู่แบบลำดับชั้น
 description: เลือกจังหวัด อำเภอหรือเขต และตำบลหรือแขวงตามลำดับ
 ---
 
-import CascadeSelectDemo from '../../../components/demos/CascadeSelectDemo'
-
 `ThaiAddressCascadeSelect` เหมาะกับฟอร์มที่ต้องการให้ผู้ใช้เลือกที่อยู่ตามลำดับ จังหวัด → อำเภอ/เขต → ตำบล/แขวง
+
+<ComponentPreview name="cascade-select-demo" />
 
 ## ติดตั้ง
 
-```bash
-npx react-thaizip add cascade-select
-```
-
-คำสั่งจะเพิ่มคอมโพเนนต์, `utils`, hook โหลดดัชนี และ hook จัดการการเลือกแบบลำดับชั้นลงในตำแหน่งที่บันทึกไว้ใน [`thaizip.config.json`](/docs/reference/config)
+<ComponentInstall name="cascade-select" />
 
 ## ใช้งานพื้นฐาน
 
@@ -29,43 +25,31 @@ export function AddressField() {
 
 `onValueChange` จะส่ง `ResolvedThaiAddress | null` เมื่อเลือกครบทั้งสามระดับ
 
-## เลือกข้อมูลภาษาไทย
-
-<CascadeSelectDemo client:visible locale="th" />
-
-## เลือกข้อมูลภาษาอังกฤษ
-
-ใช้ `locale="en"` เพื่อแสดงป้ายและตัวเลือกเป็นภาษาอังกฤษ
-
-```tsx
-<ThaiAddressCascadeSelect locale="en" onValueChange={(address) => console.log(address)} />
-```
-
-<CascadeSelectDemo client:visible locale="en" />
-
-## ควบคุมค่าจากภายนอก
-
-ส่ง `value` เพื่อควบคุมค่าทั้งชุด หรือ `defaultValue` เพื่อตั้งลำดับที่เลือกไว้ตอนเริ่มต้น ตัวอย่างนี้แสดงค่า callback และมีปุ่มล้างค่า
-
-```tsx
-const [address, setAddress] = useState<ResolvedThaiAddress | null>(null)
-
-<ThaiAddressCascadeSelect value={address} onValueChange={setAddress} />
-```
-
-<CascadeSelectDemo client:visible locale="th" mode="controlled" showOutput />
-
 ## เมื่อเปลี่ยนตัวเลือกหลัก
 
 เมื่อเลือกที่อยู่ครบแล้ว การเปลี่ยนจังหวัดหรืออำเภอ/เขตจะเรียก `onValueChange(null)` และล้างตัวเลือกปลายทางที่ไม่สอดคล้องกัน ผู้ใช้จึงต้องเลือกตัวเลือกที่อยู่ถัดไปใหม่
 
-## ปิดใช้งานและแสดงข้อผิดพลาด
+## ตัวอย่าง
+
+### เลือกข้อมูลภาษาอังกฤษ
+
+ใช้ `locale="en"` เพื่อแสดงป้ายและตัวเลือกเป็นภาษาอังกฤษ
+
+<ComponentPreview name="cascade-select-en" />
+
+### ควบคุมค่าจากภายนอก
+
+ส่ง `value` เพื่อควบคุมค่าทั้งชุด หรือ `defaultValue` เพื่อตั้งลำดับที่เลือกไว้ตอนเริ่มต้น ตัวอย่างนี้แสดงค่า callback และมีปุ่มล้างค่า
+
+<ComponentPreview name="cascade-select-controlled" />
+
+### ปิดใช้งานและแสดงข้อผิดพลาด
 
 ส่ง `disabled` เพื่อปิดทุก select หรือ `aria-invalid` เพื่อทำเครื่องหมายว่าไม่ผ่านการตรวจสอบทั้งสาม trigger
 
-<CascadeSelectDemo client:visible locale="th" disabled />
+<ComponentPreview name="cascade-select-disabled" />
 
-<CascadeSelectDemo client:visible locale="th" invalid />
+<ComponentPreview name="cascade-select-invalid" />
 
 ## Props
 

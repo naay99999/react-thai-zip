@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { getPageMarkdownUrl, renderDocsIndex, renderFullDocs, renderPageMarkdown } from '../apps/docs/lib/docs-markdown.js'
+import { getInstallVariants } from '../apps/docs/lib/component-install.js'
+
+const SITE = 'https://react-thai-zip.vercel.app'
+
+type Root = Parameters<typeof renderDocsIndex>[1]['th']
 
 function page(url: string, title: string, locale: string, body: string) {
   return {
@@ -13,46 +18,115 @@ function page(url: string, title: string, locale: string, body: string) {
   }
 }
 
+function tree(...nodes: Root['children']): Root {
+  return { name: 'docs', children: nodes }
+}
+
+/** The `\0{json}\0` placeholder fumadocs emits for components listed in `mdxAsPlaceholder`. */
+function placeholder(name: string, attributes: Record<string, string>) {
+  return `\0${JSON.stringify({ name, children: '', attributes })}\0`
+}
+
+const pages = [
+  page('/docs', 'บทนำ', 'th', 'ไทย'),
+  page('/docs/components/autocomplete', 'ค้นหา', 'th', 'คอมโพเนนต์'),
+  page('/docs/guides/using-with-ai', 'ใช้กับ AI', 'th', 'คู่มือ'),
+  page('/en/docs', 'Introduction', 'en', 'English'),
+  page('/en/docs/guides/using-with-ai', 'Use with AI', 'en', 'Guide'),
+]
+const trees = {
+  th: tree(
+    { type: 'page', name: 'บทนำ', url: '/docs' },
+    { type: 'separator', name: 'คอมโพเนนต์' },
+    { type: 'page', name: 'ค้นหา', url: '/docs/components/autocomplete' },
+    { type: 'separator', name: 'คู่มือ' },
+    { type: 'page', name: 'ใช้กับ AI', url: '/docs/guides/using-with-ai' },
+  ),
+  en: tree(
+    { type: 'page', name: 'Introduction', url: '/en/docs' },
+    { type: 'separator', name: 'Guides' },
+    { type: 'page', name: 'Use with AI', url: '/en/docs/guides/using-with-ai' },
+  ),
+}
+
 describe('docs Markdown output', () => {
   it('gives root and nested pages stable Markdown URLs in both languages', () => {
-    expect(getPageMarkdownUrl(page('/docs', 'เริ่มต้น', 'th', ''))).toBe('/docs/index.md')
+    expect(getPageMarkdownUrl(page('/docs', 'บทนำ', 'th', ''))).toBe('/docs.md')
     expect(getPageMarkdownUrl(page('/docs/components/autocomplete', 'ค้นหา', 'th', ''))).toBe('/docs/components/autocomplete.md')
-    expect(getPageMarkdownUrl(page('/en/docs', 'Start', 'en', ''))).toBe('/en/docs/index.md')
+    expect(getPageMarkdownUrl(page('/en/docs', 'Introduction', 'en', ''))).toBe('/en/docs.md')
     expect(getPageMarkdownUrl(page('/en/docs/components/autocomplete', 'Search', 'en', ''))).toBe('/en/docs/components/autocomplete.md')
   })
 
-  it('indexes both languages with links to Markdown pages and the full document', () => {
-    const index = renderDocsIndex([
-      page('/docs', 'เริ่มต้น', 'th', 'ไทย'),
-      page('/docs/guides/using-with-ai', 'ใช้กับ AI', 'th', 'คู่มือ'),
-      page('/en/docs', 'Start', 'en', 'English'),
-      page('/en/docs/guides/using-with-ai', 'Use with AI', 'en', 'Guide'),
-    ])
+  it('indexes both languages in sidebar order with absolute Markdown links', () => {
+    const index = renderDocsIndex(pages, trees)
 
-    expect(index).toContain('[Full documentation](/llms-full.txt)')
-    expect(index).toContain('[AI usage guide (ไทย)](/docs/guides/using-with-ai.md)')
-    expect(index).toContain('[AI usage guide (English)](/en/docs/guides/using-with-ai.md)')
-    expect(index).toContain('[เริ่มต้น](/docs/index.md)')
-    expect(index).toContain('[Start](/en/docs/index.md)')
-    expect(index).not.toContain('](/docs)')
+    expect(index).toContain(`[Full documentation](${SITE}/llms-full.txt)`)
+    expect(index).toContain('(https://naay99999.github.io/thai-zip/llms.txt)')
+    expect(index).toContain(`[บทนำ](${SITE}/docs.md)`)
+    expect(index).toContain(`[Introduction](${SITE}/en/docs.md)`)
+    expect(index).toMatch(/### คอมโพเนนต์\n\n- \[ค้นหา\]\(https:\/\/react-thai-zip\.vercel\.app\/docs\/components\/autocomplete\.md\)/)
+    expect(index.indexOf('### คอมโพเนนต์')).toBeLessThan(index.indexOf('### คู่มือ'))
+    expect(index).not.toMatch(/\]\(\//)
   })
 
-  it('renders processed content with its page URL and language context', async () => {
-    const output = await renderPageMarkdown(page('/en/docs/components/autocomplete', 'Search', 'en', '## Example\n\nUse the generated component.'))
+  it('renders processed content with an absolute source URL and absolute links', async () => {
+    const output = await renderPageMarkdown(
+      page('/en/docs/components/autocomplete', 'Search', 'en', '## Example\n\nSee [forms](/en/docs/guides/forms).'),
+    )
 
     expect(output).toContain('# Search')
-    expect(output).toContain('Source: /en/docs/components/autocomplete')
-    expect(output).toContain('## Example\n\nUse the generated component.')
+    expect(output).toContain(`Source: ${SITE}/en/docs/components/autocomplete`)
+    expect(output).toContain(`## Example\n\nSee [forms](${SITE}/en/docs/guides/forms).`)
   })
 
-  it('includes both locales in the full document with separate page boundaries', async () => {
-    const output = await renderFullDocs([
-      page('/docs', 'เริ่มต้น', 'th', 'เนื้อหาไทย'),
-      page('/en/docs', 'Start', 'en', 'English content'),
-    ])
+  it('replaces previews with the example source and install sections with CLI + manual steps', async () => {
+    const body = [
+      placeholder('ComponentPreview', { name: 'autocomplete-demo' }),
+      '## Install',
+      placeholder('ComponentInstall', { name: 'autocomplete', lang: 'en' }),
+    ].join('\n\n')
+    const output = await renderPageMarkdown(page('/en/docs/components/autocomplete', 'Search', 'en', body))
 
-    expect(output).toContain('เนื้อหาไทย')
-    expect(output).toContain('English content')
-    expect(output).toMatch(/เนื้อหาไทย\n\n---\n\n# Start/)
+    expect(output).toContain('```tsx title="autocomplete-demo.tsx"')
+    expect(output).toContain("import { ThaiAddressAutocomplete } from '@/components/thai-address-autocomplete'")
+    expect(output).toContain('npx react-thaizip add autocomplete')
+    expect(output).toContain('**Manual — shadcn/ui · React Aria**')
+    expect(output).toContain('npx shadcn@latest add popover command button')
+    expect(output).toContain('templates/react/ts/shadcn/aria/thai-address-autocomplete.tsx')
+    expect(output).not.toContain('\0')
+  })
+
+  it('includes both locales in the full document in sidebar order', async () => {
+    const output = await renderFullDocs(pages, trees)
+
+    expect(output).toContain('ไทย')
+    expect(output).toContain('English')
+    expect(output.indexOf('# ค้นหา')).toBeLessThan(output.indexOf('# ใช้กับ AI'))
+    expect(output).toMatch(/คู่มือ\n\n---\n\n# Introduction/)
+  })
+})
+
+describe('docs manual install steps', () => {
+  it('derives files and dependencies from the CLI registry, including transitive items', () => {
+    const [vanilla, base] = getInstallVariants('address-form')
+
+    expect(vanilla.key).toBe('vanilla')
+    expect(vanilla.dependencies).toContain('@base-ui/react')
+    expect(vanilla.files.map((file) => file.target)).toEqual(
+      expect.arrayContaining([
+        'lib/utils.ts',
+        'hooks/use-thai-address-index.ts',
+        'hooks/use-thai-address-cascade.ts',
+        'components/thai-address-cascade-select.tsx',
+        'components/thai-address-form.tsx',
+      ]),
+    )
+    expect(base.key).toBe('base')
+    expect(base.dependencies).not.toContain('@base-ui/react')
+    expect(base.files.map((file) => file.source)).toContain('react/ts/shadcn/base/thai-address-cascade-select.tsx')
+  })
+
+  it('offers only the vanilla variant for components without shadcn variants', () => {
+    expect(getInstallVariants('address-display').map((variant) => variant.key)).toEqual(['vanilla'])
   })
 })

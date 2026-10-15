@@ -44,18 +44,29 @@ Build [a checkout address form] in this project using react-thaizip.
 7. Run the project's typecheck/build, then report the files created and verification result.
 ```
 
-If the agent can read the web, give it this page or `/llms.txt` with the task. Each docs page also offers Copy Markdown for sharing just that page.
+## Markdown for AI
+
+Every docs page has a Markdown version that already includes the source of every example and the manual install steps. Give it to an agent that can read the web, along with the task:
+
+| URL | Content |
+| --- | --- |
+| [`/llms.txt`](https://react-thai-zip.vercel.app/llms.txt) | Index of every page, linking to its `.md` file |
+| [`/llms-full.txt`](https://react-thai-zip.vercel.app/llms-full.txt) | Every page in one file |
+| [`/en/docs.md`](https://react-thai-zip.vercel.app/en/docs.md) | Any page: append `.md` to its URL, e.g. [`/en/docs/components/autocomplete.md`](https://react-thai-zip.vercel.app/en/docs/components/autocomplete.md) |
+| [thaizip `/llms.txt`](https://naay99999.github.io/thai-zip/llms.txt) | The lower-level address search API the components use |
+
+Each page also has a Copy Markdown button at the top for copying just that page.
 
 ## Use the generated file
 
-This example assumes the CLI wrote to `components/` at the project root. Use the import path printed by `add` if your project differs:
+This example uses the `@/components/...` alias like the rest of these docs. Use the import path printed by `add` if your project has no such alias or uses a different path:
 
 ```tsx
 'use client'
 
 import { useState } from 'react'
 import type { ResolvedThaiAddress } from 'thaizip'
-import { ThaiAddressAutocomplete } from './components/thai-address-autocomplete'
+import { ThaiAddressAutocomplete } from '@/components/thai-address-autocomplete'
 
 export function AddressField() {
   const [address, setAddress] = useState<ResolvedThaiAddress | null>(null)

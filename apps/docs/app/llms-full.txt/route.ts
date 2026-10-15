@@ -1,8 +1,11 @@
 import { source } from '~/lib/source';
 import { renderFullDocs } from '~/lib/docs-markdown';
 
+export const dynamic = 'force-static';
+
 export async function GET() {
-  return new Response(await renderFullDocs(source.getPages()), {
+  const trees = { th: source.getPageTree('th'), en: source.getPageTree('en') };
+  return new Response(await renderFullDocs(source.getPages(), trees), {
     headers: { 'Content-Type': 'text/markdown; charset=utf-8' },
   });
 }

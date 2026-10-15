@@ -1,25 +1,38 @@
 ---
-title: react-thaizip
-description: เพิ่มคอมโพเนนต์ที่อยู่ไทยพร้อมใช้ให้โปรเจกต์ React และ Next.js
+title: บทนำ
+description: react-thaizip เพิ่มคอมโพเนนต์กรอกที่อยู่ไทยลงในโปรเจกต์ React และ Next.js โดยคัดลอกซอร์สโค้ดมาให้คุณเป็นเจ้าของ
 ---
 
-import AutocompleteDemo from '../../components/demos/AutocompleteDemo'
+<ComponentPreview name="autocomplete-demo" />
 
-<AutocompleteDemo locale="th" />
+**react-thaizip ไม่ใช่ component library ที่ติดตั้งเป็น dependency** แต่เป็น CLI ที่คัดลอกซอร์สโค้ดคอมโพเนนต์ที่อยู่ไทยลงในโปรเจกต์ของคุณ แบบเดียวกับ [shadcn/ui](https://ui.shadcn.com/) เมื่อเพิ่มแล้ว ไฟล์เหล่านั้นเป็นโค้ดของคุณ แก้ markup, style หรือพฤติกรรมได้โดยตรง
 
-## ลองคอมโพเนนต์จริง
+ตัวอย่างด้านบนคือ `ThaiAddressAutocomplete` จาก template จริงที่ CLI คัดลอกให้ ไม่ใช่สำเนาที่เขียนขึ้นสำหรับเว็บเอกสาร กดแท็บ "โค้ด" เพื่อดูโค้ดที่ใช้
 
-ตัวอย่างนี้คือ `ThaiAddressAutocomplete` จาก scaffold มาตรฐานของ react-thaizip ไม่ใช่สำเนาที่เขียนขึ้นสำหรับเว็บเอกสาร เมื่อเพิ่มลงโปรเจกต์แล้ว คุณเป็นเจ้าของซอร์สโค้ดและปรับแต่งได้เต็มที่
+## หลักการ
+
+- **เป็นเจ้าของโค้ด**: คอมโพเนนต์อยู่ในโปรเจกต์ของคุณ ไม่ต้อง override style หรือห่อ wrapper เพื่อปรับแต่ง
+- **ข้อมูลครบในตัว**: ค้นหาตำบล อำเภอ จังหวัด และรหัสไปรษณีย์ทั้งภาษาไทยและอังกฤษด้วย [thaizip](https://naay99999.github.io/thai-zip/) โดยไม่ต้องเรียก API ภายนอก
+- **เข้ากับ design system ที่มีอยู่**: ได้แบบ vanilla (Base UI + Tailwind) หรือแบบที่ประกอบจาก primitives ของ shadcn/ui (Base UI, Radix หรือ React Aria) ตามที่ `init` ตรวจพบ
+- **พร้อมใช้กับ AI**: ทุกหน้ามีฉบับ Markdown พร้อมโค้ดตัวอย่าง รวมถึง [`/llms.txt`](/llms.txt) และ [`/llms-full.txt`](/llms-full.txt) ดู [ใช้ react-thaizip กับ AI](/docs/guides/using-with-ai)
+
+## คอมโพเนนต์
+
+| คอมโพเนนต์ | ใช้เมื่อ |
+| --- | --- |
+| [Autocomplete](/docs/components/autocomplete) | ให้ผู้ใช้พิมพ์ค้นหาด้วยชื่อตำบล อำเภอ จังหวัด หรือรหัสไปรษณีย์ |
+| [Cascade select](/docs/components/cascade-select) | ให้ผู้ใช้เลือกจังหวัด → อำเภอ/เขต → ตำบล/แขวง ตามลำดับ |
+| [Address form](/docs/components/address-form) | ต้องการบ้านเลขที่ หมู่ ซอย ถนน พร้อมที่อยู่ตามลำดับชั้นในฟอร์มเดียว |
+| [Address display](/docs/components/address-display) | แสดงที่อยู่ที่บันทึกไว้แบบอ่านอย่างเดียว |
+| [Address form field](/docs/components/address-form-field) | ผูก cascade select เข้ากับ react-hook-form |
 
 ## เริ่มอย่างรวดเร็ว
 
 ```bash
 npx react-thaizip init
-npx react-thaizip add autocomplete cascade-select
+npx react-thaizip add autocomplete
 ```
 
-คำสั่งแรกตรวจสอบ Tailwind และสร้างการตั้งค่า ส่วนคำสั่งที่สองเพิ่มคอมโพเนนต์พร้อมไฟล์ช่วยเหลือที่จำเป็น
+`init` ตรวจ Tailwind และ shadcn/ui แล้วสร้าง `thaizip.config.json` ส่วน `add` คัดลอกคอมโพเนนต์พร้อมไฟล์ช่วยเหลือและติดตั้ง dependencies ดูรายละเอียดทีละขั้นที่ [เริ่มต้นใช้งาน](/docs/getting-started)
 
-## ไปต่อจากนี้
-
-ดูวิธีใช้ [autocomplete](/docs/components/autocomplete) หรือ [cascade select](/docs/components/cascade-select) ในสถานการณ์ต่าง ๆ หรือดูคอมโพเนนต์ที่ประกอบมาให้แล้ว ทั้ง [ฟอร์มที่อยู่แบบเต็ม](/docs/components/address-form), [แสดงที่อยู่แบบอ่านอย่างเดียว](/docs/components/address-display) และ [ฟิลด์สำหรับ react-hook-form](/docs/components/address-form-field) และดูข้อมูลดัชนีและ API ระดับล่างได้ที่ [thai-zip Core API](https://naay99999.github.io/thai-zip/)
+ต้องการ API ค้นหาที่อยู่ระดับล่างเพื่อสร้าง UI เอง ดู [thaizip Core API](https://naay99999.github.io/thai-zip/)

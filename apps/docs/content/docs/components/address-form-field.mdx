@@ -3,17 +3,13 @@ title: ฟิลด์ที่อยู่สำหรับ react-hook-form
 description: ครอบ cascade select ด้วย Controller ของ react-hook-form เพื่อผูกกับ validation และ state ของฟอร์มที่มีอยู่แล้ว
 ---
 
-import AddressFormFieldDemo from '../../../components/demos/AddressFormFieldDemo'
-
 `ThaiAddressFormField` เหมาะกับฟอร์มที่ใช้ [react-hook-form](https://react-hook-form.com/) อยู่แล้วและต้องการผูกที่อยู่เข้ากับ state ของฟอร์มโดยตรง แทนที่จะอ่านค่าจาก hidden inputs รูปแบบ prop ต่างจากคอมโพเนนต์อื่นโดยตั้งใจ: ส่ง `control`/`name`/`rules` เหมือนกับ `useController` ของ react-hook-form เอง และไม่มี `value`/`onValueChange`/hidden inputs
+
+<ComponentPreview name="address-form-field-demo" />
 
 ## ติดตั้ง
 
-```bash
-npx react-thaizip add address-form-field
-```
-
-คำสั่งจะเพิ่มคอมโพเนนต์ รวมถึงไฟล์ `thai-address-cascade-select.tsx` ที่ฝังอยู่ภายใน, `utils`, hook โหลดดัชนี และ hook จัดการการเลือกแบบลำดับชั้นลงในตำแหน่งที่บันทึกไว้ใน [`thaizip.config.json`](/docs/reference/config) และติดตั้ง `react-hook-form` หากยังไม่มี
+<ComponentInstall name="address-form-field" />
 
 ## ใช้งานพื้นฐาน
 
@@ -46,27 +42,25 @@ export function AddressField() {
 
 ฟิลด์ `name` ที่ระบุ (`"address"` ในตัวอย่าง) ต้องมีชนิดค่าเป็น `ResolvedThaiAddress | null` ใน type ของฟอร์ม react-hook-form จะเรียก `handleSubmit` เพื่ออ่านค่าโดยตรง component นี้ไม่ render hidden inputs
 
-## กรอกข้อมูลภาษาไทย
+## ตัวอย่าง
 
-<AddressFormFieldDemo client:visible locale="th" />
-
-## กรอกข้อมูลภาษาอังกฤษ
+### กรอกข้อมูลภาษาอังกฤษ
 
 ใช้ `locale="en"` เพื่อแสดงป้ายและตัวเลือกของ cascade select ที่ฝังอยู่เป็นภาษาอังกฤษ
 
-<AddressFormFieldDemo client:visible locale="en" />
+<ComponentPreview name="address-form-field-en" />
 
-## ตรวจสอบด้วย validation rule
+### ตรวจสอบด้วย validation rule
 
 ส่ง `rules` แบบเดียวกับที่ส่งให้ `Controller`/`useController` ของ react-hook-form ตัวอย่างนี้กำหนดให้ต้องเลือกที่อยู่ครบก่อนส่งฟอร์ม ข้อความ error จะแสดงเป็น `<p role="alert">` ใต้ cascade select
 
-<AddressFormFieldDemo client:visible locale="th" required showOutput />
+<ComponentPreview name="address-form-field-validation" />
 
-## ปิดใช้งาน
+### ปิดใช้งาน
 
 ส่ง `disabled` เพื่อปิดทุก select ใน cascade select ที่ฝังอยู่
 
-<AddressFormFieldDemo client:visible locale="th" disabled />
+<ComponentPreview name="address-form-field-disabled" />
 
 ## Props
 

@@ -14,6 +14,8 @@ const config = {
   outputFileTracingRoot: repositoryRoot,
   async rewrites() {
     return [
+      { source: '/en/docs.md', destination: '/api/docs-markdown/en' },
+      { source: '/docs.md', destination: '/api/docs-markdown/th' },
       { source: '/en/docs/:slug*.md', destination: '/api/docs-markdown/en/:slug*' },
       { source: '/docs/:slug*.md', destination: '/api/docs-markdown/th/:slug*' },
     ];

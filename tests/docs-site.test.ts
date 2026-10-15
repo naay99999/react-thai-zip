@@ -98,50 +98,78 @@ describe('documentation site structure', () => {
     }
   })
 
-  it('demo wrappers are client components importing canonical templates through the alias', async () => {
-    const autocomplete = await read(`${docsDir}/components/demos/AutocompleteDemo.tsx`)
-    const cascade = await read(`${docsDir}/components/demos/CascadeSelectDemo.tsx`)
-    const form = await read(`${docsDir}/components/demos/FormDemo.tsx`)
+  it('maps the shadcn-style @/components alias to the canonical templates directory', async () => {
+    const config = await read(`${docsDir}/tsconfig.json`)
 
-    expect(autocomplete).toContain("'use client'")
-    expect(cascade).toContain("'use client'")
-    expect(form).toContain("'use client'")
-    expect(autocomplete).toContain("from '@/thai-address-autocomplete'")
-    expect(cascade).toContain("from '@/thai-address-cascade-select'")
-    expect(cascade).toContain('export default CascadeSelectDemo')
-    expect(form).toMatch(/from '@\/thai-address-(autocomplete|cascade-select)'/)
-    expect(form).toContain('export default FormDemo')
+    expect(config).toMatch(/"@\/components\/\*":\s*\[\s*"\.\.\/\.\.\/templates\/react\/ts\/\*"/)
   })
 
-  it('address-form/display/form-field demo wrappers import canonical templates through the alias', async () => {
-    const addressForm = await read(`${docsDir}/components/demos/AddressFormDemo.tsx`)
-    const addressDisplay = await read(`${docsDir}/components/demos/AddressDisplayDemo.tsx`)
-    const addressFormField = await read(`${docsDir}/components/demos/AddressFormFieldDemo.tsx`)
+  it('examples import canonical templates through the @/components alias and are all registered', async () => {
+    const files = (await readdir(path.join(root, docsDir, 'examples'))).filter((file) => file.endsWith('.tsx'))
+    const registry = await read(`${docsDir}/examples/registry.ts`)
 
-    expect(addressForm).toContain("'use client'")
-    expect(addressFormField).toContain("'use client'")
-    expect(addressForm).toContain("from '@/thai-address-form'")
-    expect(addressDisplay).toContain("from '@/thai-address-display'")
-    expect(addressFormField).toContain("from '@/thai-address-form-field'")
-    expect(addressForm).toContain('export default AddressFormDemo')
-    expect(addressDisplay).toContain('export default AddressDisplayDemo')
-    expect(addressFormField).toContain('export default AddressFormFieldDemo')
+    expect(files.length).toBeGreaterThan(0)
+    for (const file of files) {
+      const source = await read(`${docsDir}/examples/${file}`)
+      const name = file.replace(/\.tsx$/, '')
+
+      expect(source).toMatch(/from '@\/components\/thai-address-[a-z-]+'/)
+      expect(source).toContain('export default function')
+      if (source.includes('useState') || source.includes('useForm')) expect(source).toContain("'use client'")
+      expect(registry).toContain(`'${name}': `)
+      expect(registry).toContain(`from './${name}'`)
+    }
   })
 
-  it('form demo presents the localized current resolved address', async () => {
-    const form = await read(`${docsDir}/components/demos/FormDemo.tsx`)
+  it('only references registered examples from the docs content', async () => {
+    const registry = await read(`${docsDir}/examples/registry.ts`)
+    const entries = await readdir(path.join(root, docsDir, 'content/docs'), { recursive: true })
+    const missing: string[] = []
 
-    expect(form).toContain('value.subdistrict')
-    expect(form).toContain('value.subdistrictEn')
-    expect(form).toContain('value.zipCode')
+    for (const entry of entries.filter((e) => e.endsWith('.mdx'))) {
+      const content = await read(`${docsDir}/content/docs/${entry}`)
+      for (const [, name] of content.matchAll(/<ComponentPreview name="([^"]+)"/g)) {
+        if (!registry.includes(`'${name}': `)) missing.push(`${entry}: ${name}`)
+      }
+    }
+
+    expect(missing).toEqual([])
   })
 
-  it('visually distinguishes invalid demo controls', async () => {
-    const css = await read(`${docsDir}/components/demos/demos.css`)
+  it('gives every component page a live preview and CLI + manual install section in both languages', async () => {
+    for (const component of ['autocomplete', 'cascade-select', 'address-form', 'address-display', 'address-form-field']) {
+      for (const prefix of ['', 'en/']) {
+        const page = await read(`${docsDir}/content/docs/${prefix}components/${component}.mdx`)
+
+        expect(page).toContain('<ComponentPreview name=')
+        expect(page).toContain(`<ComponentInstall name="${component}"`)
+      }
+    }
+  })
+
+  it('form examples submit the hidden fields through FormData', async () => {
+    const form = await read(`${docsDir}/examples/form-autocomplete.tsx`)
+
+    expect(form).toContain('name="address"')
+    expect(form).toContain('new FormData(event.currentTarget)')
+  })
+
+  it('visually distinguishes invalid example controls', async () => {
+    const css = await read(`${docsDir}/styles/preview.css`)
 
     expect(css).toMatch(
-      /\.tz-demo \[aria-invalid=['"]true['"]\]\s*\{[^}]*border-color:\s*var\(--destructive\)/s,
+      /\.tz-preview \[aria-invalid=['"]true['"]\]\s*\{[^}]*border-color:\s*var\(--destructive\)/s,
     )
+  })
+
+  it('serves Markdown for AI: per-page .md (including /docs.md) and llms.txt routes', async () => {
+    const config = await read(`${docsDir}/next.config.mjs`)
+
+    expect(config).toContain("source: '/docs.md'")
+    expect(config).toContain("source: '/en/docs.md'")
+    expect(config).toContain("source: '/docs/:slug*.md'")
+    await expect(read(`${docsDir}/app/llms.txt/route.ts`)).resolves.toContain('renderDocsIndex')
+    await expect(read(`${docsDir}/app/llms-full.txt/route.ts`)).resolves.toContain('renderFullDocs')
   })
 
   it('defines bilingual sidebars and the external Core API link', async () => {

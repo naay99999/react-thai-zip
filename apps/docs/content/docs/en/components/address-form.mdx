@@ -3,17 +3,13 @@ title: Full address form
 description: Capture house number, moo, soi, and street alongside an ordered address selection in one form
 ---
 
-import AddressFormDemo from '../../../../components/demos/AddressFormDemo'
-
 `ThaiAddressForm` is for forms that need a full address: house number/moo/soi/street plus sub-district, district, and province. It embeds a [cascade select](/en/docs/components/cascade-select) internally.
+
+<ComponentPreview name="address-form-demo" lang="en" />
 
 ## Install
 
-```bash
-npx react-thaizip add address-form
-```
-
-The command adds the component, the embedded `thai-address-cascade-select.tsx` file, `utils`, the address-index loading hook, and the cascade-state hook to the directories recorded in [`thaizip.config.json`](/en/docs/reference/config).
+<ComponentInstall name="address-form" lang="en" />
 
 ## Basic usage
 
@@ -29,33 +25,27 @@ export function AddressField() {
 
 `onValueChange` receives `FullThaiAddress | null`. It is only non-null once the house number is filled in and all three cascade levels are selected.
 
-## Thai input
+## Examples
 
-<AddressFormDemo client:visible locale="th" />
-
-## English input
+### English input
 
 Use `locale="en"` for English labels and options, for both the free-text fields and the embedded cascade select.
 
-<AddressFormDemo client:visible locale="en" />
+<ComponentPreview name="address-form-en" lang="en" />
 
-## Controlled value
+### Controlled value
 
 Pass `value` to control the whole address, or `defaultValue` to seed it. An in-progress, not-yet-complete cascade selection is never cleared, even while the controlled `value` is `null`.
 
-```tsx
-<ThaiAddressForm name="address" value={address} onValueChange={setAddress} />
-```
+<ComponentPreview name="address-form-controlled-en" lang="en" />
 
-<AddressFormDemo client:visible locale="th" mode="controlled" showOutput />
-
-## Disabled and invalid states
+### Disabled and invalid states
 
 Pass `disabled` to disable every text field and select, or `aria-invalid` to mark them invalid.
 
-<AddressFormDemo client:visible locale="th" disabled />
+<ComponentPreview name="address-form-disabled" lang="en" />
 
-<AddressFormDemo client:visible locale="th" invalid />
+<ComponentPreview name="address-form-invalid" lang="en" />
 
 ## Props
 

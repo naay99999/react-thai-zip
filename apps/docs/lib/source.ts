@@ -7,9 +7,10 @@ const docs = defineDocs({
   docs: {
     postprocess: {
       includeProcessedMarkdown: {
-        stringify(node) {
-          if (node.type === 'mdxJsxFlowElement' && typeof node.name === 'string' && node.name.endsWith('Demo')) return ' ';
-        },
+        headingIds: false,
+        // Expanded by renderPageMarkdown() in lib/docs-markdown.ts: examples become
+        // their source code, install sections become CLI + manual steps.
+        mdxAsPlaceholder: ['ComponentPreview', 'ComponentInstall'],
       },
     },
   },

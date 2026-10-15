@@ -6,7 +6,7 @@ const i18nProxy = createI18nMiddleware(i18n);
 
 export default function proxy(request: NextRequest, event: NextFetchEvent) {
   const pathname = request.nextUrl.pathname;
-  if (/^\/(?:en\/)?docs\/.*\.md$/.test(pathname)) {
+  if (/^\/(?:en\/)?docs(?:\/.*)?\.md$/.test(pathname)) {
     return NextResponse.next();
   }
   if (pathname === '/th' || pathname.startsWith('/th/')) return NextResponse.next();

@@ -40,12 +40,12 @@ lib/
 
 คำสั่งยังติดตั้ง dependency ที่คอมโพเนนต์ต้องใช้หากยังไม่มี ดู targets, aliases และ flags เพิ่มเติมได้ที่ [ข้อมูลอ้างอิง CLI](/docs/reference/cli)
 
-ใช้ import path ที่ `add` พิมพ์ให้ เพราะ path นั้นตรงกับ directory ที่เลือกตอน `init` ตัวอย่างต่อไปนี้สมมติว่ามี `components/` ที่รากโปรเจกต์
+ใช้ import path ที่ `add` พิมพ์ให้ เพราะ path นั้นตรงกับ directory ที่เลือกตอน `init` ตัวอย่างในเอกสารนี้ใช้ alias `@/components/...` ตามแบบ shadcn/ui หากโปรเจกต์ไม่มี alias นี้หรือเก็บไฟล์ไว้ที่อื่น ให้เปลี่ยนเป็น path ที่ `add` พิมพ์
 
 ## ใช้คอมโพเนนต์ครั้งแรก
 
 ```tsx
-import { ThaiAddressAutocomplete } from './components/thai-address-autocomplete'
+import { ThaiAddressAutocomplete } from '@/components/thai-address-autocomplete'
 
 export function AddressField() {
   return <ThaiAddressAutocomplete onValueChange={(address) => console.log(address)} />

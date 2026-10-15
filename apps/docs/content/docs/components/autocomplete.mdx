@@ -3,17 +3,13 @@ title: ค้นหาที่อยู่แบบ autocomplete
 description: ค้นหาที่อยู่ไทยจากข้อความที่พิมพ์ พร้อมค่าที่อยู่แบบมีโครงสร้าง
 ---
 
-import AutocompleteDemo from '../../../components/demos/AutocompleteDemo'
-
 `ThaiAddressAutocomplete` เหมาะกับหน้าฟอร์มที่ผู้ใช้ต้องการค้นหาที่อยู่ด้วยตำบล อำเภอ/เขต จังหวัด หรือรหัสไปรษณีย์
+
+<ComponentPreview name="autocomplete-demo" />
 
 ## ติดตั้ง
 
-```bash
-npx react-thaizip add autocomplete
-```
-
-คำสั่งจะเพิ่มคอมโพเนนต์ รวมถึง `utils` และ hook สำหรับโหลดดัชนีที่อยู่ลงในตำแหน่งที่บันทึกไว้ใน [`thaizip.config.json`](/docs/reference/config)
+<ComponentInstall name="autocomplete" />
 
 ## ใช้งานพื้นฐาน
 
@@ -29,39 +25,27 @@ export function AddressField() {
 
 ค่าใน `onValueChange` คือ `ResolvedThaiAddress | null` เมื่อผู้ใช้เลือกคำแนะนำจะได้ที่อยู่แบบมีโครงสร้าง และการพิมพ์ให้ข้อความว่างจะล้างที่อยู่ที่เลือกอยู่แล้วด้วยค่า `null`
 
-## ค้นหาภาษาไทย
+## ตัวอย่าง
 
-<AutocompleteDemo client:visible locale="th" />
-
-## ค้นหาภาษาอังกฤษ
+### ค้นหาภาษาอังกฤษ
 
 ใช้ `locale="en"` เพื่อแสดงป้ายกำกับ คำใบ้ และผลลัพธ์เป็นภาษาอังกฤษ ข้อมูลที่ส่งกลับยังมีชื่อทั้งไทยและอังกฤษ
 
-```tsx
-<ThaiAddressAutocomplete locale="en" onValueChange={(address) => console.log(address)} />
-```
+<ComponentPreview name="autocomplete-en" />
 
-<AutocompleteDemo client:visible locale="en" />
-
-## ควบคุมค่าจากภายนอก
+### ควบคุมค่าจากภายนอก
 
 ส่ง `value` เพื่อควบคุมค่า หรือส่ง `defaultValue` เพื่อตั้งค่าเริ่มต้นสำหรับโหมด uncontrolled ปุ่มในตัวอย่างนี้ล้างค่าที่ควบคุมอยู่และแสดงผลลัพธ์ที่ callback ส่งกลับมา
 
-```tsx
-const [address, setAddress] = useState<ResolvedThaiAddress | null>(null)
+<ComponentPreview name="autocomplete-controlled" />
 
-<ThaiAddressAutocomplete value={address} onValueChange={setAddress} />
-```
-
-<AutocompleteDemo client:visible locale="th" mode="controlled" showOutput />
-
-## ปิดใช้งานและแสดงข้อผิดพลาด
+### ปิดใช้งานและแสดงข้อผิดพลาด
 
 ส่ง `disabled` เพื่อปิดช่องค้นหา หรือ `aria-invalid` เมื่อผลตรวจฟอร์มไม่ผ่าน
 
-<AutocompleteDemo client:visible locale="th" disabled />
+<ComponentPreview name="autocomplete-disabled" />
 
-<AutocompleteDemo client:visible locale="th" invalid />
+<ComponentPreview name="autocomplete-invalid" />
 
 ## Props
 

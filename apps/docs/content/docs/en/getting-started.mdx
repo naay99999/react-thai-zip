@@ -40,12 +40,12 @@ lib/
 
 The command also installs any component dependencies that are not already present. See the [CLI reference](/en/docs/reference/cli) for more targets, aliases, and flags.
 
-Follow the import path printed by `add`; it reflects the directory you chose during `init`. The example below assumes a `components/` directory at the project root.
+Follow the import path printed by `add`; it reflects the directory you chose during `init`. Examples in these docs use the shadcn/ui-style `@/components/...` alias; if your project has no such alias or keeps the files elsewhere, swap in the path `add` printed.
 
 ## Use your first component
 
 ```tsx
-import { ThaiAddressAutocomplete } from './components/thai-address-autocomplete'
+import { ThaiAddressAutocomplete } from '@/components/thai-address-autocomplete'
 
 export function AddressField() {
   return <ThaiAddressAutocomplete onValueChange={(address) => console.log(address)} />
