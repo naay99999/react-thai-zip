@@ -1,7 +1,6 @@
 # react-thaizip
 
 [![npm version](https://img.shields.io/npm/v/react-thaizip.svg)](https://www.npmjs.com/package/react-thaizip)
-[![npm downloads](https://img.shields.io/npm/dm/react-thaizip.svg)](https://www.npmjs.com/package/react-thaizip)
 [![license](https://img.shields.io/npm/l/react-thaizip.svg)](https://github.com/naay99999/react-thai-zip/blob/main/LICENSE)
 
 A CLI that scaffolds ready-to-use Thai address React components — powered by [`thaizip`](https://www.npmjs.com/package/thaizip) — directly into your project, shadcn/ui-style.
@@ -10,9 +9,7 @@ A CLI that scaffolds ready-to-use Thai address React components — powered by [
 
 Using a coding agent? Start with the [AI usage guide](https://react-thai-zip.vercel.app/en/docs/guides/using-with-ai) or provide it the site's [`llms.txt`](https://react-thai-zip.vercel.app/llms.txt).
 
-| Thai input | English input (romanization alias) |
-|---|---|
-| ![react-thaizip demo — typing "ลาดพร้าว" in the scaffolded ThaiAddressAutocomplete component](.github/assets/demo.png) | ![react-thaizip demo — typing "ladprao" and matching the same Thai suggestions](.github/assets/demo-en.png) |
+![react-thaizip demo — typing "ลาดพร้าว" and "ladprao" in the scaffolded ThaiAddressAutocomplete component and selecting a suggestion](.github/assets/demo.gif)
 
 ## Quick start
 
