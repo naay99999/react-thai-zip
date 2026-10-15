@@ -3,8 +3,6 @@ title: การใช้งานร่วมกับฟอร์ม
 description: ส่งค่าที่อยู่ไทยด้วยฟอร์มของเบราว์เซอร์ หรือเชื่อมต่อกับ state ของไลบรารีฟอร์ม
 ---
 
-import FormDemo from '../../../components/demos/FormDemo'
-
 คอมโพเนนต์ที่ CLI สร้างเป็น element ของฟอร์มในเบราว์เซอร์ปกติ ไม่ได้ส่งข้อมูลหรือเก็บข้อมูลให้คุณเอง เมื่อใส่ `name` คอมโพเนนต์จะสร้าง hidden inputs เพื่อให้ `FormData` และการ submit ตามปกติอ่านค่าที่อยู่ได้
 
 ## ส่งด้วยฟอร์มของเบราว์เซอร์
@@ -31,9 +29,9 @@ address-zipcode
 
 ตัวอย่างนี้ดัก `submit` ไว้ อ่าน `FormData` และแสดงผลในหน้านี้ จึงใช้งานได้โดยไม่ต้องมี server:
 
-<FormDemo client:visible locale="th" component="autocomplete" />
+<ComponentPreview name="form-autocomplete" />
 
-<FormDemo client:visible locale="th" component="cascade-select" />
+<ComponentPreview name="form-cascade-select" />
 
 ทั้ง autocomplete และ cascade select สร้างฟิลด์ชื่อเดียวกัน หากส่ง `disabled` ควบคู่กัน hidden inputs ทั้งสี่ช่องก็จะถูก disabled และจะไม่ปรากฏใน `FormData`
 

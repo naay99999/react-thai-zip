@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { HomeLayout } from 'fumadocs-ui/layouts/home';
 import { baseOptions } from '~/lib/layout.shared';
-import AutocompleteDemo from '~/components/demos/AutocompleteDemo';
+import { ComponentPreview } from '~/components/component-preview';
 
 const copy = {
   th: {
@@ -10,7 +10,7 @@ const copy = {
     cta: 'เริ่มต้นใช้งาน',
     tryTitle: 'ลองคอมโพเนนต์จริง',
     tryBody:
-      'ตัวอย่างนี้คือ ThaiAddressAutocomplete จาก scaffold มาตรฐานของ react-thaizip ไม่ใช่สำเนาที่เขียนขึ้นสำหรับเว็บเอกสาร เมื่อเพิ่มลงโปรเจกต์แล้ว คุณเป็นเจ้าของซอร์สโค้ดและปรับแต่งได้เต็มที่',
+      'ตัวอย่างนี้คือ ThaiAddressAutocomplete จาก scaffold มาตรฐานของ react-thaizip ไม่ใช่สำเนาที่เขียนขึ้นสำหรับเว็บเอกสาร กดแท็บ "โค้ด" เพื่อดูโค้ด เมื่อเพิ่มลงโปรเจกต์แล้ว คุณเป็นเจ้าของซอร์สโค้ดและปรับแต่งได้เต็มที่',
   },
   en: {
     tagline: 'Scaffold autocomplete and cascade components whose code you own',
@@ -18,7 +18,7 @@ const copy = {
     cta: 'Get Started',
     tryTitle: 'Try the real component',
     tryBody:
-      'This example is the ThaiAddressAutocomplete from the standard react-thaizip scaffold, not a copy written for this site. Once added to your project, you own the source and can customize it freely.',
+      'This example is the ThaiAddressAutocomplete from the standard react-thaizip scaffold, not a copy written for this site. Open the "Code" tab to see the code. Once added to your project, you own the source and can customize it freely.',
   },
 } as const;
 
@@ -46,7 +46,11 @@ export default async function HomePage({
       <section className="container mx-auto max-w-3xl pb-20">
         <h2 className="mb-4 text-xl font-semibold">{c.tryTitle}</h2>
         <p className="mb-4 text-sm text-fd-muted-foreground">{c.tryBody}</p>
-        <AutocompleteDemo locale={lang === 'en' ? 'en' : 'th'} />
+        {lang === 'en' ? (
+          <ComponentPreview name="autocomplete-en" lang="en" />
+        ) : (
+          <ComponentPreview name="autocomplete-demo" />
+        )}
       </section>
     </HomeLayout>
   );

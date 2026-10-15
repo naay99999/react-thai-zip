@@ -1,0 +1,11 @@
+/* Live example area of <ComponentPreview>. */
+.tz-preview {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 10rem;
+  padding: 1.5rem 0.5rem;
+}
+.tz-preview [aria-invalid='true'] {
+  border-color: var(--destructive);
+}

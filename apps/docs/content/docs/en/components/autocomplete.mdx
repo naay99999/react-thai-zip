@@ -3,17 +3,13 @@ title: Address autocomplete
 description: Search Thai addresses from typed text and receive a structured address value
 ---
 
-import AutocompleteDemo from '../../../../components/demos/AutocompleteDemo'
-
 `ThaiAddressAutocomplete` is for forms where people can search an address by sub-district, district, province, or postal code.
+
+<ComponentPreview name="autocomplete-demo" lang="en" />
 
 ## Install
 
-```bash
-npx react-thaizip add autocomplete
-```
-
-The command adds the component plus `utils` and the address-index loading hook to the directories recorded in [`thaizip.config.json`](/en/docs/reference/config).
+<ComponentInstall name="autocomplete" lang="en" />
 
 ## Basic usage
 
@@ -29,39 +25,27 @@ export function AddressField() {
 
 `onValueChange` receives `ResolvedThaiAddress | null`. Selecting a suggestion yields a structured address; typing an empty query clears an existing resolved selection with `null`.
 
-## Thai search
+## Examples
 
-<AutocompleteDemo client:visible locale="th" />
-
-## English search
+### English search
 
 Use `locale="en"` for English labels, placeholders, and suggestions. The returned data still includes Thai and English names.
 
-```tsx
-<ThaiAddressAutocomplete locale="en" onValueChange={(address) => console.log(address)} />
-```
+<ComponentPreview name="autocomplete-en" lang="en" />
 
-<AutocompleteDemo client:visible locale="en" />
-
-## Controlled value
+### Controlled value
 
 Pass `value` to control the selection, or `defaultValue` to seed uncontrolled state. This example includes a clear button for the controlled value and shows the callback output.
 
-```tsx
-const [address, setAddress] = useState<ResolvedThaiAddress | null>(null)
+<ComponentPreview name="autocomplete-controlled-en" lang="en" />
 
-<ThaiAddressAutocomplete value={address} onValueChange={setAddress} />
-```
-
-<AutocompleteDemo client:visible locale="th" mode="controlled" showOutput />
-
-## Disabled and invalid states
+### Disabled and invalid states
 
 Pass `disabled` to turn off the search field, or `aria-invalid` after failed form validation.
 
-<AutocompleteDemo client:visible locale="th" disabled />
+<ComponentPreview name="autocomplete-disabled" lang="en" />
 
-<AutocompleteDemo client:visible locale="th" invalid />
+<ComponentPreview name="autocomplete-invalid" lang="en" />
 
 ## Props
 
