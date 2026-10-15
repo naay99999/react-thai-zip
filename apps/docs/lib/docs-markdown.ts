@@ -1,5 +1,4 @@
 import type { Node, Root } from 'fumadocs-core/page-tree';
-import { renderPlaceholder } from 'fumadocs-core/mdx-plugins/remark-llms.runtime';
 import { renderInstallMarkdown, type DocsLocale } from './component-install';
 import { readExampleSource } from './examples';
 
@@ -36,8 +35,15 @@ function absolutizeLinks(markdown: string): string {
   return markdown.replace(/\]\((\/[^)\s]*)\)/g, (_, href: string) => `](${absolute(href)})`);
 }
 
+type Placeholder = { name: string | null; attributes: Record<string, unknown> };
+
+/**
+ * Expands the `\0{json}\0` placeholders fumadocs emits for `mdxAsPlaceholder`
+ * components. Kept local (rather than fumadocs-core's `renderPlaceholder`) so the
+ * repo's root test suite can import this module without apps/docs' node_modules.
+ */
 async function expandPlaceholders(markdown: string, locale: DocsLocale): Promise<string> {
-  return renderPlaceholder(markdown, {
+  const renderers: Record<string, (data: Placeholder) => string | Promise<string>> = {
     async ComponentPreview({ attributes }) {
       const name = String(attributes.name);
       return `\n\n\`\`\`tsx title="${name}.tsx"\n${await readExampleSource(name)}\n\`\`\`\n\n`;
@@ -45,7 +51,22 @@ async function expandPlaceholders(markdown: string, locale: DocsLocale): Promise
     ComponentInstall({ attributes }) {
       return `\n\n${renderInstallMarkdown(String(attributes.name), locale, SITE_URL)}\n\n`;
     },
-  });
+  };
+
+  let output = '';
+  let index = 0;
+  for (const match of markdown.matchAll(/\0(.+?)\0/gs)) {
+    const data = JSON.parse(match[1]) as Placeholder;
+    const renderer = data.name ? renderers[data.name] : undefined;
+    if (!renderer) throw new Error(`No Markdown renderer for <${data.name}>`);
+    output += markdown.slice(index, match.index) + (await renderer(data));
+    index = match.index + match[0].length;
+  }
+  output += markdown.slice(index);
+
+  // Fails the static build if fumadocs ever changes its placeholder format.
+  if (output.includes('\0')) throw new Error('Unexpanded MDX placeholder in page Markdown');
+  return output;
 }
 
 /** Pages of one locale in sidebar order, split at the sidebar's separators. */
