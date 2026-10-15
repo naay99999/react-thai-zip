@@ -5,9 +5,28 @@ import { fileURLToPath } from 'node:url';
 const docsDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(docsDirectory, '../..');
 
+// Applied to every route. The site is static docs with no auth, so the goal is
+// defense in depth: no framing (clickjacking), no MIME sniffing, a minimal
+// referrer, and no access to powerful browser features. A full script-src CSP
+// is left out because Next's inline bootstrap scripts would need nonces.
+const securityHeaders = [
+  { key: 'Content-Security-Policy', value: "frame-ancestors 'none'; base-uri 'self'; object-src 'none'" },
+  { key: 'X-Frame-Options', value: 'DENY' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=()' },
+];
+
 /** @type {import('next').NextConfig} */
 const config = {
   reactStrictMode: true,
+  // The site serves no remote or user-supplied images, so the on-demand
+  // optimizer (/_next/image) is pure attack surface — it has carried SSRF and
+  // RCE advisories. Serve images as-is instead.
+  images: { unoptimized: true },
+  async headers() {
+    return [{ source: '/:path*', headers: securityHeaders }];
+  },
   turbopack: {
     root: repositoryRoot,
   },
