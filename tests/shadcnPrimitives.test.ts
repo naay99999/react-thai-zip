@@ -3,19 +3,59 @@ import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import { runPackageManagerDlx } from '../src/utils/install.js'
+import { confirm } from '../src/utils/prompt.js'
 import { ensureShadcnPrimitives } from '../src/utils/shadcnPrimitives.js'
 
 vi.mock('../src/utils/install.js', () => ({
   runPackageManagerDlx: vi.fn().mockResolvedValue(undefined),
 }))
 
+vi.mock('../src/utils/prompt.js', () => ({
+  confirm: vi.fn().mockResolvedValue(true),
+}))
+
 const mockedDlx = vi.mocked(runPackageManagerDlx)
+const mockedConfirm = vi.mocked(confirm)
 
 async function tempDir() {
   return mkdtemp(path.join(os.tmpdir(), 'react-thaizip-shadcn-primitives-'))
 }
 
 describe('ensureShadcnPrimitives', () => {
+  it('asks before downloading and running the shadcn CLI, and runs nothing when declined', async () => {
+    const cwd = await tempDir()
+
+    mockedDlx.mockClear()
+    mockedConfirm.mockClear()
+    mockedConfirm.mockResolvedValueOnce(false)
+    await expect(
+      ensureShadcnPrimitives(['popover'], { cwd, pm: 'npm', uiDir: 'components/ui', yes: false, typescript: true }),
+    ).rejects.toThrow(/Declined to run shadcn@4\.21\.0/)
+
+    expect(mockedConfirm).toHaveBeenCalledWith(expect.stringContaining('shadcn@4.21.0'), true, false)
+    expect(mockedDlx).not.toHaveBeenCalled()
+  })
+
+  it('passes yes through to the confirmation so --yes skips the prompt', async () => {
+    const cwd = await tempDir()
+
+    mockedConfirm.mockClear()
+    await ensureShadcnPrimitives(['popover'], { cwd, pm: 'npm', uiDir: 'components/ui', yes: true, typescript: true })
+
+    expect(mockedConfirm).toHaveBeenCalledWith(expect.any(String), true, true)
+  })
+
+  it('does not ask when nothing is missing', async () => {
+    const cwd = await tempDir()
+    await mkdir(path.join(cwd, 'components', 'ui'), { recursive: true })
+    await writeFile(path.join(cwd, 'components', 'ui', 'popover.tsx'), '')
+
+    mockedConfirm.mockClear()
+    await ensureShadcnPrimitives(['popover'], { cwd, pm: 'npm', uiDir: 'components/ui', yes: false, typescript: true })
+
+    expect(mockedConfirm).not.toHaveBeenCalled()
+  })
+
   it('does nothing and never execs when every primitive already exists', async () => {
     const cwd = await tempDir()
     await mkdir(path.join(cwd, 'components', 'ui'), { recursive: true })

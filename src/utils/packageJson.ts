@@ -15,7 +15,11 @@ export async function readPackageJson(cwd = process.cwd()): Promise<PackageJson 
   }
 
   const content = await readFile(packageJsonPath, 'utf8')
-  return JSON.parse(content) as PackageJson
+  try {
+    return JSON.parse(content) as PackageJson
+  } catch (cause) {
+    throw new Error(`Could not parse ${packageJsonPath}: ${cause instanceof Error ? cause.message : String(cause)}`)
+  }
 }
 
 export async function hasPackageDependency(packageName: string, cwd = process.cwd()): Promise<boolean> {

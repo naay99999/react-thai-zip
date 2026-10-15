@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile } from 'node:fs/promises'
 import path from 'node:path'
 import prompts from 'prompts'
 import { installPackage } from '../utils/install.js'
@@ -19,7 +19,7 @@ import { getInstalledPackageVersion, getPackageDependencyRange, readPackageJson 
 import { confirm } from '../utils/prompt.js'
 import { compareVersions, extractVersionAnchor, isVersionAtLeast } from '../utils/semver.js'
 import { rewriteTemplateImports } from '../utils/rewriteImports.js'
-import { assertPathInsideRoot, assertRealPathInsideRoot } from '../utils/pathSafety.js'
+import { assertPathInsideRoot, assertRealPathInsideRoot, writeFileInsideRoot } from '../utils/pathSafety.js'
 import { registryItems, resolveRegistryItem, resolveWithDependencies, selectVariant, type RegistryItem } from '../registry.js'
 import { ensureShadcnPrimitives, SHADCN_CLI_SPEC } from '../utils/shadcnPrimitives.js'
 import { initProject } from './init.js'
@@ -200,7 +200,10 @@ export async function addComponents(options: AddComponentsOptions = {}): Promise
         if (item.type === 'component') content = rewriteTemplateImports(content, path.dirname(destination), config, cwd)
 
         await mkdir(path.dirname(destination), { recursive: true })
-        await writeFile(destination, content, 'utf8')
+        // Re-checks containment now that the directory exists (the checks
+        // above ran before a prompt and mkdir) and opens with O_NOFOLLOW, so a
+        // symlink swapped in at the destination meanwhile is not followed.
+        await writeFileInsideRoot(destination, cwd, content)
 
         anyFileWritten = true
 

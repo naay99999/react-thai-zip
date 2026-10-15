@@ -2,6 +2,7 @@ import path from 'node:path'
 import type { PackageManager } from './detectPM.js'
 import { pathExistsNoFollow } from './fs.js'
 import { runPackageManagerDlx } from './install.js'
+import { confirm } from './prompt.js'
 
 // Match the version used to generate the committed shadcn template fixtures.
 export const SHADCN_CLI_SPEC = 'shadcn@4.21.0'
@@ -46,6 +47,19 @@ export async function ensureShadcnPrimitives(primitives: string[], options: Ensu
   }
 
   if (missing.length === 0) return
+
+  // This downloads and runs a package (and its unpinned transitive deps) from
+  // the npm registry on the user's machine — distinct from installing our own
+  // declared dependencies — so it gets its own explicit confirmation unless
+  // --yes was passed.
+  const proceed = await confirm(
+    `Download and run ${SHADCN_CLI_SPEC} from npm to add the missing shadcn/ui primitives (${missing.join(', ')})?`,
+    true,
+    options.yes,
+  )
+  if (!proceed) {
+    throw new Error(`Declined to run ${SHADCN_CLI_SPEC}.`)
+  }
 
   console.log(`\nRunning ${SHADCN_CLI_SPEC} add ${missing.join(' ')}${options.yes ? ' -y' : ''}`)
   await runPackageManagerDlx(

@@ -1,6 +1,13 @@
 import path from 'node:path'
 import prompts from 'prompts'
-import { CORE_PACKAGE_NAME, CORE_PACKAGE_VERSION, configExists, getRegistryVersion, writeConfig } from '../utils/config.js'
+import {
+  CORE_PACKAGE_NAME,
+  CORE_PACKAGE_VERSION,
+  configExists,
+  describeUnsafeDirectory,
+  getRegistryVersion,
+  writeConfig,
+} from '../utils/config.js'
 import { detectPM } from '../utils/detectPM.js'
 import { detectProjectStructure } from '../utils/detectProjectStructure.js'
 import { detectShadcn } from '../utils/detectShadcn.js'
@@ -69,6 +76,7 @@ export async function initProject(options: InitProjectOptions = {}): Promise<voi
       name: 'componentDir',
       message: 'Where should components be written?',
       initial: componentDir,
+      validate: (value: string) => (value.length === 0 ? true : (describeUnsafeDirectory(value) ?? true)),
     })
     if (directoryResponse.componentDir) {
       componentDir = String(directoryResponse.componentDir)

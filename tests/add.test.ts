@@ -156,7 +156,7 @@ describe('addComponents', () => {
     expect(logged).toContain('Skipped app/components/thai-address-autocomplete.tsx')
   })
 
-  it('installs the missing thaizip dependency with the pinned >=0.7.5 range while leaving other packages bare', async () => {
+  it('installs the missing thaizip dependency with the pinned ^0.7.5 range while leaving other packages bare', async () => {
     const cwd = await tempDir()
     await writeFile(path.join(cwd, 'package.json'), JSON.stringify({ dependencies: {} }))
     await writeConfig(
@@ -180,7 +180,7 @@ describe('addComponents', () => {
 
     expect(mockedInstallPackage).toHaveBeenCalledTimes(1)
     const [specs, options] = mockedInstallPackage.mock.calls[0]
-    expect(specs).toContain('thaizip@>=0.7.5')
+    expect(specs).toContain('thaizip@^0.7.5')
     expect(specs).not.toContain('thaizip')
     expect(specs).toEqual(expect.arrayContaining(['clsx', 'tailwind-merge', '@base-ui/react']))
     expect(options).toEqual({ cwd, pm: 'npm' })
@@ -601,7 +601,7 @@ describe('addComponents', () => {
     expect(mockedInstallPackage).toHaveBeenCalledTimes(1)
     const [specs, options] = mockedInstallPackage.mock.calls[0]
     expect(specs).toEqual(
-      expect.arrayContaining(['thaizip@>=0.7.5', '@base-ui/react', 'clsx', 'tailwind-merge', 'react-hook-form']),
+      expect.arrayContaining(['thaizip@^0.7.5', '@base-ui/react', 'clsx', 'tailwind-merge', 'react-hook-form']),
     )
     expect(options).toEqual({ cwd, pm: 'npm' })
   })

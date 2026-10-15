@@ -34,7 +34,8 @@ export function parseCliArgs(argv: string[]): { command: string | undefined; tar
 }
 
 const GLOBAL_FLAG_LINES = [
-  '  --yes, -y        Skip confirmation prompts',
+  '  --yes, -y        Skip confirmation prompts (installs missing dependencies and,',
+  '                   for shadcn projects, downloads and runs the shadcn CLI from npm)',
   '  --overwrite      Overwrite existing files without prompting',
   '  --help, -h       Print this help message',
   '  --version, -v    Print the CLI version',
@@ -70,7 +71,8 @@ function printHelp(command?: string): void {
         '  react-thaizip add [component...] [--yes] [--overwrite]',
         '',
         'Flags:',
-        '  --yes, -y        Skip confirmation prompts',
+        '  --yes, -y        Skip confirmation prompts (installs missing dependencies and,',
+        '                   for shadcn projects, downloads and runs the shadcn CLI from npm)',
         '  --overwrite      Overwrite existing component files without prompting',
         '',
         'Components:',

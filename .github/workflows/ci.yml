@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
@@ -21,7 +23,7 @@ jobs:
           node-version: 24
           cache: npm
 
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: npm test
       - run: npm run typecheck
       - run: npm run typecheck:templates
@@ -40,6 +42,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
@@ -53,8 +57,8 @@ jobs:
       # their bare imports (thaizip, clsx, tailwind-merge, @base-ui/react) by
       # walking up from templates/ to this repo's own node_modules, so it
       # has to be installed too, not just apps/docs/node_modules.
-      - run: npm ci
-      - run: npm ci
+      - run: npm ci --ignore-scripts
+      - run: npm ci --ignore-scripts
         working-directory: apps/docs
       - run: npm run build
         working-directory: apps/docs
