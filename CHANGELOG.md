@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.10](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.9...react-thaizip-v0.3.10) (2026-10-15)
+
+
+### Bug Fixes
+
+* let the docs Markdown test run without apps/docs dependencies ([ffae9c1](https://github.com/naay99999/react-thai-zip/commit/ffae9c13d16a2eee78dcba5f25a5a6a679f4acef))
+* let the docs Markdown test run without apps/docs dependencies ([daac1ad](https://github.com/naay99999/react-thai-zip/commit/daac1adc4a98b4b3ccaebada2ae8b757984309e1))
+
 ## [0.3.9](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.8...react-thaizip-v0.3.9) (2026-10-02)
 
 
