@@ -113,7 +113,7 @@ describe('initProject', () => {
 
     expect(process.exitCode).toBe(1)
     const logged = consoleError.mock.calls.map((call) => call.join(' ')).join('\n')
-    expect(logged).toContain('thaizip@>=0.7.5')
+    expect(logged).toContain('thaizip@^0.7.5')
     expect(await pathExists(path.join(cwd, 'thaizip.config.json'))).toBe(false)
     consoleError.mockRestore()
   })

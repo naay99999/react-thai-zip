@@ -37,6 +37,12 @@ describe('config', () => {
     expect(extractVersionAnchor(CORE_PACKAGE_VERSION)).not.toBeNull()
   })
 
+  it('CORE_PACKAGE_VERSION is an upper-bounded caret/tilde range, never an open-ended floor', () => {
+    // Written into the user's package.json — `>=x` would accept any future
+    // major (or a compromised publish) on their next install.
+    expect(CORE_PACKAGE_VERSION).toMatch(/^[\^~]\d+\.\d+\.\d+$/)
+  })
+
   it('CORE_PACKAGE_VERSION is at least the version whose APIs the templates rely on (0.7.5: cascade/enumeration, bilingual labels, getDefaultIndexIfLoaded)', () => {
     const anchor = extractVersionAnchor(CORE_PACKAGE_VERSION)
     expect(anchor).not.toBeNull()

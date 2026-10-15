@@ -8,9 +8,13 @@ import { pathExists } from './fs.js'
 export const CONFIG_FILE = 'thaizip.config.json'
 export const CORE_PACKAGE_NAME = 'thaizip'
 // thaizip 0.7.0 introduced the cascade/enumeration API and bilingual (en/th)
-// labels that the scaffolded templates rely on. Left as an open-ended floor
-// rather than a caret range so it doesn't exclude the real "latest" tag.
-export const CORE_PACKAGE_VERSION = '>=0.7.5'
+// labels that the scaffolded templates rely on. A caret range, not an
+// open-ended `>=` floor: this spec is written into the user's package.json, so
+// an unbounded range would pull any future breaking (or compromised) release
+// into every scaffolded project on its next install. On 0.x, `^0.7.5` means
+// `>=0.7.5 <0.8.0` — bump it in step with each thaizip minor the templates
+// are verified against.
+export const CORE_PACKAGE_VERSION = '^0.7.5'
 // Minimum thaizip version required for the cascade/enumeration API and
 // bilingual labels used by every scaffolded component. Kept separate from
 // CORE_PACKAGE_VERSION (a range string) so version-gate logic has a single
