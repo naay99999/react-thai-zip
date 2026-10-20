@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { getPageMarkdownUrl, renderDocsIndex, renderFullDocs, renderPageMarkdown } from '../apps/docs/lib/docs-markdown.js'
-import { getInstallVariants } from '../apps/docs/lib/component-install.js'
+import { getComponentStyles, getInstallVariants } from '../apps/docs/lib/component-install.js'
+import { toPackageManager } from '../apps/docs/lib/package-manager.js'
 
 const SITE = 'https://react-thai-zip.vercel.app'
 
@@ -79,6 +80,14 @@ describe('docs Markdown output', () => {
     expect(output).toContain(`## Example\n\nSee [forms](${SITE}/en/docs/guides/forms).`)
   })
 
+  it('makes JSX hrefs absolute too, e.g. the components overview cards', async () => {
+    const output = await renderPageMarkdown(
+      page('/en/docs/components', 'Components', 'en', '<Card title="Autocomplete" href="/en/docs/components/autocomplete" />'),
+    )
+
+    expect(output).toContain(`href="${SITE}/en/docs/components/autocomplete"`)
+  })
+
   it('replaces previews with the example source and install sections with CLI + manual steps', async () => {
     const body = [
       placeholder('ComponentPreview', { name: 'autocomplete-demo' }),
@@ -128,5 +137,22 @@ describe('docs manual install steps', () => {
 
   it('offers only the vanilla variant for components without shadcn variants', () => {
     expect(getInstallVariants('address-display').map((variant) => variant.key)).toEqual(['vanilla'])
+  })
+
+  it('lists the styles for the page style picker, and none for non-component slugs', () => {
+    expect(getComponentStyles('autocomplete')).toEqual(['vanilla', 'base', 'radix', 'aria'])
+    expect(getComponentStyles('address-display')).toEqual(['vanilla'])
+    expect(getComponentStyles('index')).toEqual([])
+  })
+})
+
+describe('docs package manager commands', () => {
+  it('converts npx and npm install the way remarkNpm does', () => {
+    expect(toPackageManager('npx react-thaizip add autocomplete', 'npm')).toBe('npx react-thaizip add autocomplete')
+    expect(toPackageManager('npx react-thaizip add autocomplete', 'pnpm')).toBe('pnpm dlx react-thaizip add autocomplete')
+    expect(toPackageManager('npx shadcn@latest add popover', 'yarn')).toBe('yarn dlx shadcn@latest add popover')
+    expect(toPackageManager('npx react-thaizip add autocomplete', 'bun')).toBe('bun x react-thaizip add autocomplete')
+    expect(toPackageManager('npm install thaizip clsx', 'pnpm')).toBe('pnpm add thaizip clsx')
+    expect(toPackageManager('npm install thaizip clsx', 'bun')).toBe('bun add thaizip clsx')
   })
 })

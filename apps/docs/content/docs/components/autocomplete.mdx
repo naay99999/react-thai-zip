@@ -11,16 +11,14 @@ description: ค้นหาที่อยู่ไทยจากข้อค�
 
 <ComponentInstall name="autocomplete" />
 
-## ใช้งานพื้นฐาน
-
-นำเข้าจากตำแหน่งที่ CLI สร้างในโปรเจกต์ของคุณ:
+## วิธีใช้
 
 ```tsx
 import { ThaiAddressAutocomplete } from '@/components/thai-address-autocomplete'
+```
 
-export function AddressField() {
-  return <ThaiAddressAutocomplete onValueChange={(address) => console.log(address)} />
-}
+```tsx
+<ThaiAddressAutocomplete onValueChange={(address) => console.log(address)} />
 ```
 
 ค่าใน `onValueChange` คือ `ResolvedThaiAddress | null` เมื่อผู้ใช้เลือกคำแนะนำจะได้ที่อยู่แบบมีโครงสร้าง และการพิมพ์ให้ข้อความว่างจะล้างที่อยู่ที่เลือกอยู่แล้วด้วยค่า `null`
@@ -33,71 +31,75 @@ export function AddressField() {
 
 <ComponentPreview name="autocomplete-en" />
 
+### ป้ายกำกับ
+
+คอมโพเนนต์ไม่มีป้ายกำกับในตัว ครอบด้วย `<label>` เพื่อให้ช่องมีชื่อที่ screen reader อ่านได้ และเพิ่มคำอธิบายไว้ด้านล่าง
+
+<ComponentPreview name="autocomplete-label" />
+
 ### ควบคุมค่าจากภายนอก
 
 ส่ง `value` เพื่อควบคุมค่า หรือส่ง `defaultValue` เพื่อตั้งค่าเริ่มต้นสำหรับโหมด uncontrolled ปุ่มในตัวอย่างนี้ล้างค่าที่ควบคุมอยู่และแสดงผลลัพธ์ที่ callback ส่งกลับมา
 
 <ComponentPreview name="autocomplete-controlled" />
 
-### ปิดใช้งานและแสดงข้อผิดพลาด
+### ปิดใช้งาน
 
-ส่ง `disabled` เพื่อปิดช่องค้นหา หรือ `aria-invalid` เมื่อผลตรวจฟอร์มไม่ผ่าน
+ส่ง `disabled` เพื่อปิดช่องค้นหา
 
 <ComponentPreview name="autocomplete-disabled" />
 
+### ไม่ผ่านการตรวจสอบ
+
+ส่ง `aria-invalid` เพื่อแสดงว่าช่องนี้ไม่ผ่านการตรวจสอบ เช่นหลังตรวจฟอร์มไม่ผ่าน
+
 <ComponentPreview name="autocomplete-invalid" />
 
-## Props
+### ปรับข้อความ
 
-### ค่า
+ใช้ `texts` เพื่อแทนที่ placeholder และข้อความตอนโหลด/ผิดพลาด/ไม่พบผลลัพธ์ คีย์ที่ไม่ได้ส่งจะใช้ค่าเริ่มต้นตาม `locale`
 
-| Prop | Type | รายละเอียด |
-| --- | --- | --- |
-| `value` | `ResolvedThaiAddress \| null` | ค่าที่ควบคุมอยู่; ส่ง `null` เพื่อล้าง |
-| `defaultValue` | `ResolvedThaiAddress \| null` | ค่าเริ่มต้นของโหมด uncontrolled และเติมข้อความค้นหาเริ่มต้น |
-| `onValueChange` | `(address: ResolvedThaiAddress \| null) => void` | เรียกเมื่อเลือกหรือล้างที่อยู่ |
+<ComponentPreview name="autocomplete-texts" />
 
-### การค้นหา
+### ปรับสไตล์
 
-| Prop | Type | รายละเอียด |
-| --- | --- | --- |
-| `limit` | `number` | จำนวนคำแนะนำสูงสุด ส่งต่อไปยัง core hook |
-| `debounce` | `number` | ระยะหน่วงก่อนค้นหา (มิลลิวินาที) ส่งต่อไปยัง core hook |
-| `threshold` | `number` | จำนวนอักขระขั้นต่ำก่อนค้นหา ส่งต่อไปยัง core hook |
+แต่ละส่วนของคอมโพเนนต์มี class prop ของตัวเอง (ดู [API Reference](#api-reference)) class ที่ส่งจะรวมด้วย `cn` จึงทับค่าเริ่มต้นได้
 
-### ฟิลด์
+<ComponentPreview name="autocomplete-styled" />
 
-| Prop | Type | รายละเอียด |
-| --- | --- | --- |
-| `name` | `string` | สร้าง hidden inputs สี่ช่องสำหรับ subdistrict, district, province และ zipcode |
-| `locale` | `'th' \| 'en'` | ภาษาของข้อความและป้ายกำกับ; ค่าเริ่มต้นคือ `'th'` |
-| `disabled` | `boolean` | ปิดใช้งานช่องค้นหา |
-| `required` | `boolean` | กำหนดให้ input ต้องมีค่า |
-| `aria-invalid` | `React.AriaAttributes['aria-invalid']` | ระบุสถานะไม่ผ่านการตรวจสอบของ input |
-| `onBlur` | `React.FocusEventHandler<HTMLInputElement>` | ทำงานเมื่อ input สูญเสียโฟกัส |
-| `onError` | `(error: Error) => void` | ทำงานเมื่อโหลดดัชนีที่อยู่ไม่สำเร็จ |
+### ใช้ในฟอร์ม
 
-### ข้อความ
+ส่ง `name` เพื่อส่งที่อยู่ที่เลือกไปกับฟอร์มปกติ คอมโพเนนต์จะสร้าง hidden inputs สี่ช่อง (`address-subdistrict`, `address-district`, `address-province`, `address-zipcode`) และ `required` จะกันไม่ให้ส่งฟอร์มจนกว่าจะเลือกที่อยู่ ดูรูปแบบอื่นได้ที่ [การใช้งานร่วมกับฟอร์ม](/docs/guides/forms)
 
-| Prop | Type | รายละเอียด |
-| --- | --- | --- |
-| `texts` | `Partial<ThaiAddressAutocompleteTexts>` | แทนที่ placeholder, ข้อความโหลด/ผิดพลาด/ไม่พบผลลัพธ์ และป้ายปุ่มล้าง/ลองใหม่ |
+<ComponentPreview name="form-autocomplete" />
 
-### Class slots
+## API Reference
 
-| Prop | ใช้กับ |
-| --- | --- |
-| `className` | wrapper หลัก |
-| `inputClassName` | ช่องพิมพ์ค้นหา |
-| `popupClassName` | กล่องผลลัพธ์ |
-| `itemClassName` | แต่ละผลลัพธ์ |
+| Prop | Type | ค่าเริ่มต้น | รายละเอียด |
+| --- | --- | --- | --- |
+| `value` | `ResolvedThaiAddress \| null` | — | ค่าที่ควบคุมอยู่; ส่ง `null` เพื่อล้าง |
+| `defaultValue` | `ResolvedThaiAddress \| null` | — | ค่าเริ่มต้นของโหมด uncontrolled และเติมข้อความค้นหาเริ่มต้น |
+| `onValueChange` | `(address: ResolvedThaiAddress \| null) => void` | — | เรียกเมื่อเลือกหรือล้างที่อยู่ |
+| `name` | `string` | — | สร้าง hidden inputs สี่ช่อง: `<name>-subdistrict`, `-district`, `-province`, `-zipcode` |
+| `locale` | `'th' \| 'en'` | `'th'` | ภาษาของผลลัพธ์และข้อความเริ่มต้น |
+| `texts` | `Partial<ThaiAddressAutocompleteTexts>` | — | แทนที่ `placeholder`, `clearAriaLabel`, `loadingText`, `errorText`, `retryLabel`, `emptyText` |
+| `indexLoad` | `'mount' \| 'visible'` | `'mount'` | โหลดข้อมูลที่อยู่ตอน mount หรือรอจนช่องเลื่อนเข้ามาในจอ |
+| `limit` | `number` | `10` | จำนวนคำแนะนำสูงสุด |
+| `debounce` | `number` | `200` | ระยะหน่วงก่อนค้นหา (มิลลิวินาที) |
+| `threshold` | `number` | `0.4` | คะแนนความใกล้เคียงขั้นต่ำ (0–1) ที่คำแนะนำจะถูกแสดง |
+| `disabled` | `boolean` | `false` | ปิดใช้งานช่องค้นหา |
+| `required` | `boolean` | — | กำหนดให้ช่องต้องมีค่า |
+| `aria-invalid` | `React.AriaAttributes['aria-invalid']` | — | ระบุสถานะไม่ผ่านการตรวจสอบ |
+| `onBlur` | `React.FocusEventHandler` | — | Vanilla: ทำงานเมื่อ input สูญเสียโฟกัส ส่วน shadcn/ui: ทำงานที่ปุ่ม trigger (`HTMLButtonElement`) |
+| `onError` | `(error: Error) => void` | — | ทำงานเมื่อโหลดดัชนีที่อยู่ไม่สำเร็จ |
+| `className` | `string` | — | wrapper หลัก |
+| `inputClassName` | `string` | — | ช่องพิมพ์ค้นหา |
+| `popupClassName` | `string` | — | กล่องผลลัพธ์ |
+| `itemClassName` | `string` | — | แต่ละผลลัพธ์ |
+| `ref` | `React.Ref<HTMLInputElement>` | — | ส่งต่อไปยัง input ใน style shadcn/ui นั้น input อยู่ใน popover จึงเป็น `null` ระหว่างที่ popover ปิดอยู่ |
 
-### Ref
+`limit`, `debounce` และ `threshold` ส่งต่อตรงไปยัง hook `useThaiAddressAutocomplete` ของ thaizip
 
-| Prop | Type | รายละเอียด |
-| --- | --- | --- |
-| `ref` | `React.Ref<HTMLInputElement>` | ref ที่ส่งต่อไปยัง input |
-
-## คู่มือที่เกี่ยวข้อง
+## ดูเพิ่มเติม
 
 ดู [การใช้งานร่วมกับฟอร์ม](/docs/guides/forms) สำหรับการส่งค่าที่อยู่ และ [การปรับแต่ง](/docs/guides/customization) สำหรับปรับหน้าตา ส่วน UI แบบเลือกตามลำดับ ดู [cascade select](/docs/components/cascade-select)

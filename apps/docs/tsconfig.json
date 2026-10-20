@@ -23,6 +23,10 @@
       }
     ],
     "paths": {
+      "@/components/thai-address-autocomplete": ["./components/style-switch/autocomplete"],
+      "@/components/thai-address-cascade-select": ["./components/style-switch/cascade-select"],
+      "@/components/thai-address-form": ["./components/style-switch/form"],
+      "@/components/thai-address-form-field": ["./components/style-switch/form-field"],
       "@/components/*": [
         "../../templates/react/ts/*"
       ],

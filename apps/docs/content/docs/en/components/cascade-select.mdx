@@ -5,98 +5,91 @@ description: Choose province, district, and sub-district in order
 
 `ThaiAddressCascadeSelect` is for forms where people choose an address in the order province → district → sub-district.
 
-<ComponentPreview name="cascade-select-demo" lang="en" />
+<ComponentPreview name="cascade-select-en" lang="en" size="lg" />
 
-## Install
+## Installation
 
 <ComponentInstall name="cascade-select" lang="en" />
 
-## Basic usage
-
-Import from the location generated in your project:
+## Usage
 
 ```tsx
 import { ThaiAddressCascadeSelect } from '@/components/thai-address-cascade-select'
+```
 
-export function AddressField() {
-  return <ThaiAddressCascadeSelect onValueChange={(address) => console.log(address)} />
-}
+```tsx
+<ThaiAddressCascadeSelect onValueChange={(address) => console.log(address)} />
 ```
 
 `onValueChange` receives `ResolvedThaiAddress | null` once all three levels have been chosen.
 
-## Changing a parent choice
+### Changing a parent choice
 
 After a complete selection, changing the province or district emits `onValueChange(null)` and clears downstream selections that no longer match. The person then chooses the remaining address levels again.
 
 ## Examples
 
-### English choices
+### Thai choices
 
-Use `locale="en"` for English labels and options.
+Without `locale`, labels and options are in Thai (the default `locale="th"`).
 
-<ComponentPreview name="cascade-select-en" lang="en" />
+<ComponentPreview name="cascade-select-demo" lang="en" size="lg" />
 
-### Controlled value
+### Controlled
 
 Pass `value` to control the full selection, or `defaultValue` to seed the selected address. This example includes a clear button and shows the callback value.
 
-<ComponentPreview name="cascade-select-controlled-en" lang="en" />
+<ComponentPreview name="cascade-select-controlled-en" lang="en" size="lg" />
 
-### Disabled and invalid states
+### Disabled
 
-Pass `disabled` to disable every select, or `aria-invalid` to mark all three triggers invalid.
+Pass `disabled` to disable every select.
 
-<ComponentPreview name="cascade-select-disabled" lang="en" />
+<ComponentPreview name="cascade-select-disabled" lang="en" size="lg" />
 
-<ComponentPreview name="cascade-select-invalid" lang="en" />
+### Invalid
 
-## Props
+Pass `aria-invalid` to mark all three triggers invalid.
 
-### Value
+<ComponentPreview name="cascade-select-invalid" lang="en" size="lg" />
 
-| Prop | Type | Description |
-| --- | --- | --- |
-| `value` | `ResolvedThaiAddress \| null` | Controlled value; pass `null` to clear it. |
-| `defaultValue` | `ResolvedThaiAddress \| null` | Uncontrolled seed value; pre-selects the complete address chain. |
-| `onValueChange` | `(address: ResolvedThaiAddress \| null) => void` | Called when an address is completed or cleared. |
+### Custom text
 
-### Field
+Use `texts` to override labels and placeholders, for example to match Bangkok's khet/khwaeng wording. Keys you don't pass keep the `locale` defaults.
 
-| Prop | Type | Description |
-| --- | --- | --- |
-| `name` | `string` | Renders four hidden inputs for subdistrict, district, province, and zipcode. |
-| `locale` | `'th' \| 'en'` | Label and option locale; defaults to `'th'`. |
-| `disabled` | `boolean` | Disables all selects. |
-| `required` | `boolean` | Marks all three selects as required. |
-| `aria-invalid` | `React.AriaAttributes['aria-invalid']` | Marks all three triggers invalid. |
-| `onBlur` | `React.FocusEventHandler<HTMLButtonElement>` | Runs when the province trigger loses focus. |
-| `onError` | `(error: Error) => void` | Runs if the address index cannot load. |
+<ComponentPreview name="cascade-select-texts-en" lang="en" size="lg" />
 
-### Text
+### Form
 
-| Prop | Type | Description |
-| --- | --- | --- |
-| `texts` | `Partial<ThaiAddressCascadeSelectTexts>` | Overrides labels, placeholders, and loading/error/retry text. |
+Pass `name` to submit the selection with a regular form: the component renders four hidden inputs (`address-subdistrict`, `address-district`, `address-province`, `address-zipcode`). `required` blocks submission until all three levels are chosen. See [Forms](/en/docs/guides/forms) for more patterns.
 
-### Class slots
+<ComponentPreview name="form-cascade-select-en" lang="en" size="lg" />
 
-| Prop | Applied to |
-| --- | --- |
-| `className` | Root grid wrapper |
-| `labelClassName` | Every field label |
-| `triggerClassName` | Select triggers and the postal-code input |
-| `popupClassName` | Option popups |
-| `itemClassName` | Each option item |
+## API Reference
 
-### Ref
-
-| Prop | Type | Description |
-| --- | --- | --- |
-| `ref` | `React.Ref<HTMLButtonElement>` | Forwarded to the province trigger, the cascade's primary control. |
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `ResolvedThaiAddress \| null` | — | Controlled value; pass `null` to clear it. |
+| `defaultValue` | `ResolvedThaiAddress \| null` | — | Uncontrolled seed value; pre-selects the complete address chain. |
+| `onValueChange` | `(address: ResolvedThaiAddress \| null) => void` | — | Called when an address is completed or cleared. |
+| `name` | `string` | — | Renders four hidden inputs: `<name>-subdistrict`, `-district`, `-province`, `-zipcode`. |
+| `locale` | `'th' \| 'en'` | `'th'` | Label and option locale. |
+| `texts` | `Partial<ThaiAddressCascadeSelectTexts>` | — | Overrides the `*Label`/`*Placeholder` text of each level plus `loadingText`, `errorText`, `retryLabel`. |
+| `indexLoad` | `'mount' \| 'visible'` | `'mount'` | Load the address data on mount, or only once the field scrolls into view. |
+| `disabled` | `boolean` | `false` | Disables all selects. |
+| `required` | `boolean` | — | Marks all three selects as required. |
+| `aria-invalid` | `React.AriaAttributes['aria-invalid']` | — | Marks all three triggers invalid. |
+| `onBlur` | `React.FocusEventHandler<HTMLButtonElement>` | — | Runs when the province trigger loses focus. |
+| `onError` | `(error: Error) => void` | — | Runs if the address index cannot load. |
+| `className` | `string` | — | Root grid wrapper. |
+| `labelClassName` | `string` | — | Every field label. |
+| `triggerClassName` | `string` | — | Select triggers and the postal-code input. |
+| `popupClassName` | `string` | — | Option popups. |
+| `itemClassName` | `string` | — | Each option item. |
+| `ref` | `React.Ref<HTMLButtonElement>` | — | Forwarded to the province trigger, the cascade's primary control. |
 
 Both `ref` and `onBlur` target the province trigger, not the district or sub-district trigger.
 
-## Related guides
+## Related
 
 See [Forms](/en/docs/guides/forms) to submit address values and [Customization](/en/docs/guides/customization) to change the presentation. For free-text search, see [autocomplete](/en/docs/components/autocomplete).

@@ -13,7 +13,7 @@ description: สาเหตุและคำสั่งกู้คืนส�
 
 **วิธีแก้:** ติดตั้งและตั้งค่า Tailwind ตาม framework ให้มี dependency และรูปแบบ CSS/config ที่ถูกต้อง แล้วรัน:
 
-```bash
+```npm
 npx react-thaizip init
 ```
 
@@ -41,7 +41,7 @@ npx react-thaizip init
 
 **วิธีแก้:** อัปเกรดแล้วรันคำสั่ง `add` เดิมอีกครั้ง:
 
-```bash
+```npm
 npm i thaizip@latest
 npx react-thaizip add autocomplete
 ```
@@ -56,7 +56,7 @@ npx react-thaizip add autocomplete
 
 **วิธีแก้:** ติดตั้งรายการที่ error พิมพ์ด้วย package manager ของโปรเจกต์ แล้วรันคำสั่งเดิมอีกครั้ง ตัวอย่างสำหรับรายการเต็มของ autocomplete แบบ vanilla:
 
-```bash
+```npm
 npm i 'thaizip@^0.7.5' @base-ui/react clsx tailwind-merge
 npx react-thaizip add autocomplete
 ```
@@ -73,7 +73,7 @@ npx react-thaizip add autocomplete
 
 **วิธีแก้:** ตรวจ diff หรือสำรองการแก้ไขของคุณก่อน จากนั้นตอบยืนยันใน prompt หรือใช้ flag นี้เมื่อเจตนาแทนที่ไฟล์จริง:
 
-```bash
+```npm
 npx react-thaizip add autocomplete --overwrite
 ```
 
@@ -85,7 +85,7 @@ npx react-thaizip add autocomplete --overwrite
 
 **วิธีแก้:** ถ้าไฟล์ที่มีอยู่ทำงานถูกต้อง ไม่ต้องทำอะไร ถ้าต้องการสำเนาใหม่ ให้สำรองการแก้ไขของคุณไว้ก่อน (เพราะจะถูกเขียนทับโดยไม่มีการถาม) แล้วรันคำสั่งเดิมพร้อม `--overwrite`:
 
-```bash
+```npm
 npx react-thaizip add utils --overwrite
 ```
 
@@ -99,7 +99,7 @@ npx react-thaizip add utils --overwrite
 
 **วิธีแก้:** ตรวจ diff ของไฟล์นั้นกับ template เวอร์ชันล่าสุดก่อนถ้าต้องการ แล้วรันคำสั่งที่ข้อความแนะนำไว้ตรง ๆ เพื่อ refresh:
 
-```bash
+```npm
 npx react-thaizip add utils --overwrite
 ```
 
@@ -113,7 +113,7 @@ npx react-thaizip add utils --overwrite
 
 **วิธีแก้:** เปิด `thaizip.config.json` และตรวจสอบ directory ทั้งสามให้เป็น path เทียบจากรากโปรเจกต์ จากนั้น `cd` ไปที่รากนั้นและ scaffold ใหม่ ถ้ามีคอมโพเนนต์อยู่แล้ว ต้องตั้งใจใช้ `--overwrite` เพื่อให้ไฟล์และ imports ถูกเขียนใหม่:
 
-```bash
+```npm
 npx react-thaizip add autocomplete --overwrite
 ```
 
@@ -127,7 +127,7 @@ npx react-thaizip add autocomplete --overwrite
 
 **วิธีแก้:** ยอมรับ prompt เพื่อให้ `add` เรียก `init` แล้วทำงานต่อ หรือรันคำสั่งนี้เองจากรากโปรเจกต์ก่อนเรียก `add`:
 
-```bash
+```npm
 npx react-thaizip init
 npx react-thaizip add autocomplete
 ```

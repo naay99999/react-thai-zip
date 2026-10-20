@@ -3,7 +3,7 @@ title: แสดงที่อยู่แบบอ่านอย่างเ�
 description: จัดรูปแบบที่อยู่ไทยที่เลือกไว้แล้วให้เป็นข้อความอ่านง่าย ไม่ต้องโหลดดัชนีที่อยู่
 ---
 
-`ThaiAddressDisplay` เหมาะกับหน้าที่ต้องแสดงที่อยู่ที่บันทึกไว้แล้ว เช่นหน้าสรุปคำสั่งซื้อหรือโปรไฟล์ผู้ใช้ เป็นคอมโพเนนต์อ่านอย่างเดียว ไม่มี Base UI และไม่โหลดดัชนีที่อยู่
+`ThaiAddressDisplay` เหมาะกับหน้าที่ต้องแสดงที่อยู่ที่บันทึกไว้แล้ว เช่นหน้าสรุปคำสั่งซื้อหรือโปรไฟล์ผู้ใช้ เป็นคอมโพเนนต์อ่านอย่างเดียว ไม่มี Base UI และไม่โหลดดัชนีที่อยู่ จึงมี style เดียว
 
 <ComponentPreview name="address-display-demo" />
 
@@ -11,23 +11,21 @@ description: จัดรูปแบบที่อยู่ไทยที่�
 
 <ComponentInstall name="address-display" />
 
-## ใช้งานพื้นฐาน
-
-นำเข้าจากตำแหน่งที่ CLI สร้างในโปรเจกต์ของคุณ:
+## วิธีใช้
 
 ```tsx
-import { ThaiAddressDisplay, type ThaiAddressDisplayValue } from '@/components/thai-address-display'
-
-export function OrderAddress({ address }: { address: ThaiAddressDisplayValue | null }) {
-  return <ThaiAddressDisplay value={address} />
-}
+import { ThaiAddressDisplay } from '@/components/thai-address-display'
 ```
 
-`value` รับที่อยู่ที่ resolve ไว้แล้ว (`ResolvedThaiAddress` บวก `houseNo`/`moo`/`soi`/`street` แบบ optional) หรือ `null` เมื่อยังไม่มีที่อยู่ ซึ่งจะแสดง `emptyText` แทน
+```tsx
+<ThaiAddressDisplay value={address} />
+```
+
+`value` รับที่อยู่ที่ resolve ไว้แล้ว (`ResolvedThaiAddress` บวก `houseNo`/`moo`/`soi`/`street` แบบ optional มี type ชื่อ `ThaiAddressDisplayValue`) หรือ `null` เมื่อยังไม่มีที่อยู่ ซึ่งจะแสดง `emptyText` แทน
 
 ## ตัวอย่าง
 
-### แสดงแบบหลายบรรทัด
+### หลายบรรทัด
 
 ใช้ `mode="multi-line"` เพื่อแยกส่วนบ้านเลขที่/หมู่/ซอย/ถนน กับส่วนตำบล-อำเภอ-จังหวัดออกเป็นคนละบรรทัด
 
@@ -39,42 +37,36 @@ export function OrderAddress({ address }: { address: ThaiAddressDisplayValue | n
 
 <ComponentPreview name="address-display-en" />
 
-### แสดงเมื่อไม่มีบ้านเลขที่
+### ไม่มีบ้านเลขที่
 
 เมื่อ `value` ไม่มี `houseNo`/`moo`/`soi`/`street` เลย จะแสดงเฉพาะตำบล-อำเภอ-จังหวัด
 
 <ComponentPreview name="address-display-minimal" />
 
-### แสดงเมื่อยังไม่มีที่อยู่
+### ยังไม่มีที่อยู่
 
 ส่ง `value={null}` เพื่อแสดง `emptyText` แทน (ค่าเริ่มต้นคือ "ไม่มีที่อยู่" หรือ "No address" ตาม `locale`)
 
 <ComponentPreview name="address-display-empty" />
 
-## Props
+### ปรับสไตล์
 
-### ค่า
+ใช้ `className` กับ `<address>` และ `lineClassName` กับแต่ละบรรทัดในโหมดหลายบรรทัด ตัวอย่างนี้ทำเป็นการ์ดและเน้นบรรทัดแรก
 
-| Prop | Type | รายละเอียด |
-| --- | --- | --- |
-| `value` | `ThaiAddressDisplayValue \| null` | ที่อยู่ที่จะแสดง; `null` จะแสดง `emptyText` แทน (พร็อพเดียวที่จำเป็นต้องส่ง) |
-| `locale` | `'th' \| 'en'` | กำหนดป้ายตำบล-อำเภอ-จังหวัดและ `emptyText` เริ่มต้น; ค่าเริ่มต้นคือ `'th'` |
-| `mode` | `'single-line' \| 'multi-line'` | `'single-line'` (ค่าเริ่มต้น) รวมส่วนบ้านเลขที่กับส่วนตำบล-อำเภอ-จังหวัดด้วย `', '`; `'multi-line'` แยกเป็นสองบรรทัด |
-| `emptyText` | `string` | ข้อความแทนที่เมื่อ `value` เป็น `null`; ค่าเริ่มต้นคือ `'ไม่มีที่อยู่'` (`'No address'` เมื่อ `locale="en"`) |
+<ComponentPreview name="address-display-styled" />
 
-### Class slots
+## API Reference
 
-| Prop | ใช้กับ |
-| --- | --- |
-| `className` | `<address>` หลัก |
-| `lineClassName` | แต่ละบรรทัดในโหมด `'multi-line'` |
+| Prop | Type | ค่าเริ่มต้น | รายละเอียด |
+| --- | --- | --- | --- |
+| `value` | `ThaiAddressDisplayValue \| null` | — | **จำเป็น** ที่อยู่ที่จะแสดง; `null` จะแสดง `emptyText` แทน |
+| `locale` | `'th' \| 'en'` | `'th'` | กำหนดภาษาของชื่อพื้นที่และ `emptyText` เริ่มต้น |
+| `mode` | `'single-line' \| 'multi-line'` | `'single-line'` | `'single-line'` ต่อส่วนถนนกับพื้นที่ด้วย `', '` ส่วน `'multi-line'` แสดงเป็นสองบรรทัด |
+| `emptyText` | `string` | `'ไม่มีที่อยู่'` / `'No address'` | ข้อความเมื่อ `value` เป็น `null` ตาม `locale` |
+| `className` | `string` | — | `<address>` หลัก |
+| `lineClassName` | `string` | — | แต่ละบรรทัดในโหมด `'multi-line'` |
+| `ref` | `React.Ref<HTMLElement>` | — | ส่งต่อไปยัง `<address>` |
 
-### Ref
+## ดูเพิ่มเติม
 
-| Prop | Type | รายละเอียด |
-| --- | --- | --- |
-| `ref` | `React.Ref<HTMLElement>` | ref ที่ส่งต่อไปยัง `<address>` |
-
-## คู่มือที่เกี่ยวข้อง
-
-ดู [การปรับแต่ง](/docs/guides/customization) สำหรับปรับหน้าตา ถ้าต้องการให้ผู้ใช้เลือกหรือแก้ที่อยู่แทนการแสดงอย่างเดียว ดู [address form](/docs/components/address-form) หรือ [cascade select](/docs/components/cascade-select)
+ดู [การปรับแต่ง](/docs/guides/customization) สำหรับปรับหน้าตา ถ้าต้องการให้ผู้ใช้เลือกหรือแก้ไขที่อยู่ ดู [ฟอร์มที่อยู่แบบเต็ม](/docs/components/address-form) หรือ [cascade select](/docs/components/cascade-select)

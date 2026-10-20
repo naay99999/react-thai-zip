@@ -1,34 +1,51 @@
 import { ServerCodeBlock } from 'fumadocs-ui/components/codeblock.rsc'
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs'
 import { examples } from '~/examples/registry'
 import { readExampleSource } from '~/lib/examples'
+import { cn } from '~/lib/cn'
 import type { DocsLocale } from '~/lib/component-install'
+import { CollapsibleCode } from './collapsible-code'
 
 const COPY = {
-  th: { preview: 'ตัวอย่าง', code: 'โค้ด' },
-  en: { preview: 'Preview', code: 'Code' },
+  th: { viewCode: 'ดูโค้ด', hideCode: 'ซ่อนโค้ด' },
+  en: { viewCode: 'View Code', hideCode: 'Hide Code' },
+} as const
+
+/** Maximum width of the live example, centered in the preview area. */
+const SIZES = {
+  sm: 'max-w-sm',
+  md: 'max-w-md',
+  lg: 'max-w-2xl',
 } as const
 
 /**
- * Renders `examples/<name>.tsx` live in a Preview tab and its exact source in a
- * Code tab — both come from the same file, so the code always matches the demo.
+ * Renders `examples/<name>.tsx` live, with that same file's source collapsed
+ * underneath — so the code always matches the demo. Templates imported by the
+ * example render in the style picked on the site (see `components/style-switch`).
  */
-export async function ComponentPreview({ name, lang = 'th' }: { name: string; lang?: DocsLocale }) {
+export async function ComponentPreview({
+  name,
+  lang = 'th',
+  size = 'md',
+}: {
+  name: string
+  lang?: DocsLocale
+  size?: keyof typeof SIZES
+}) {
   const Example = examples[name]
   if (!Example) throw new Error(`Unknown example: ${name}`)
   const code = await readExampleSource(name)
   const copy = COPY[lang]
 
   return (
-    <Tabs items={[copy.preview, copy.code]} groupId="component-preview" persist>
-      <Tab value={copy.preview}>
-        <div className="tz-preview not-prose">
+    <div className="not-prose my-6 overflow-hidden rounded-xl border bg-fd-card">
+      <div className="tz-preview">
+        <div className={cn('w-full', SIZES[size])}>
           <Example />
         </div>
-      </Tab>
-      <Tab value={copy.code}>
-        <ServerCodeBlock code={code} lang="tsx" codeblock={{ title: `${name}.tsx` }} />
-      </Tab>
-    </Tabs>
+      </div>
+      <CollapsibleCode expandLabel={copy.viewCode} collapseLabel={copy.hideCode} className="border-t">
+        <ServerCodeBlock code={code} lang="tsx" codeblock={{ className: 'my-0 rounded-none border-0' }} />
+      </CollapsibleCode>
+    </div>
   )
 }
