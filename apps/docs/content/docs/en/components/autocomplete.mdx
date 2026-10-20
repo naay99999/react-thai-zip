@@ -5,99 +5,101 @@ description: Search Thai addresses from typed text and receive a structured addr
 
 `ThaiAddressAutocomplete` is for forms where people can search an address by sub-district, district, province, or postal code.
 
-<ComponentPreview name="autocomplete-demo" lang="en" />
+<ComponentPreview name="autocomplete-en" lang="en" />
 
-## Install
+## Installation
 
 <ComponentInstall name="autocomplete" lang="en" />
 
-## Basic usage
-
-Import from the location generated in your project:
+## Usage
 
 ```tsx
 import { ThaiAddressAutocomplete } from '@/components/thai-address-autocomplete'
+```
 
-export function AddressField() {
-  return <ThaiAddressAutocomplete onValueChange={(address) => console.log(address)} />
-}
+```tsx
+<ThaiAddressAutocomplete onValueChange={(address) => console.log(address)} />
 ```
 
 `onValueChange` receives `ResolvedThaiAddress | null`. Selecting a suggestion yields a structured address; typing an empty query clears an existing resolved selection with `null`.
 
 ## Examples
 
-### English search
+### Thai search
 
-Use `locale="en"` for English labels, placeholders, and suggestions. The returned data still includes Thai and English names.
+Without `locale`, labels, the placeholder, and suggestions are in Thai (the default `locale="th"`). The returned data includes both Thai and English names either way.
 
-<ComponentPreview name="autocomplete-en" lang="en" />
+<ComponentPreview name="autocomplete-demo" lang="en" />
 
-### Controlled value
+### Label
+
+The component renders no label of its own. Wrap it in a `<label>` to give the field an accessible name, and add a description underneath.
+
+<ComponentPreview name="autocomplete-label-en" lang="en" />
+
+### Controlled
 
 Pass `value` to control the selection, or `defaultValue` to seed uncontrolled state. This example includes a clear button for the controlled value and shows the callback output.
 
 <ComponentPreview name="autocomplete-controlled-en" lang="en" />
 
-### Disabled and invalid states
+### Disabled
 
-Pass `disabled` to turn off the search field, or `aria-invalid` after failed form validation.
+Pass `disabled` to turn off the search field.
 
 <ComponentPreview name="autocomplete-disabled" lang="en" />
 
+### Invalid
+
+Pass `aria-invalid` to mark the field invalid, for example after failed form validation.
+
 <ComponentPreview name="autocomplete-invalid" lang="en" />
 
-## Props
+### Custom text
 
-### Value
+Use `texts` to override the placeholder and the loading/error/empty messages. Keys you don't pass keep the `locale` defaults.
 
-| Prop | Type | Description |
-| --- | --- | --- |
-| `value` | `ResolvedThaiAddress \| null` | Controlled value; pass `null` to clear it. |
-| `defaultValue` | `ResolvedThaiAddress \| null` | Uncontrolled seed value; also pre-fills the initial search text. |
-| `onValueChange` | `(address: ResolvedThaiAddress \| null) => void` | Called when an address is selected or cleared. |
+<ComponentPreview name="autocomplete-texts-en" lang="en" />
 
-### Search
+### Custom styling
 
-| Prop | Type | Description |
-| --- | --- | --- |
-| `limit` | `number` | Maximum suggestions; passed to the core hook. |
-| `debounce` | `number` | Search delay in milliseconds; passed to the core hook. |
-| `threshold` | `number` | Minimum query length; passed to the core hook. |
+Each part of the component has its own class prop (see [API Reference](#api-reference)). Classes are merged with `cn`, so they override the defaults.
 
-### Field
+<ComponentPreview name="autocomplete-styled-en" lang="en" />
 
-| Prop | Type | Description |
-| --- | --- | --- |
-| `name` | `string` | Renders four hidden inputs for subdistrict, district, province, and zipcode. |
-| `locale` | `'th' \| 'en'` | Text and label locale; defaults to `'th'`. |
-| `disabled` | `boolean` | Disables the search input. |
-| `required` | `boolean` | Marks the input as required. |
-| `aria-invalid` | `React.AriaAttributes['aria-invalid']` | Marks the input as invalid. |
-| `onBlur` | `React.FocusEventHandler<HTMLInputElement>` | Runs when the input loses focus. |
-| `onError` | `(error: Error) => void` | Runs if the address index cannot load. |
+### Form
 
-### Text
+Pass `name` to submit the selected address with a regular form: the component renders four hidden inputs (`address-subdistrict`, `address-district`, `address-province`, `address-zipcode`). `required` blocks submission until an address is selected. See [Forms](/en/docs/guides/forms) for more patterns.
 
-| Prop | Type | Description |
-| --- | --- | --- |
-| `texts` | `Partial<ThaiAddressAutocompleteTexts>` | Overrides the placeholder, loading/error/empty states, and clear/retry labels. |
+<ComponentPreview name="form-autocomplete-en" lang="en" />
 
-### Class slots
+## API Reference
 
-| Prop | Applied to |
-| --- | --- |
-| `className` | Root wrapper |
-| `inputClassName` | Search input |
-| `popupClassName` | Results popup |
-| `itemClassName` | Each result item |
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `ResolvedThaiAddress \| null` | — | Controlled value; pass `null` to clear it. |
+| `defaultValue` | `ResolvedThaiAddress \| null` | — | Uncontrolled seed value; also pre-fills the initial search text. |
+| `onValueChange` | `(address: ResolvedThaiAddress \| null) => void` | — | Called when an address is selected or cleared. |
+| `name` | `string` | — | Renders four hidden inputs: `<name>-subdistrict`, `-district`, `-province`, `-zipcode`. |
+| `locale` | `'th' \| 'en'` | `'th'` | Locale of suggestions and default text. |
+| `texts` | `Partial<ThaiAddressAutocompleteTexts>` | — | Overrides `placeholder`, `clearAriaLabel`, `loadingText`, `errorText`, `retryLabel`, `emptyText`. |
+| `indexLoad` | `'mount' \| 'visible'` | `'mount'` | Load the address data on mount, or only once the field scrolls into view. |
+| `limit` | `number` | `10` | Maximum number of suggestions. |
+| `debounce` | `number` | `200` | Delay before searching, in milliseconds. |
+| `threshold` | `number` | `0.4` | Minimum match score (0–1) for a suggestion to be shown. |
+| `disabled` | `boolean` | `false` | Disables the field. |
+| `required` | `boolean` | — | Marks the field as required. |
+| `aria-invalid` | `React.AriaAttributes['aria-invalid']` | — | Marks the field invalid. |
+| `onBlur` | `React.FocusEventHandler` | — | Vanilla: fires when the input loses focus. shadcn/ui: fires on the trigger button (`HTMLButtonElement`). |
+| `onError` | `(error: Error) => void` | — | Runs if the address index cannot load. |
+| `className` | `string` | — | Root wrapper. |
+| `inputClassName` | `string` | — | Search input. |
+| `popupClassName` | `string` | — | Results popup. |
+| `itemClassName` | `string` | — | Each result item. |
+| `ref` | `React.Ref<HTMLInputElement>` | — | Forwarded to the input. In the shadcn/ui styles the input lives inside the popover, so `ref.current` is `null` while it is closed. |
 
-### Ref
+`limit`, `debounce`, and `threshold` are passed straight to thaizip's `useThaiAddressAutocomplete` hook.
 
-| Prop | Type | Description |
-| --- | --- | --- |
-| `ref` | `React.Ref<HTMLInputElement>` | Forwarded to the input. |
-
-## Related guides
+## Related
 
 See [Forms](/en/docs/guides/forms) to submit address values and [Customization](/en/docs/guides/customization) to change the presentation. For ordered address selection, see [cascade select](/en/docs/components/cascade-select).

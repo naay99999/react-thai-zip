@@ -77,13 +77,23 @@ export function getInstallVariants(component: string): InstallVariant[] {
   return item.shadcn ? variants : variants.slice(0, 1)
 }
 
+/** Styles a component ships in, for the page's style picker; `[]` for a non-component slug. */
+export function getComponentStyles(component: string): InstallVariantKey[] {
+  if (!resolveRegistryItem(component)) return []
+  return getInstallVariants(component).map((variant) => variant.key)
+}
+
 export async function readTemplate(source: string): Promise<string> {
   return (await readFile(path.join(templatesDirectory, source), 'utf8')).trim()
 }
 
 export const INSTALL_COPY = {
   th: {
+    command: 'คำสั่ง',
     manual: 'ติดตั้งเอง',
+    styleNote: 'แสดงไฟล์ของ style **{style}** เปลี่ยน style ได้ที่ตัวเลือกด้านบนของหน้า',
+    expand: 'แสดงทั้งหมด',
+    collapse: 'ย่อ',
     cliNote:
       'CLI เลือกไฟล์ให้ตาม style ที่ `init` บันทึกไว้: โปรเจกต์ที่มี `components.json` ของ shadcn/ui จะได้ไฟล์ที่ประกอบจาก primitives ของ shadcn (Base UI, Radix หรือ React Aria) นอกนั้นได้แบบ vanilla',
     installDependencies: 'ติดตั้ง dependencies',
@@ -95,7 +105,11 @@ export const INSTALL_COPY = {
     source: 'ซอร์ส',
   },
   en: {
+    command: 'Command',
     manual: 'Manual',
+    styleNote: 'Showing the files for the **{style}** style. Change it with the picker at the top of the page.',
+    expand: 'Expand',
+    collapse: 'Collapse',
     cliNote:
       'The CLI picks files based on the style `init` recorded: projects with a shadcn/ui `components.json` get files composed from shadcn primitives (Base UI, Radix, or React Aria); everything else gets the vanilla files.',
     installDependencies: 'Install the dependencies',

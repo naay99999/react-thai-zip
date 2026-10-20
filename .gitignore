@@ -6,6 +6,7 @@ apps/docs/node_modules/
 dist/
 apps/docs/.next/
 apps/docs/.source/
+apps/docs/.generated/
 *.tsbuildinfo
 
 # Generated/local-only workspaces (see CLAUDE.md)

@@ -30,9 +30,11 @@ function absolute(url: string): string {
   return `${SITE_URL}${url}`;
 }
 
-/** Turns site-relative markdown links into absolute ones, so the file works outside the site. */
+/** Turns site-relative links (markdown and JSX `href`) into absolute ones, so the file works outside the site. */
 function absolutizeLinks(markdown: string): string {
-  return markdown.replace(/\]\((\/[^)\s]*)\)/g, (_, href: string) => `](${absolute(href)})`);
+  return markdown
+    .replace(/\]\((\/[^)\s]*)\)/g, (_, href: string) => `](${absolute(href)})`)
+    .replace(/ href="(\/[^"\s]*)"/g, (_, href: string) => ` href="${absolute(href)}"`);
 }
 
 type Placeholder = { name: string | null; attributes: Record<string, unknown> };

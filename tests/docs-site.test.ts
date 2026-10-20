@@ -6,6 +6,7 @@ const docsDir = 'apps/docs'
 const requiredDocSlugs = [
   'index.mdx',
   'getting-started.mdx',
+  'components/index.mdx',
   'components/autocomplete.mdx',
   'components/cascade-select.mdx',
   'components/address-form.mdx',
@@ -81,6 +82,7 @@ describe('documentation site structure', () => {
     expect(ignore).toContain('apps/docs/node_modules/')
     expect(ignore).toContain('apps/docs/.next/')
     expect(ignore).toContain('apps/docs/.source/')
+    expect(ignore).toContain('apps/docs/.generated/')
     expect(ignore).toContain('apps/sandbox/')
   })
 
@@ -102,6 +104,26 @@ describe('documentation site structure', () => {
     const config = await read(`${docsDir}/tsconfig.json`)
 
     expect(config).toMatch(/"@\/components\/\*":\s*\[\s*"\.\.\/\.\.\/templates\/react\/ts\/\*"/)
+  })
+
+  it('previews every shadcn/ui style through the style-switch modules', async () => {
+    const config = await read(`${docsDir}/tsconfig.json`)
+    const manifest = JSON.parse(await read(`${docsDir}/package.json`)) as { scripts?: Record<string, string> }
+
+    for (const [component, file] of [
+      ['autocomplete', 'autocomplete'],
+      ['cascade-select', 'cascade-select'],
+      ['form', 'form'],
+      ['form-field', 'form-field'],
+    ]) {
+      expect(config).toContain(`"@/components/thai-address-${component}": ["./components/style-switch/${file}"]`)
+      const shim = await read(`${docsDir}/components/style-switch/${file}.tsx`)
+      expect(shim).toContain('../../../../templates/react/ts/thai-address-')
+      for (const base of ['base', 'radix', 'aria']) expect(shim).toContain(`.generated/styles/${base}/thai-address-`)
+    }
+    // The shadcn copies are generated before both dev and build.
+    expect(manifest.scripts?.predev).toBe('node scripts/generate-styles.mjs')
+    expect(manifest.scripts?.prebuild).toBe('node scripts/generate-styles.mjs')
   })
 
   it('examples import canonical templates through the @/components alias and are all registered', async () => {

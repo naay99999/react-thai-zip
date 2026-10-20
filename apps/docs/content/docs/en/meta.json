@@ -3,6 +3,7 @@
     "index",
     "getting-started",
     "---Components---",
+    "components/index",
     "components/autocomplete",
     "components/cascade-select",
     "components/address-form",

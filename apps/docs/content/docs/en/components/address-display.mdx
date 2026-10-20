@@ -3,31 +3,29 @@ title: Read-only address display
 description: Format an already-resolved Thai address as readable text, with no address-index loading
 ---
 
-`ThaiAddressDisplay` is for pages that show an address you already have, such as an order summary or a user profile. It is purely presentational — no Base UI, and no address-index loading.
+`ThaiAddressDisplay` is for pages that show an address you already have, such as an order summary or a user profile. It is purely presentational — no Base UI, and no address-index loading — so it ships in a single style.
 
 <ComponentPreview name="address-display-en" lang="en" />
 
-## Install
+## Installation
 
 <ComponentInstall name="address-display" lang="en" />
 
-## Basic usage
-
-Import from the location generated in your project:
+## Usage
 
 ```tsx
-import { ThaiAddressDisplay, type ThaiAddressDisplayValue } from '@/components/thai-address-display'
-
-export function OrderAddress({ address }: { address: ThaiAddressDisplayValue | null }) {
-  return <ThaiAddressDisplay value={address} />
-}
+import { ThaiAddressDisplay } from '@/components/thai-address-display'
 ```
 
-`value` takes an already-resolved address (`ResolvedThaiAddress` plus optional `houseNo`/`moo`/`soi`/`street`), or `null` when there is no address yet, which renders `emptyText` instead.
+```tsx
+<ThaiAddressDisplay value={address} />
+```
+
+`value` takes an already-resolved address (`ResolvedThaiAddress` plus optional `houseNo`/`moo`/`soi`/`street`, typed as `ThaiAddressDisplayValue`), or `null` when there is no address yet, which renders `emptyText` instead.
 
 ## Examples
 
-### Multi-line layout
+### Multi-line
 
 Use `mode="multi-line"` to render the house-number/moo/soi/street portion and the sub-district/district/province portion as separate rows.
 
@@ -45,36 +43,30 @@ When `value` has none of `houseNo`/`moo`/`soi`/`street`, only the sub-district/d
 
 <ComponentPreview name="address-display-minimal-en" lang="en" />
 
-### No address yet
+### Empty
 
 Pass `value={null}` to render `emptyText` instead (the default is "No address" or "ไม่มีที่อยู่", based on `locale`).
 
 <ComponentPreview name="address-display-empty-en" lang="en" />
 
-## Props
+### Custom styling
 
-### Value
+Use `className` for the `<address>` element and `lineClassName` for each row in multi-line mode — here, a card with an emphasized first line.
 
-| Prop | Type | Description |
-| --- | --- | --- |
-| `value` | `ThaiAddressDisplayValue \| null` | The address to render; `null` renders `emptyText` instead. The only required prop. |
-| `locale` | `'th' \| 'en'` | Drives the locality label and the default `emptyText`; defaults to `'th'`. |
-| `mode` | `'single-line' \| 'multi-line'` | `'single-line'` (default) joins the street portion and the locality with `', '`; `'multi-line'` renders them as two rows. |
-| `emptyText` | `string` | Replacement text when `value` is `null`; defaults to `'No address'` (`'ไม่มีที่อยู่'` when `locale="th"`). |
+<ComponentPreview name="address-display-styled-en" lang="en" />
 
-### Class slots
+## API Reference
 
-| Prop | Applied to |
-| --- | --- |
-| `className` | The root `<address>` |
-| `lineClassName` | Each row in `'multi-line'` mode |
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `ThaiAddressDisplayValue \| null` | — | **Required.** The address to render; `null` renders `emptyText` instead. |
+| `locale` | `'th' \| 'en'` | `'th'` | Drives the locality label and the default `emptyText`. |
+| `mode` | `'single-line' \| 'multi-line'` | `'single-line'` | `'single-line'` joins the street portion and the locality with `', '`; `'multi-line'` renders them as two rows. |
+| `emptyText` | `string` | `'ไม่มีที่อยู่'` / `'No address'` | Replacement text when `value` is `null`, based on `locale`. |
+| `className` | `string` | — | The root `<address>`. |
+| `lineClassName` | `string` | — | Each row in `'multi-line'` mode. |
+| `ref` | `React.Ref<HTMLElement>` | — | Forwarded to the `<address>` element. |
 
-### Ref
-
-| Prop | Type | Description |
-| --- | --- | --- |
-| `ref` | `React.Ref<HTMLElement>` | Forwarded to the `<address>` element. |
-
-## Related guides
+## Related
 
 See [Customization](/en/docs/guides/customization) to change the presentation. To let people choose or edit an address instead of only displaying it, see [address form](/en/docs/components/address-form) or [cascade select](/en/docs/components/cascade-select).
