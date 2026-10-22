@@ -12,15 +12,15 @@
   "dependencies": {
     "@base-ui/react": "^1.9.0",
     "clsx": "^2.1.1",
-    "fumadocs-core": "^16.17.1",
-    "fumadocs-mdx": "^15.4.7",
-    "fumadocs-ui": "^16.17.1",
-    "next": "^16.4.1",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0",
+    "fumadocs-core": "^16.17.7",
+    "fumadocs-mdx": "^15.4.8",
+    "fumadocs-ui": "^16.17.7",
+    "next": "^16.4.2",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "react-hook-form": "^7.90.0",
     "tailwind-merge": "^3.7.0",
-    "thaizip": "^0.7.6"
+    "thaizip": "^0.7.8"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
