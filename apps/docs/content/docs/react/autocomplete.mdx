@@ -1,0 +1,103 @@
+---
+title: ค้นหาที่อยู่แบบ autocomplete
+description: ค้นหาที่อยู่ไทยจากข้อความที่พิมพ์ พร้อมค่าที่อยู่แบบมีโครงสร้าง
+---
+
+`ThaiAddressAutocomplete` เหมาะกับหน้าฟอร์มที่ผู้ใช้ต้องการค้นหาที่อยู่ด้วยตำบล อำเภอ/เขต จังหวัด หรือรหัสไปรษณีย์
+
+<ComponentPreview name="autocomplete-demo" />
+
+## ติดตั้ง
+
+<ComponentInstall name="autocomplete" />
+
+## วิธีใช้
+
+```tsx
+import { ThaiAddressAutocomplete } from '@/components/thai-address-autocomplete'
+```
+
+```tsx
+<ThaiAddressAutocomplete onValueChange={(address) => console.log(address)} />
+```
+
+ค่าใน `onValueChange` คือ `ResolvedThaiAddress | null` เมื่อผู้ใช้เลือกคำแนะนำจะได้ที่อยู่แบบมีโครงสร้าง และการพิมพ์ให้ข้อความว่างจะล้างที่อยู่ที่เลือกอยู่แล้วด้วยค่า `null`
+
+## ตัวอย่าง
+
+### ค้นหาภาษาอังกฤษ
+
+ใช้ `locale="en"` เพื่อแสดงป้ายกำกับ คำใบ้ และผลลัพธ์เป็นภาษาอังกฤษ ข้อมูลที่ส่งกลับยังมีชื่อทั้งไทยและอังกฤษ
+
+<ComponentPreview name="autocomplete-en" />
+
+### ป้ายกำกับ
+
+คอมโพเนนต์ไม่มีป้ายกำกับในตัว ครอบด้วย `<label>` เพื่อให้ช่องมีชื่อที่ screen reader อ่านได้ และเพิ่มคำอธิบายไว้ด้านล่าง
+
+<ComponentPreview name="autocomplete-label" />
+
+### ควบคุมค่าจากภายนอก
+
+ส่ง `value` เพื่อควบคุมค่า หรือส่ง `defaultValue` เพื่อตั้งค่าเริ่มต้นสำหรับโหมด uncontrolled ปุ่มในตัวอย่างนี้ล้างค่าที่ควบคุมอยู่และแสดงผลลัพธ์ที่ callback ส่งกลับมา
+
+<ComponentPreview name="autocomplete-controlled" />
+
+### ปิดใช้งาน
+
+ส่ง `disabled` เพื่อปิดช่องค้นหา
+
+<ComponentPreview name="autocomplete-disabled" />
+
+### ไม่ผ่านการตรวจสอบ
+
+ส่ง `aria-invalid` เพื่อแสดงว่าช่องนี้ไม่ผ่านการตรวจสอบ เช่นหลังตรวจฟอร์มไม่ผ่าน
+
+<ComponentPreview name="autocomplete-invalid" />
+
+### ปรับข้อความ
+
+ใช้ `texts` เพื่อแทนที่ placeholder และข้อความตอนโหลด/ผิดพลาด/ไม่พบผลลัพธ์ คีย์ที่ไม่ได้ส่งจะใช้ค่าเริ่มต้นตาม `locale`
+
+<ComponentPreview name="autocomplete-texts" />
+
+### ปรับสไตล์
+
+แต่ละส่วนของคอมโพเนนต์มี class prop ของตัวเอง (ดู [API Reference](#api-reference)) class ที่ส่งจะรวมด้วย `cn` จึงทับค่าเริ่มต้นได้
+
+<ComponentPreview name="autocomplete-styled" />
+
+### ใช้ในฟอร์ม
+
+ส่ง `name` เพื่อส่งที่อยู่ที่เลือกไปกับฟอร์มปกติ คอมโพเนนต์จะสร้าง hidden inputs สี่ช่อง (`address-subdistrict`, `address-district`, `address-province`, `address-zipcode`) และ `required` จะกันไม่ให้ส่งฟอร์มจนกว่าจะเลือกที่อยู่
+
+<ComponentPreview name="form-autocomplete" />
+
+ชื่อพื้นที่ใน hidden inputs เป็นภาษาไทยเสมอ แม้ UI จะแสดงภาษาอังกฤษ ถ้า `disabled` hidden inputs จะถูก disabled ด้วยและไม่อยู่ใน `FormData` ถ้าใช้ไลบรารีฟอร์ม ให้เก็บ `ResolvedThaiAddress | null` ไว้ใน state ของฟอร์มแล้วส่งกลับผ่าน `value` เพื่อให้ validation, reset และ submit ใช้ค่าเดียวกัน
+
+## API Reference
+
+| Prop | Type | ค่าเริ่มต้น | รายละเอียด |
+| --- | --- | --- | --- |
+| `value` | `ResolvedThaiAddress \| null` | — | ค่าที่ควบคุมอยู่; ส่ง `null` เพื่อล้าง |
+| `defaultValue` | `ResolvedThaiAddress \| null` | — | ค่าเริ่มต้นของโหมด uncontrolled และเติมข้อความค้นหาเริ่มต้น |
+| `onValueChange` | `(address: ResolvedThaiAddress \| null) => void` | — | เรียกเมื่อเลือกหรือล้างที่อยู่ |
+| `name` | `string` | — | สร้าง hidden inputs สี่ช่อง: `<name>-subdistrict`, `-district`, `-province`, `-zipcode` |
+| `locale` | `'th' \| 'en'` | `'th'` | ภาษาของผลลัพธ์และข้อความเริ่มต้น |
+| `texts` | `Partial<ThaiAddressAutocompleteTexts>` | — | แทนที่ `placeholder`, `clearAriaLabel`, `loadingText`, `errorText`, `retryLabel`, `emptyText` |
+| `indexLoad` | `'mount' \| 'visible'` | `'mount'` | โหลดข้อมูลที่อยู่ตอน mount หรือรอจนช่องเลื่อนเข้ามาในจอ |
+| `limit` | `number` | `10` | จำนวนคำแนะนำสูงสุด |
+| `debounce` | `number` | `200` | ระยะหน่วงก่อนค้นหา (มิลลิวินาที) |
+| `threshold` | `number` | `0.4` | คะแนนความใกล้เคียงขั้นต่ำ (0–1) ที่คำแนะนำจะถูกแสดง |
+| `disabled` | `boolean` | `false` | ปิดใช้งานช่องค้นหา |
+| `required` | `boolean` | — | กำหนดให้ช่องต้องมีค่า |
+| `aria-invalid` | `React.AriaAttributes['aria-invalid']` | — | ระบุสถานะไม่ผ่านการตรวจสอบ |
+| `onBlur` | `React.FocusEventHandler` | — | Vanilla: ทำงานเมื่อ input สูญเสียโฟกัส ส่วน shadcn/ui: ทำงานที่ปุ่ม trigger (`HTMLButtonElement`) |
+| `onError` | `(error: Error) => void` | — | ทำงานเมื่อโหลดดัชนีที่อยู่ไม่สำเร็จ |
+| `className` | `string` | — | wrapper หลัก |
+| `inputClassName` | `string` | — | ช่องพิมพ์ค้นหา |
+| `popupClassName` | `string` | — | กล่องผลลัพธ์ |
+| `itemClassName` | `string` | — | แต่ละผลลัพธ์ |
+| `ref` | `React.Ref<HTMLInputElement>` | — | ส่งต่อไปยัง input ใน style shadcn/ui นั้น input อยู่ใน popover จึงเป็น `null` ระหว่างที่ popover ปิดอยู่ |
+
+`limit`, `debounce` และ `threshold` ส่งต่อตรงไปยัง hook `useThaiAddressAutocomplete` ของ thaizip

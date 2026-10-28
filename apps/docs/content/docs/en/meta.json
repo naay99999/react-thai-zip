@@ -1,21 +1,3 @@
 {
-  "pages": [
-    "index",
-    "getting-started",
-    "---Components---",
-    "components/index",
-    "components/autocomplete",
-    "components/cascade-select",
-    "components/address-form",
-    "components/address-display",
-    "components/address-form-field",
-    "---Guides---",
-    "guides/forms",
-    "guides/customization",
-    "guides/using-with-ai",
-    "---Reference---",
-    "reference/cli",
-    "reference/config",
-    "troubleshooting"
-  ]
+  "pages": ["(core)", "react"]
 }

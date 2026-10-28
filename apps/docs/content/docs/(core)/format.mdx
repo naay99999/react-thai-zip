@@ -1,0 +1,64 @@
+---
+title: จัดรูปแบบและแปลงที่อยู่
+description: แปลงผลการค้นหาเป็น label สำหรับ dropdown หรือเป็นที่อยู่แบบมีโครงสร้างสำหรับบันทึก
+---
+
+## `formatThaiAddressSuggestion`
+
+```ts
+function formatThaiAddressSuggestion(record: ThaiAddressRecord, options?: { locale?: 'th' | 'en' }): ThaiAddressSuggestion
+```
+
+สร้าง label พร้อมแสดงสำหรับรายการใน dropdown
+
+```ts
+const suggestions = searchThaiAddress(index, 'ลาดพร้าว').map((r) => formatThaiAddressSuggestion(r))
+suggestions[0].label // 'ลาดพร้าว > เขตลาดพร้าว > กรุงเทพมหานคร 10230'
+
+formatThaiAddressSuggestion(record, { locale: 'en' }).label // 'Lat Phrao > Khet Lat Phrao > Bangkok 10230'
+```
+
+```ts
+type ThaiAddressSuggestion = {
+  id: string // String(record.tambonId)
+  label: string // labelTh หรือ labelEn เมื่อ locale เป็น 'en'
+  labelTh: string
+  labelEn: string
+  tambon: string
+  tambonEn: string
+  amphure: string
+  amphureEn: string
+  province: string
+  provinceEn: string
+  zipCode: string
+}
+```
+
+## `resolveThaiAddress`
+
+```ts
+function resolveThaiAddress(record: ThaiAddressRecord): ResolvedThaiAddress
+```
+
+สร้าง object ที่อยู่สำหรับบันทึก มีค่าเดียวกันในชื่อฟิลด์สองแบบ เลือกแบบที่เข้ากับ schema ของคุณ
+
+```ts
+type ResolvedThaiAddress = {
+  // แบบไทย
+  tambon: string
+  tambonEn: string
+  amphure: string
+  amphureEn: string
+  province: string
+  provinceEn: string
+  zipCode: string
+  // แบบอังกฤษ ค่าเดียวกัน
+  subdistrict: string
+  subdistrictEn: string
+  district: string
+  districtEn: string
+  postalCode: string
+}
+```
+
+[React hook](/docs/react-hook) คืนค่านี้ และ[คอมโพเนนต์ของ react-thaizip](/docs/react) ก็ใช้ค่านี้เป็น value

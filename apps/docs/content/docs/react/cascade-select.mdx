@@ -1,0 +1,97 @@
+---
+title: เลือกที่อยู่แบบลำดับชั้น
+description: เลือกจังหวัด อำเภอหรือเขต และตำบลหรือแขวงตามลำดับ
+---
+
+`ThaiAddressCascadeSelect` เหมาะกับฟอร์มที่ต้องการให้ผู้ใช้เลือกที่อยู่ตามลำดับ จังหวัด → อำเภอ/เขต → ตำบล/แขวง
+
+<ComponentPreview name="cascade-select-demo" size="lg" />
+
+## ติดตั้ง
+
+<ComponentInstall name="cascade-select" />
+
+## วิธีใช้
+
+```tsx
+import { ThaiAddressCascadeSelect } from '@/components/thai-address-cascade-select'
+```
+
+```tsx
+<ThaiAddressCascadeSelect onValueChange={(address) => console.log(address)} />
+```
+
+`onValueChange` จะส่ง `ResolvedThaiAddress | null` เมื่อเลือกครบทั้งสามระดับ
+
+### เมื่อเปลี่ยนตัวเลือกหลัก
+
+เมื่อเลือกที่อยู่ครบแล้ว การเปลี่ยนจังหวัดหรืออำเภอ/เขตจะเรียก `onValueChange(null)` และล้างตัวเลือกปลายทางที่ไม่สอดคล้องกัน ผู้ใช้จึงต้องเลือกตัวเลือกที่อยู่ถัดไปใหม่
+
+## ตัวอย่าง
+
+### เลือกข้อมูลภาษาอังกฤษ
+
+ใช้ `locale="en"` เพื่อแสดงป้ายและตัวเลือกเป็นภาษาอังกฤษ
+
+<ComponentPreview name="cascade-select-en" size="lg" />
+
+### ควบคุมค่าจากภายนอก
+
+ส่ง `value` เพื่อควบคุมค่าทั้งชุด หรือ `defaultValue` เพื่อตั้งลำดับที่เลือกไว้ตอนเริ่มต้น ตัวอย่างนี้แสดงค่า callback และมีปุ่มล้างค่า
+
+<ComponentPreview name="cascade-select-controlled" size="lg" />
+
+### ปิดใช้งาน
+
+ส่ง `disabled` เพื่อปิดทุก select
+
+<ComponentPreview name="cascade-select-disabled" size="lg" />
+
+### ไม่ผ่านการตรวจสอบ
+
+ส่ง `aria-invalid` เพื่อทำเครื่องหมายว่าไม่ผ่านการตรวจสอบทั้งสาม trigger
+
+<ComponentPreview name="cascade-select-invalid" size="lg" />
+
+### ปรับข้อความ
+
+ใช้ `texts` เพื่อแทนที่ป้ายกำกับและ placeholder เช่นให้ตรงกับคำว่าเขต/แขวงของกรุงเทพฯ คีย์ที่ไม่ได้ส่งจะใช้ค่าเริ่มต้นตาม `locale`
+
+<ComponentPreview name="cascade-select-texts" size="lg" />
+
+### ใช้ในฟอร์ม
+
+ส่ง `name` เพื่อส่งค่าที่เลือกไปกับฟอร์มปกติ คอมโพเนนต์จะสร้าง hidden inputs สี่ช่อง (`address-subdistrict`, `address-district`, `address-province`, `address-zipcode`) และ `required` จะกันไม่ให้ส่งฟอร์มจนกว่าจะเลือกครบทั้งสามระดับ
+
+<ComponentPreview name="form-cascade-select" size="lg" />
+
+cascade select จะไม่ส่ง resolved value จนกว่าจะเลือกครบทั้งสามระดับ ระหว่างที่เลือกจังหวัด/อำเภอไว้บางส่วน คอมโพเนนต์เก็บสถานะนั้นไว้เอง การส่ง `value={null}` จะล้าง selection ที่ครบแล้ว แต่คงการเลือกบางส่วนไว้ ถ้าการ reset ฟอร์มต้องล้างการเลือกบางส่วนด้วย ให้ remount ด้วย key:
+
+```tsx
+<ThaiAddressCascadeSelect key={resetVersion} name="address" value={address} onValueChange={setAddress} />
+```
+
+## API Reference
+
+| Prop | Type | ค่าเริ่มต้น | รายละเอียด |
+| --- | --- | --- | --- |
+| `value` | `ResolvedThaiAddress \| null` | — | ค่าที่ควบคุมอยู่; ส่ง `null` เพื่อล้าง |
+| `defaultValue` | `ResolvedThaiAddress \| null` | — | ค่าเริ่มต้นของโหมด uncontrolled และเลือกลำดับที่อยู่ให้ครบตั้งแต่เริ่ม |
+| `onValueChange` | `(address: ResolvedThaiAddress \| null) => void` | — | เรียกเมื่อเลือกครบหรือเมื่อค่าถูกล้าง |
+| `name` | `string` | — | สร้าง hidden inputs สี่ช่อง: `<name>-subdistrict`, `-district`, `-province`, `-zipcode` |
+| `locale` | `'th' \| 'en'` | `'th'` | ภาษาของป้ายและตัวเลือก |
+| `texts` | `Partial<ThaiAddressCascadeSelectTexts>` | — | แทนที่ข้อความ `*Label`/`*Placeholder` ของแต่ละระดับ รวมถึง `loadingText`, `errorText`, `retryLabel` |
+| `indexLoad` | `'mount' \| 'visible'` | `'mount'` | โหลดข้อมูลที่อยู่ตอน mount หรือรอจนช่องเลื่อนเข้ามาในจอ |
+| `disabled` | `boolean` | `false` | ปิดใช้งานทุก select |
+| `required` | `boolean` | — | กำหนดให้ทั้งสาม select ต้องมีค่า |
+| `aria-invalid` | `React.AriaAttributes['aria-invalid']` | — | ทำเครื่องหมายว่าไม่ผ่านการตรวจสอบทั้งสาม trigger |
+| `onBlur` | `React.FocusEventHandler<HTMLButtonElement>` | — | ทำงานเมื่อ trigger ของจังหวัดสูญเสียโฟกัส |
+| `onError` | `(error: Error) => void` | — | ทำงานเมื่อโหลดดัชนีที่อยู่ไม่สำเร็จ |
+| `className` | `string` | — | grid wrapper หลัก |
+| `labelClassName` | `string` | — | ป้ายกำกับของทุกช่อง |
+| `triggerClassName` | `string` | — | trigger ของ select และช่องรหัสไปรษณีย์ |
+| `popupClassName` | `string` | — | กล่องตัวเลือก |
+| `itemClassName` | `string` | — | แต่ละตัวเลือก |
+| `ref` | `React.Ref<HTMLButtonElement>` | — | ส่งต่อไปยัง trigger ของจังหวัด ซึ่งเป็นตัวควบคุมหลักของ cascade |
+
+ทั้ง `ref` และ `onBlur` ผูกกับ trigger ของจังหวัด ไม่ใช่ trigger ของอำเภอหรือตำบล

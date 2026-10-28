@@ -20,7 +20,7 @@
     "react-dom": "^19.3.0",
     "react-hook-form": "^7.90.0",
     "tailwind-merge": "^3.7.0",
-    "thaizip": "^0.7.6"
+    "thaizip": "^0.7.8"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",

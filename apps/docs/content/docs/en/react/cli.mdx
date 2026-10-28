@@ -1,0 +1,92 @@
+---
+title: CLI
+description: Commands, flags, thaizip.config.json, and fixes for common problems
+---
+
+Run the CLI from the root of the project you want to scaffold.
+
+```text
+react-thaizip init [--yes]
+react-thaizip add [component...] [--yes] [--overwrite]
+react-thaizip --help | --version
+```
+
+## `init`
+
+Detects the project, then prints a summary before asking anything:
+
+```text
+Detected project settings:
+  Components directory: app/components
+  Lib directory: lib
+  Hooks directory: hooks
+  Package manager: npm
+  Language: TypeScript
+  Tailwind: v4 (app/globals.css)
+  Component style: vanilla Tailwind (no components.json found)
+```
+
+You can change the component directory at the prompt. `init` then adds design tokens to the global stylesheet, offers to install `thaizip`, and writes `thaizip.config.json`. Any steps you must do by hand are printed together at the end under `=== Manual steps required ===`.
+
+## `add`
+
+```npm
+npx react-thaizip add autocomplete cascade-select
+```
+
+With no names, `add` opens a multiselect. Names are case-insensitive:
+
+| Component | Accepted names |
+| --- | --- |
+| `ThaiAddressAutocomplete` | `autocomplete`, `thai-address-autocomplete` |
+| `ThaiAddressCascadeSelect` | `cascade`, `cascade-select`, `thai-address-cascade-select` |
+| `ThaiAddressForm` | `address-form`, `thai-address-form` |
+| `ThaiAddressDisplay` | `address-display`, `thai-address-display` |
+| `ThaiAddressFormField` | `address-form-field`, `thai-address-form-field` |
+
+The PascalCase component name works too. Shared files (`lib/utils.ts` and the hooks) are added automatically. `add` requires `thaizip` 0.7.5 or later, installs missing dependencies, and, in a shadcn/ui project, runs the shadcn CLI for any missing primitives.
+
+## Flags
+
+| Flag | Effect |
+| --- | --- |
+| `--yes`, `-y` | Skip prompts and take each prompt's default. The default for overwriting is **no**. |
+| `--overwrite` | Replace existing files without asking, including the protected `lib`/hook files. `add` only. |
+| `--help`, `-h` | Print help; after `init` or `add` for that command. Wins over `--version`. |
+| `--version`, `-v` | Print the CLI version. |
+
+## `thaizip.config.json`
+
+```json
+{
+  "typescript": true,
+  "componentDir": "app/components",
+  "libDir": "lib",
+  "hooksDir": "hooks",
+  "packageManager": "npm",
+  "tailwind": { "version": 4, "css": "app/globals.css" },
+  "style": "vanilla",
+  "shadcnBase": "",
+  "shadcnUiAlias": "",
+  "shadcnUiDir": "",
+  "registryVersion": "0.3.7"
+}
+```
+
+Directories are relative to the project root. `typescript: false` makes `add` write `.jsx`/`.js`. `style` is `vanilla` or `shadcn`, with `shadcnBase` set to `base`, `radix`, or `aria` for shadcn. To switch style, edit the file and rerun `add --overwrite`. Older config versions are migrated automatically.
+
+## Troubleshooting
+
+**`init` cannot detect Tailwind.** Install Tailwind for your framework first, then rerun `init`.
+
+**`No global CSS file was found`.** Copy the printed token block into the stylesheet your app loads, and set its path in `tailwind.css`.
+
+**Token classes like `bg-background` have no styles (Tailwind v3).** Add the `theme.extend` snippet `init` printed to `tailwind.config`, then restart the dev server. See [Customization](/en/docs/react/customization#tailwind-v3).
+
+**`thaizip` is older than 0.7.5.** Run `npm i thaizip@latest`, then rerun `add`.
+
+**`Failed to install`.** Install the printed package list with your package manager, then rerun the command.
+
+**A file was skipped.** Existing components are kept unless you confirm or pass `--overwrite`. `lib`/hook files are always kept, even with `--yes`; refresh one with `npx react-thaizip add utils --overwrite`. If `add` warns that a file predates the current registry, run the command it prints.
+
+**Import paths look wrong.** Check the three directories in `thaizip.config.json`, `cd` to the project root, and rerun `add <component> --overwrite`.

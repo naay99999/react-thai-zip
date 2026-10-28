@@ -101,7 +101,7 @@ export const INSTALL_COPY = {
     copyFiles: 'คัดลอกไฟล์ต่อไปนี้ลงในโปรเจกต์',
     updateImports:
       'แก้ import `@/lib/...` และ `@/hooks/...` ให้ตรงกับตำแหน่งไฟล์ในโปรเจกต์ (CLI แก้ให้อัตโนมัติ)',
-    tokens: 'แบบ vanilla ต้องมี design tokens ใน global stylesheet ด้วย ดู [การปรับแต่ง](/docs/guides/customization#tokens-ที่-init-เพิ่ม)',
+    tokens: 'แบบ vanilla ต้องมี design tokens ใน global stylesheet ด้วย ดู [การปรับแต่ง](/docs/react/customization#design-tokens)',
     source: 'ซอร์ส',
   },
   en: {
@@ -117,7 +117,7 @@ export const INSTALL_COPY = {
     copyFiles: 'Copy these files into your project',
     updateImports:
       'Update the `@/lib/...` and `@/hooks/...` imports to match where the files live in your project (the CLI does this for you).',
-    tokens: 'The vanilla style also needs the design tokens in your global stylesheet — see [Customization](/en/docs/guides/customization#tokens-inserted-by-init).',
+    tokens: 'The vanilla style also needs the design tokens in your global stylesheet — see [Customization](/en/docs/react/customization#design-tokens).',
     source: 'source',
   },
 } as const

@@ -1,0 +1,52 @@
+---
+title: Customization
+description: Theme the scaffolded components with design tokens, or edit their source
+---
+
+Text and class props are covered on each component page (`locale`, `texts`, and the `*ClassName` slots). This page covers the theme tokens and when to edit the source.
+
+## Design tokens
+
+`init` adds a token block to your global stylesheet. The components read these CSS custom properties: `--background`, `--foreground`, `--popover`, `--primary`, `--muted`, `--accent`, `--destructive`, `--border`, `--input`, `--ring`, and `--radius`.
+
+```css
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --border: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --radius: 0.625rem;
+  /* … */
+}
+```
+
+`.dark` overrides the colors in the same block. Change the values to retheme every component. A shadcn/ui project already has these tokens.
+
+## Tailwind v4
+
+The block includes `@theme inline`, which maps the properties to classes such as `bg-background`, `border-input`, and `ring-ring`. Nothing else to do.
+
+## Tailwind v3
+
+Tailwind v3 has no `@theme inline`, so `init` prints this snippet for `theme.extend` in `tailwind.config.{js,ts}`. The token classes have no styles until you add it:
+
+```ts
+colors: {
+  background: 'hsl(var(--background))',
+  foreground: 'hsl(var(--foreground))',
+  popover: { DEFAULT: 'hsl(var(--popover))', foreground: 'hsl(var(--popover-foreground))' },
+  primary: { DEFAULT: 'hsl(var(--primary))', foreground: 'hsl(var(--primary-foreground))' },
+  muted: { DEFAULT: 'hsl(var(--muted))', foreground: 'hsl(var(--muted-foreground))' },
+  accent: { DEFAULT: 'hsl(var(--accent))', foreground: 'hsl(var(--accent-foreground))' },
+  destructive: { DEFAULT: 'hsl(var(--destructive))', foreground: 'hsl(var(--destructive-foreground))' },
+  border: 'hsl(var(--border))',
+  input: 'hsl(var(--input))',
+  ring: 'hsl(var(--ring))',
+},
+borderRadius: { lg: 'var(--radius)', md: 'calc(var(--radius) - 2px)', sm: 'calc(var(--radius) - 4px)' },
+```
+
+## Edit the source
+
+For layout, markup, or behavior changes, edit the component file `add` generated. Keep its imports of `utils` and the hooks. Rerunning `add` won't overwrite your edits unless you pass `--overwrite`.

@@ -1,7 +1,13 @@
+import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { RootProvider } from '@fumadocs/base-ui/provider/next';
 import { DocsStyleProvider } from '~/components/docs-style';
 import './global.css';
+
+export const metadata: Metadata = {
+  title: { template: '%s | thaizip', default: 'thaizip' },
+  metadataBase: new URL('https://thaizip.vercel.app'),
+};
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (

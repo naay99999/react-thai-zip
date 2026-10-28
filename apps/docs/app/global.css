@@ -18,6 +18,6 @@
   --react-color: #a9ceff;
 }
 
-.react {
+:root:has(.section-react) {
   --color-fd-primary: var(--react-color);
 }

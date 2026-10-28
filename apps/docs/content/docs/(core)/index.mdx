@@ -1,0 +1,44 @@
+---
+title: บทนำ
+description: ค้นหาที่อยู่ไทยแบบ fuzzy ด้วยตำบล อำเภอ จังหวัด หรือรหัสไปรษณีย์ ทั้งภาษาไทยและอังกฤษ ไม่มี runtime dependency
+---
+
+`thaizip` เป็นไลบรารีค้นหาที่อยู่ไทยแบบ headless มีชุดข้อมูลที่อยู่ทั้งประเทศมาในตัว ค้นหาได้ทั้งบนเบราว์เซอร์และเซิร์ฟเวอร์ และใช้กับเฟรมเวิร์กใดก็ได้
+
+| แพ็กเกจ | ใช้เมื่อ |
+| --- | --- |
+| `thaizip` | ต้องการ API ค้นหา หรือสร้าง UI เอง (หน้าในส่วนนี้) |
+| [`react-thaizip`](/docs/react) | ต้องการคอมโพเนนต์ React พร้อมใช้ (autocomplete, cascade select, ฟอร์มที่อยู่) ที่คัดลอกลงโปรเจกต์ |
+
+## ติดตั้ง
+
+```npm
+npm install thaizip
+```
+
+ต้องใช้ Node.js 18 ขึ้นไป React เป็น peer dependency แบบ optional ใช้เฉพาะเมื่อ import `thaizip/react`
+
+| Import | เนื้อหา |
+| --- | --- |
+| `thaizip` | ฟังก์ชันและ type หลัก (4.4 KB gzip) |
+| `thaizip/react` | hook [`useThaiAddressAutocomplete`](/docs/react-hook) |
+| `thaizip/data` | ตัวโหลดชุดข้อมูลที่มากับแพ็กเกจ (2.3 KB gzip และก้อนข้อมูล 114 KB gzip ที่ดึงตอนโหลดครั้งแรก) |
+
+## เริ่มใช้งาน
+
+```ts
+import { loadDefaultIndex } from 'thaizip/data'
+import { searchThaiAddress, resolveThaiAddress } from 'thaizip'
+
+const index = await loadDefaultIndex()
+
+const [record] = searchThaiAddress(index, 'ลาดพร้าว') // หรือ 'bang rak' หรือ '10500'
+const address = resolveThaiAddress(record)
+// { subdistrict: 'ลาดพร้าว', district: 'เขตลาดพร้าว', province: 'กรุงเทพมหานคร', postalCode: '10230', … }
+```
+
+`loadDefaultIndex()` สร้าง index ครั้งเดียว (ราว 40 ms) แล้ว cache ไว้ ควรเรียกตอนโหลดหน้าหรือ route ไม่ใช่ตอนผู้ใช้กดคีย์แรก
+
+## ใช้กับ AI
+
+ทุกหน้ามีเวอร์ชัน Markdown: เติม `.md` ท้าย URL หรือกดปุ่ม Copy Markdown ด้านบน [`/llms.txt`](/llms.txt) เป็นสารบัญทุกหน้า และ [`/llms-full.txt`](/llms-full.txt) รวมทุกหน้าไว้ในไฟล์เดียว

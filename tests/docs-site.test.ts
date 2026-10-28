@@ -4,20 +4,23 @@ import path from 'node:path'
 const root = process.cwd()
 const docsDir = 'apps/docs'
 const requiredDocSlugs = [
-  'index.mdx',
-  'getting-started.mdx',
-  'components/index.mdx',
-  'components/autocomplete.mdx',
-  'components/cascade-select.mdx',
-  'components/address-form.mdx',
-  'components/address-display.mdx',
-  'components/address-form-field.mdx',
-  'guides/forms.mdx',
-  'guides/customization.mdx',
-  'guides/using-with-ai.md',
-  'reference/cli.mdx',
-  'reference/config.mdx',
-  'troubleshooting.mdx',
+  'meta.json',
+  '(core)/meta.json',
+  '(core)/index.mdx',
+  '(core)/search.mdx',
+  '(core)/cascade.mdx',
+  '(core)/format.mdx',
+  '(core)/react-hook.mdx',
+  '(core)/data.mdx',
+  'react/meta.json',
+  'react/index.mdx',
+  'react/autocomplete.mdx',
+  'react/cascade-select.mdx',
+  'react/address-form.mdx',
+  'react/address-display.mdx',
+  'react/address-form-field.mdx',
+  'react/customization.mdx',
+  'react/cli.mdx',
 ]
 
 async function read(relativePath: string): Promise<string> {
@@ -161,7 +164,7 @@ describe('documentation site structure', () => {
   it('gives every component page a live preview and CLI + manual install section in both languages', async () => {
     for (const component of ['autocomplete', 'cascade-select', 'address-form', 'address-display', 'address-form-field']) {
       for (const prefix of ['', 'en/']) {
-        const page = await read(`${docsDir}/content/docs/${prefix}components/${component}.mdx`)
+        const page = await read(`${docsDir}/content/docs/${prefix}react/${component}.mdx`)
 
         expect(page).toContain('<ComponentPreview name=')
         expect(page).toContain(`<ComponentInstall name="${component}"`)
@@ -194,14 +197,23 @@ describe('documentation site structure', () => {
     await expect(read(`${docsDir}/app/llms-full.txt/route.ts`)).resolves.toContain('renderFullDocs')
   })
 
-  it('defines bilingual sidebars and the external Core API link', async () => {
-    const thai = await read(`${docsDir}/content/docs/meta.json`)
-    const english = await read(`${docsDir}/content/docs/en/meta.json`)
-    const layout = await read(`${docsDir}/lib/layout.shared.tsx`)
+  it('splits the sidebar into thaizip and react-thaizip tabs in both languages', async () => {
+    for (const prefix of ['', 'en/']) {
+      const core = JSON.parse(await read(`${docsDir}/content/docs/${prefix}(core)/meta.json`)) as { root?: boolean }
+      const react = JSON.parse(await read(`${docsDir}/content/docs/${prefix}react/meta.json`)) as { root?: boolean }
 
-    expect(thai).toContain('---อ้างอิง---')
-    expect(english).toContain('---Reference---')
-    expect(layout).toContain("'https://naay99999.github.io/thai-zip/'")
+      expect(core.root).toBe(true)
+      expect(react.root).toBe(true)
+    }
+    expect(await read(`${docsDir}/content/docs/react/meta.json`)).toContain('---อ้างอิง---')
+    expect(await read(`${docsDir}/content/docs/en/react/meta.json`)).toContain('---Reference---')
+  })
+
+  it('redirects pages from before the docs were merged', async () => {
+    const config = await read(`${docsDir}/next.config.mjs`)
+
+    expect(config).toContain("['/docs/components/:slug', '/docs/react/:slug']")
+    expect(config).toContain("['/docs/getting-started', '/docs/react']")
   })
 
   it('keeps internal links on the Fumadocs route structure', async () => {
@@ -216,9 +228,9 @@ describe('documentation site structure', () => {
     expect(stale).toEqual([])
   })
 
-  it('documents the cascade select partial-state boundary in both Forms guides', async () => {
-    const thai = await read(`${docsDir}/content/docs/guides/forms.mdx`)
-    const english = await read(`${docsDir}/content/docs/en/guides/forms.mdx`)
+  it('documents the cascade select partial-state boundary on both cascade select pages', async () => {
+    const thai = await read(`${docsDir}/content/docs/react/cascade-select.mdx`)
+    const english = await read(`${docsDir}/content/docs/en/react/cascade-select.mdx`)
 
     expect(thai).toContain('จะไม่ส่ง resolved value จนกว่าจะเลือกครบทั้งสามระดับ')
     expect(thai).toContain('key={resetVersion}')

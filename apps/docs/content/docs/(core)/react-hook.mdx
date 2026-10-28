@@ -1,0 +1,60 @@
+---
+title: React hook
+description: useThaiAddressAutocomplete จาก thaizip/react จัดการ state การค้นหาแบบ debounce สำหรับ UI autocomplete ของคุณเอง
+---
+
+`useThaiAddressAutocomplete` ครอบ `searchThaiAddress` ด้วย debounce และจัดการ state ของ query กับ suggestions ให้ แนบ `"use client"` มาแล้ว จึงใช้ใน Next.js App Router ได้ทันที ถ้าต้องการคอมโพเนนต์สำเร็จรูป ดู [autocomplete](/docs/react/autocomplete)
+
+```tsx
+import { useState } from 'react'
+import { useThaiAddressAutocomplete } from 'thaizip/react'
+import type { ResolvedThaiAddress, TrigramIndex } from 'thaizip'
+
+function AddressAutocomplete({ index }: { index: TrigramIndex }) {
+  const [selected, setSelected] = useState<ResolvedThaiAddress | null>(null)
+  const { query, setQuery, setQuerySilent, suggestions, isOpen, selectSuggestion } =
+    useThaiAddressAutocomplete({ index, onSelect: setSelected })
+
+  return (
+    <div>
+      <input value={query} onChange={(e) => setQuery(e.target.value)} />
+      {isOpen && (
+        <ul>
+          {suggestions.map((s) => (
+            <li key={s.id} onClick={() => selectSuggestion(s) && setQuerySilent(s.label)}>
+              {s.label}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+```
+
+`index` ต้องไม่เป็น null และเรียก hook แบบมีเงื่อนไขไม่ได้ ถ้าโหลด index แบบ async ให้ render คอมโพเนนต์นี้หลังจาก `loadDefaultIndex()` เสร็จแล้วเท่านั้น
+
+## ตัวเลือก
+
+| ตัวเลือก | Type | ค่าเริ่มต้น | รายละเอียด |
+| --- | --- | --- | --- |
+| `index` | `TrigramIndex` | ต้องระบุ | index ที่ใช้ค้นหา |
+| `debounce` | `number` | `200` | มิลลิวินาทีที่รอหลังหยุดพิมพ์ |
+| `limit` | `number` | `10` | ส่งต่อให้ `searchThaiAddress` |
+| `threshold` | `number` | `0.4` | ส่งต่อให้ `searchThaiAddress` |
+| `zipLimit` | `number` | — | ส่งต่อให้ `searchThaiAddress` |
+| `locale` | `'th' \| 'en'` | `'th'` | ภาษาของ `label` ในแต่ละ suggestion |
+| `initialQuery` | `string` | `''` | ข้อความเริ่มต้นในช่อง ไม่ทำให้เกิดการค้นหา |
+| `onSelect` | `(address: ResolvedThaiAddress) => void` | — | เรียกเมื่อ `selectSuggestion` ได้ที่อยู่ |
+
+## ค่าที่คืน
+
+| ค่า | รายละเอียด |
+| --- | --- |
+| `query` | ข้อความปัจจุบันในช่อง |
+| `setQuery(value)` | เปลี่ยนข้อความแล้วค้นหาหลัง debounce |
+| `setQuerySilent(value)` | เปลี่ยนข้อความโดยไม่ค้นหาและไม่เปิด dropdown เช่น ใช้แสดง label ที่เลือก |
+| `suggestions` | `ThaiAddressSuggestion[]` จากการค้นหาล่าสุด |
+| `isOpen` | `true` เมื่อมี query และมี suggestion อย่างน้อยหนึ่งรายการ |
+| `selectSuggestion(item)` | แปลง suggestion เป็น `ResolvedThaiAddress` เรียก `onSelect` แล้วคืนค่านั้น (หรือ `null` ถ้า item เก่าแล้ว) ไม่เปลี่ยน `query` |
+| `clear()` | ล้าง `query` และ `suggestions` |
