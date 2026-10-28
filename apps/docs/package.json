@@ -11,10 +11,10 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
+    "@fumadocs/base-ui": "^16.17.8",
     "clsx": "^2.1.1",
-    "fumadocs-core": "^16.17.1",
+    "fumadocs-core": "^16.17.8",
     "fumadocs-mdx": "^15.4.7",
-    "fumadocs-ui": "^16.17.1",
     "next": "^16.4.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

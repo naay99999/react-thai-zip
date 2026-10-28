@@ -3,8 +3,8 @@ import {
   CodeBlockTabs,
   CodeBlockTabsList,
   CodeBlockTabsTrigger,
-} from 'fumadocs-ui/components/codeblock'
-import { ServerCodeBlock } from 'fumadocs-ui/components/codeblock.rsc'
+} from '@fumadocs/base-ui/components/codeblock'
+import { ServerCodeBlock } from '@fumadocs/base-ui/components/codeblock.rsc'
 import { toPackageManager, PACKAGE_MANAGERS } from '~/lib/package-manager'
 
 /**

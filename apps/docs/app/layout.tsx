@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { RootProvider } from 'fumadocs-ui/provider/next';
+import { RootProvider } from '@fumadocs/base-ui/provider/next';
 import { DocsStyleProvider } from '~/components/docs-style';
 import './global.css';
 

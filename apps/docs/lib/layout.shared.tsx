@@ -1,5 +1,5 @@
-import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
-import { uiTranslations } from 'fumadocs-ui/i18n';
+import type { BaseLayoutProps } from '@fumadocs/base-ui/layouts/shared';
+import { uiTranslations } from '@fumadocs/base-ui/i18n';
 import { i18n } from './i18n';
 
 export const translations = i18n

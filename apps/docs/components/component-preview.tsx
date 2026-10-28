@@ -1,4 +1,4 @@
-import { ServerCodeBlock } from 'fumadocs-ui/components/codeblock.rsc'
+import { ServerCodeBlock } from '@fumadocs/base-ui/components/codeblock.rsc'
 import { examples } from '~/examples/registry'
 import { readExampleSource } from '~/lib/examples'
 import { cn } from '~/lib/cn'

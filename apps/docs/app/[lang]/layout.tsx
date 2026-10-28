@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { I18nProvider } from 'fumadocs-ui/contexts/i18n';
-import { i18nProvider } from 'fumadocs-ui/i18n';
+import { I18nProvider } from '@fumadocs/base-ui/contexts/i18n';
+import { i18nProvider } from '@fumadocs/base-ui/i18n';
 import { translations } from '~/lib/layout.shared';
 
 export default async function LocaleLayout({

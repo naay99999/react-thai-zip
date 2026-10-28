@@ -1,6 +1,6 @@
-import { ServerCodeBlock } from 'fumadocs-ui/components/codeblock.rsc'
-import { Step, Steps } from 'fumadocs-ui/components/steps'
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs'
+import { ServerCodeBlock } from '@fumadocs/base-ui/components/codeblock.rsc'
+import { Step, Steps } from '@fumadocs/base-ui/components/steps'
+import { Tab, Tabs } from '@fumadocs/base-ui/components/tabs'
 import { Fragment } from 'react'
 import {
   getInstallVariants,
