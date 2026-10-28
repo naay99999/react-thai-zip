@@ -7,7 +7,7 @@ import {
   DocsTitle,
   MarkdownCopyButton,
   ViewOptionsPopover,
-} from 'fumadocs-ui/layouts/docs/page';
+} from '@fumadocs/base-ui/layouts/spacious/page';
 import Link from 'next/link';
 import { findNeighbour } from 'fumadocs-core/page-tree';
 import { source } from '~/lib/source';

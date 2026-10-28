@@ -1,6 +1,23 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
-@import 'fumadocs-ui/css/neutral.css';
-@import 'fumadocs-ui/css/preset.css';
+@import '@fumadocs/base-ui/css/neutral.css';
+@import '@fumadocs/base-ui/css/generated/spacious.css';
+@import '@fumadocs/base-ui/css/preset.css';
 @import '../styles/component-demo.css';
 @import '../styles/preview.css';
+
+/* Palette from fumadocs.dev: amber for the core library, blue for UI components. */
+:root {
+  --core-color: hsl(41, 100%, 40%);
+  --react-color: hsl(217, 100%, 58%);
+  --color-fd-primary: var(--core-color);
+}
+
+.dark {
+  --core-color: #fff383;
+  --react-color: #a9ceff;
+}
+
+.react {
+  --color-fd-primary: var(--react-color);
+}

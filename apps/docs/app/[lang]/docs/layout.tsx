@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { DocsLayout } from 'fumadocs-ui/layouts/docs';
+import { DocsLayout } from '@fumadocs/base-ui/layouts/spacious';
 import { source } from '~/lib/source';
 import { baseOptions } from '~/lib/layout.shared';
 

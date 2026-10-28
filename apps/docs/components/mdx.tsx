@@ -1,4 +1,4 @@
-import defaultMdxComponents from 'fumadocs-ui/mdx';
+import defaultMdxComponents from '@fumadocs/base-ui/mdx';
 import type { MDXComponents } from 'mdx/types';
 import { ComponentInstall } from './component-install';
 import { ComponentPreview } from './component-preview';

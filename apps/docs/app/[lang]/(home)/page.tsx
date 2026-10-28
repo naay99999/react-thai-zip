@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { HomeLayout } from 'fumadocs-ui/layouts/home';
+import { HomeLayout } from '@fumadocs/base-ui/layouts/home';
 import { baseOptions } from '~/lib/layout.shared';
 import { ComponentPreview } from '~/components/component-preview';
 import { i18n } from '~/lib/i18n';
