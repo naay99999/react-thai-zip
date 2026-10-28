@@ -2,8 +2,7 @@ import type { Node, Root } from 'fumadocs-core/page-tree';
 import { renderInstallMarkdown, type DocsLocale } from './component-install';
 import { readExampleSource } from './examples';
 
-export const SITE_URL = 'https://react-thai-zip.vercel.app';
-const THAIZIP_LLMS_URL = 'https://naay99999.github.io/thai-zip/llms.txt';
+export const SITE_URL = 'https://thaizip.vercel.app';
 
 export type DocsMarkdownPage = {
   url: string;
@@ -71,7 +70,7 @@ async function expandPlaceholders(markdown: string, locale: DocsLocale): Promise
   return output;
 }
 
-/** Pages of one locale in sidebar order, split at the sidebar's separators. */
+/** Pages of one locale in sidebar order, split at the sidebar's tabs (root folders) and separators. */
 function getSections(tree: Root, pages: DocsMarkdownPage[], overview: string): Section[] {
   const byUrl = new Map(pages.map((page) => [page.url, page]));
   const sections: Section[] = [{ label: overview, pages: [] }];
@@ -80,6 +79,7 @@ function getSections(tree: Root, pages: DocsMarkdownPage[], overview: string): S
     for (const node of nodes) {
       if (node.type === 'separator') sections.push({ label: String(node.name ?? ''), pages: [] });
       else if (node.type === 'folder') {
+        if (node.root) sections.push({ label: String(node.name ?? ''), pages: [] });
         if (node.index) visit([node.index]);
         visit(node.children);
       } else {
@@ -102,13 +102,11 @@ const LOCALE_COPY = {
 
 export function renderDocsIndex(pages: DocsMarkdownPage[], trees: LocaleTrees): string {
   const lines = [
-    '# react-thaizip documentation',
+    '# thaizip documentation',
     '',
-    '> Scaffold Thai address components (autocomplete, cascade select, full address form, read-only display, react-hook-form field) into React or Next.js projects with the react-thaizip CLI, shadcn/ui-style: the component source is copied into your project. Built on the thaizip search library.',
+    '> thaizip is a headless Thai address search library (fuzzy search by sub-district, district, province, or postal code in Thai or English, cascade enumeration, a React hook). react-thaizip is its CLI that scaffolds ready-made React components (autocomplete, cascade select, full address form, read-only display, react-hook-form field) into a project, shadcn/ui-style: the component source is copied into your project.',
     '',
     `- [Full documentation](${absolute('/llms-full.txt')}): every page below in one file`,
-    `- [AI usage guide](${absolute('/en/docs/guides/using-with-ai.md')}): how an AI agent should scaffold and wire the components`,
-    `- [thaizip documentation](${THAIZIP_LLMS_URL}): the underlying headless search API (searchThaiAddress, cascade enumeration, React hook)`,
   ];
 
   for (const locale of ['th', 'en'] as const) {

@@ -36,6 +36,23 @@ const config = {
   outputFileTracingIncludes: {
     '/**': ['./examples/**/*.tsx', '../../templates/**/*'],
   },
+  // Pages from before the thaizip and react-thaizip docs were merged into one site.
+  async redirects() {
+    const moved = [
+      ['/docs/getting-started', '/docs/react'],
+      ['/docs/components', '/docs/react'],
+      ['/docs/components/:slug', '/docs/react/:slug'],
+      ['/docs/guides/forms', '/docs/react/cascade-select'],
+      ['/docs/guides/customization', '/docs/react/customization'],
+      ['/docs/guides/using-with-ai', '/docs'],
+      ['/docs/reference/:slug', '/docs/react/cli'],
+      ['/docs/troubleshooting', '/docs/react/cli'],
+    ];
+    return moved.flatMap(([source, destination]) => [
+      { source, destination, permanent: true },
+      { source: `/en${source}`, destination: `/en${destination}`, permanent: true },
+    ]);
+  },
   async rewrites() {
     return [
       { source: '/en/docs.md', destination: '/api/docs-markdown/en' },

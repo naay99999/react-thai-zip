@@ -1,0 +1,17 @@
+{
+  "title": "react-thaizip",
+  "description": "คอมโพเนนต์ React พร้อมใช้",
+  "root": true,
+  "pages": [
+    "index",
+    "---คอมโพเนนต์---",
+    "autocomplete",
+    "cascade-select",
+    "address-form",
+    "address-display",
+    "address-form-field",
+    "---อ้างอิง---",
+    "customization",
+    "cli"
+  ]
+}

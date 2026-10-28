@@ -6,20 +6,20 @@ import { i18n } from '~/lib/i18n';
 
 const copy = {
   th: {
-    tagline: 'Scaffold คอมโพเนนต์ autocomplete และ cascade ที่คุณเป็นเจ้าของโค้ดเอง',
-    description: 'เพิ่มคอมโพเนนต์ที่อยู่ไทยพร้อมใช้ให้โปรเจกต์ React และ Next.js',
-    cta: 'เริ่มต้นใช้งาน',
-    tryTitle: 'ลองคอมโพเนนต์จริง',
+    tagline: 'ค้นหาที่อยู่ไทยแบบ fuzzy ด้วยตำบล อำเภอ จังหวัด หรือรหัสไปรษณีย์ ทั้งภาษาไทยและอังกฤษ',
+    core: 'เริ่มใช้ thaizip',
+    react: 'คอมโพเนนต์ React',
+    tryTitle: 'ลองค้นหา',
     tryBody:
-      'ตัวอย่างนี้คือ ThaiAddressAutocomplete จาก scaffold มาตรฐานของ react-thaizip ไม่ใช่สำเนาที่เขียนขึ้นสำหรับเว็บเอกสาร กด "ดูโค้ด" เพื่อดูโค้ด เมื่อเพิ่มลงโปรเจกต์แล้ว คุณเป็นเจ้าของซอร์สโค้ดและปรับแต่งได้เต็มที่',
+      'ตัวอย่างนี้คือ ThaiAddressAutocomplete ที่ react-thaizip คัดลอกลงโปรเจกต์ของคุณ ทำงานบน thaizip กด "ดูโค้ด" เพื่อดูโค้ด',
   },
   en: {
-    tagline: 'Scaffold autocomplete and cascade components whose code you own',
-    description: 'Ready-to-use Thai address components for React and Next.js projects',
-    cta: 'Get Started',
-    tryTitle: 'Try the real component',
+    tagline: 'Fuzzy Thai address search by sub-district, district, province, or postal code, in Thai or English',
+    core: 'Get started with thaizip',
+    react: 'React components',
+    tryTitle: 'Try it',
     tryBody:
-      'This example is the ThaiAddressAutocomplete from the standard react-thaizip scaffold, not a copy written for this site. Select "View Code" to see the code. Once added to your project, you own the source and can customize it freely.',
+      'This is the ThaiAddressAutocomplete that react-thaizip copies into your project, built on thaizip. Select "View Code" to see the code.',
   },
 } as const;
 
@@ -30,19 +30,27 @@ export default async function HomePage({
 }) {
   const { lang } = await params;
   const c = copy[lang === 'en' ? 'en' : 'th'];
-  const docsHref = lang === 'en' ? '/en/docs/getting-started' : '/docs/getting-started';
+  const prefix = lang === 'en' ? '/en' : '';
 
   return (
     <HomeLayout {...baseOptions()}>
       <section className="container mx-auto flex flex-col items-center gap-4 py-20 text-center">
-        <h1 className="text-4xl font-bold tracking-tight">react-thaizip</h1>
+        <h1 className="text-4xl font-bold tracking-tight">thaizip</h1>
         <p className="max-w-xl text-lg text-fd-muted-foreground">{c.tagline}</p>
-        <Link
-          href={docsHref}
-          className="rounded-lg bg-fd-primary px-5 py-2.5 font-medium text-fd-primary-foreground"
-        >
-          {c.cta}
-        </Link>
+        <div className="flex flex-wrap justify-center gap-3">
+          <Link
+            href={`${prefix}/docs`}
+            className="rounded-lg bg-fd-primary px-5 py-2.5 font-medium text-fd-primary-foreground"
+          >
+            {c.core}
+          </Link>
+          <Link
+            href={`${prefix}/docs/react`}
+            className="rounded-lg border px-5 py-2.5 font-medium hover:bg-fd-accent"
+          >
+            {c.react}
+          </Link>
+        </div>
       </section>
       <section className="container mx-auto max-w-3xl pb-20">
         <h2 className="mb-4 text-xl font-semibold">{c.tryTitle}</h2>

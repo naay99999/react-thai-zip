@@ -58,11 +58,12 @@ export default async function Page({
   const MDX = page.data.body;
   const copy = COPY[lang === 'en' ? 'en' : 'th'];
   const neighbours = findNeighbour(source.getPageTree(lang), page.url);
+  const isReact = slug?.[0] === 'react';
   // Component pages get the style picker, like ui.shadcn.com's Base UI / Radix UI tabs.
-  const styles = slug?.[0] === 'components' && slug[1] ? getComponentStyles(slug[1]) : [];
+  const styles = isReact && slug?.[1] ? getComponentStyles(slug[1]) : [];
 
   return (
-    <DocsPage toc={page.data.toc} full={page.data.full}>
+    <DocsPage toc={page.data.toc} full={page.data.full} className={isReact ? 'section-react' : undefined}>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <div className="mb-6 flex flex-row items-center gap-2">

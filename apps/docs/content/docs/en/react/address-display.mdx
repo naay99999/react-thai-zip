@@ -1,0 +1,68 @@
+---
+title: Read-only address display
+description: Format an already-resolved Thai address as readable text, with no address-index loading
+---
+
+`ThaiAddressDisplay` is for pages that show an address you already have, such as an order summary or a user profile. It is purely presentational — no Base UI, and no address-index loading — so it ships in a single style.
+
+<ComponentPreview name="address-display-en" lang="en" />
+
+## Installation
+
+<ComponentInstall name="address-display" lang="en" />
+
+## Usage
+
+```tsx
+import { ThaiAddressDisplay } from '@/components/thai-address-display'
+```
+
+```tsx
+<ThaiAddressDisplay value={address} />
+```
+
+`value` takes an already-resolved address (`ResolvedThaiAddress` plus optional `houseNo`/`moo`/`soi`/`street`, typed as `ThaiAddressDisplayValue`), or `null` when there is no address yet, which renders `emptyText` instead.
+
+## Examples
+
+### Multi-line
+
+Use `mode="multi-line"` to render the house-number/moo/soi/street portion and the sub-district/district/province portion as separate rows.
+
+<ComponentPreview name="address-display-multi-line-en" lang="en" />
+
+### Thai output
+
+Use `locale="th"` for Thai names. "หมู่"/"ซอย" automatically become the standard transliterations "Moo"/"Soi" only under `locale="en"` — the house number and street name always render exactly as supplied.
+
+<ComponentPreview name="address-display-demo" lang="en" />
+
+### No house-level fields
+
+When `value` has none of `houseNo`/`moo`/`soi`/`street`, only the sub-district/district/province portion is rendered.
+
+<ComponentPreview name="address-display-minimal-en" lang="en" />
+
+### Empty
+
+Pass `value={null}` to render `emptyText` instead (the default is "No address" or "ไม่มีที่อยู่", based on `locale`).
+
+<ComponentPreview name="address-display-empty-en" lang="en" />
+
+### Custom styling
+
+Use `className` for the `<address>` element and `lineClassName` for each row in multi-line mode — here, a card with an emphasized first line.
+
+<ComponentPreview name="address-display-styled-en" lang="en" />
+
+## API Reference
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `ThaiAddressDisplayValue \| null` | — | **Required.** The address to render; `null` renders `emptyText` instead. |
+| `locale` | `'th' \| 'en'` | `'th'` | Drives the locality label and the default `emptyText`. |
+| `mode` | `'single-line' \| 'multi-line'` | `'single-line'` | `'single-line'` joins the street portion and the locality with `', '`; `'multi-line'` renders them as two rows. |
+| `emptyText` | `string` | `'ไม่มีที่อยู่'` / `'No address'` | Replacement text when `value` is `null`, based on `locale`. |
+| `className` | `string` | — | The root `<address>`. |
+| `lineClassName` | `string` | — | Each row in `'multi-line'` mode. |
+| `ref` | `React.Ref<HTMLElement>` | — | Forwarded to the `<address>` element. |

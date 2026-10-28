@@ -1,0 +1,53 @@
+---
+title: ข้อมูลและ index
+description: โหลดชุดข้อมูลที่มากับแพ็กเกจ หรือสร้าง index จากข้อมูลของคุณเอง
+---
+
+ทุกฟังก์ชันรับ `TrigramIndex` สร้างได้จากชุดข้อมูลที่มากับแพ็กเกจ หรือจากตารางข้อมูลของคุณเอง ให้มองเป็นค่าทึบ ไม่ต้องสร้างหรือแก้ไขเอง
+
+## ชุดข้อมูลที่มากับแพ็กเกจ
+
+`thaizip/data` มีชุดข้อมูลทั้งประเทศ: 77 จังหวัด พร้อมอำเภอ ตำบล และรหัสไปรษณีย์ ก้อนข้อมูลจะถูกดาวน์โหลดเมื่อเรียก `loadDefaultIndex()` ครั้งแรกเท่านั้น สำหรับ bundler ที่แยก chunk ตาม dynamic import (webpack, Turbopack, Vite)
+
+```ts
+import { loadDefaultIndex, getDefaultIndexIfLoaded, clearDefaultIndex } from 'thaizip/data'
+```
+
+| ฟังก์ชัน | รายละเอียด |
+| --- | --- |
+| `loadDefaultIndex()` | คืน `Promise<TrigramIndex>` ครั้งแรกจะสร้าง index (ราว 40 ms) ครั้งต่อไปและการเรียกพร้อมกันจะได้ index เดียวกันที่ cache ไว้ |
+| `getDefaultIndexIfLoaded()` | คืน index ถ้าสร้างเสร็จแล้ว ไม่เช่นนั้นคืน `null` เป็นแบบ synchronous UI จึงข้ามสถานะกำลังโหลดได้เมื่อ index พร้อมอยู่แล้ว ไม่เริ่มการโหลดเอง |
+| `clearDefaultIndex()` | ล้าง index ที่ cache ไว้ เช่น ระหว่างเทสต์ |
+
+## ข้อมูลของคุณเอง
+
+ใช้ `buildThaiAddressIndex` เมื่อมีชุดข้อมูลที่ใหม่กว่า ต้องการแค่บางจังหวัด หรือต้องการ record ของคุณเอง
+
+```ts
+import { buildThaiAddressIndex } from 'thaizip'
+
+const index = buildThaiAddressIndex(
+  { provinces, amphures, tambons },
+  { onSkip: (tambon) => console.warn('skipped', tambon.name_th) },
+)
+```
+
+ตารางใช้ฟิลด์แบบ snake_case ตามข้อมูลต้นทางของภาครัฐ:
+
+```ts
+type RawData = {
+  provinces: { id: number; name_th: string; name_en: string; geography_id: number; deleted_at: string | null }[]
+  amphures: { id: number; name_th: string; name_en: string; province_id: number; deleted_at: string | null }[]
+  tambons: { id: number; zip_code: number | string; name_th: string; name_en: string; amphure_id: number; deleted_at: string | null }[]
+  geographies?: { id: number; name: string; deleted_at: string | null }[] // ไม่ได้ใช้
+}
+```
+
+แถวที่ `deleted_at` ไม่เป็น null จะถูกข้าม ตำบลที่อำเภอหรือจังหวัดไม่มีอยู่หรือถูกลบจะถูกข้ามด้วย และส่งให้ `onSkip`
+
+| ตัวเลือก | ค่าเริ่มต้น | รายละเอียด |
+| --- | --- | --- |
+| `onSkip` | — | เรียกสำหรับแต่ละตำบลที่ถูกข้าม |
+| `validate` | `true` | ตรวจชนิดของฟิลด์ก่อนสร้าง แทบไม่เสียเวลา ควรเปิดไว้สำหรับข้อมูลที่ไม่ได้สร้างเอง |
+
+ถ้าต้องการตรวจข้อมูลแยกต่างหาก เช่น ใน build step ให้เรียก `validateRawData(data)` ซึ่งจะ throw `TypeError` ที่ระบุตาราง id ของแถว ฟิลด์ และชนิดที่เจอจริง เช่น `[thaizip] province 12: expected string for name_th, got number`

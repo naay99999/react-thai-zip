@@ -1,0 +1,84 @@
+---
+title: Search
+description: searchThaiAddress and lookupByZipCode — options, ranking, postal codes, and English input
+---
+
+## `searchThaiAddress`
+
+```ts
+function searchThaiAddress(index: TrigramIndex, query: string, options?: SearchOptions): ThaiAddressRecord[]
+```
+
+Searches by sub-district, district, or province name in Thai or English, or by postal code. Returns `[]` when nothing matches; it never throws.
+
+```ts
+searchThaiAddress(index, 'ลาดพร้าว', { limit: 5 })
+searchThaiAddress(index, 'bang rak')
+searchThaiAddress(index, '10500') // all digits: postal-code lookup
+```
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `limit` | `number` | `10` | Maximum results for a text query. |
+| `threshold` | `number` | `0.4` | Minimum match score (0–1) for a text query. |
+| `zipLimit` | `number` | see [below](#postal-codes) | Maximum results for an all-digit query. |
+| `romanizationAliases` | `boolean` | `true` | Rewrite common non-RTGS spellings before searching. |
+
+Each result is a `ThaiAddressRecord`, one per sub-district:
+
+```ts
+type ThaiAddressRecord = {
+  provinceId: number
+  provinceNameTh: string
+  provinceNameEn: string
+  amphureId: number
+  amphureNameTh: string
+  amphureNameEn: string
+  tambonId: number
+  tambonNameTh: string
+  tambonNameEn: string
+  zipCode: string
+}
+```
+
+Turn a record into a dropdown label or a saved address with the [format and resolve](/en/docs/format) functions.
+
+### How matching works
+
+The query is normalized first: Thai address prefixes (`จังหวัด`, `อำเภอ`, `ตำบล`, `แขวง`, `เขต`, and `จ.` `อ.` `ต.` `ข.`) and tone marks are removed. It is then matched by trigrams (overlapping three-character chunks), so typos and partial names still match.
+
+Results are ranked by trigram score, then by how well the query matches the sub-district's own name (exact, prefix, then substring), then alphabetically in Thai. That second key puts ตำบลลาดพร้าว above the other sub-districts inside เขตลาดพร้าว.
+
+Queries shorter than three characters return `[]`. A name and a postal code in one query (`ลาดพร้าว 10900`) is not supported; search them separately.
+
+### English input
+
+English names follow the RTGS romanization used in the dataset, so `bang rak` or `chatuchak` match directly. A curated list of 87 aliases also maps common non-RTGS spellings, for example `lardprao` → `lat phrao` and `krungthep` → `bangkok`. It is a dictionary, not a transliterator: spellings not on the list won't match. Pass `romanizationAliases: false` to turn it off.
+
+## Postal codes
+
+An all-digit query of two or more digits is a postal-code lookup. Exact matches come first, then prefix matches in ascending order.
+
+One postal code can cover many sub-districts (`45000` covers 33), so a complete five-digit code is **not** capped by default. A two-to-four-digit prefix is capped at `limit`, since `30` alone matches about 290. Pass `zipLimit` to set your own cap, or `Infinity` for every match.
+
+### `lookupByZipCode`
+
+```ts
+function lookupByZipCode(index: TrigramIndex, zip: string, options?: SearchOptions): ThaiAddressRecord[]
+```
+
+The postal-code lookup on its own. Only `zipLimit` applies, and it defaults to no cap, for prefixes too.
+
+```ts
+lookupByZipCode(index, '45000') // all 33 sub-districts
+lookupByZipCode(index, '450', { zipLimit: 10 })
+```
+
+## Helpers
+
+Both run inside `searchThaiAddress` and are exported for use on their own.
+
+| Function | Description |
+| --- | --- |
+| `normalizeThaiAddressText(input)` | Strips address prefixes and tone marks and lowercases, as the search does. |
+| `applyRomanizationAliases(normalized)` | Rewrites a known non-RTGS spelling to the dataset's spelling, e.g. `'lardprao'` → `'lat phrao'`. Thai text is returned unchanged. |
