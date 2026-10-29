@@ -6,7 +6,7 @@ import './global.css';
 
 export const metadata: Metadata = {
   title: { template: '%s | thaizip', default: 'thaizip' },
-  metadataBase: new URL('https://react-thai-zip.vercel.app'),
+  metadataBase: new URL('https://thai-zip.vercel.app'),
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
