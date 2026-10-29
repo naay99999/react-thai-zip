@@ -92,12 +92,12 @@ import { ThaiAddressAutocomplete } from '@/components/thai-address-autocomplete'
 | `disabled` | `boolean` | `false` | ปิดใช้งานช่องค้นหา |
 | `required` | `boolean` | — | กำหนดให้ช่องต้องมีค่า |
 | `aria-invalid` | `React.AriaAttributes['aria-invalid']` | — | ระบุสถานะไม่ผ่านการตรวจสอบ |
-| `onBlur` | `React.FocusEventHandler` | — | Vanilla: ทำงานเมื่อ input สูญเสียโฟกัส ส่วน shadcn/ui: ทำงานที่ปุ่ม trigger (`HTMLButtonElement`) |
+| `onBlur` | `React.FocusEventHandler<HTMLInputElement>` | — | ทำงานเมื่อ input สูญเสียโฟกัส |
 | `onError` | `(error: Error) => void` | — | ทำงานเมื่อโหลดดัชนีที่อยู่ไม่สำเร็จ |
 | `className` | `string` | — | wrapper หลัก |
 | `inputClassName` | `string` | — | ช่องพิมพ์ค้นหา |
 | `popupClassName` | `string` | — | กล่องผลลัพธ์ |
 | `itemClassName` | `string` | — | แต่ละผลลัพธ์ |
-| `ref` | `React.Ref<HTMLInputElement>` | — | ส่งต่อไปยัง input ใน style shadcn/ui นั้น input อยู่ใน popover จึงเป็น `null` ระหว่างที่ popover ปิดอยู่ |
+| `ref` | `React.Ref<HTMLInputElement>` | — | ส่งต่อไปยัง input |
 
 `limit`, `debounce` และ `threshold` ส่งต่อตรงไปยัง hook `useThaiAddressAutocomplete` ของ thaizip

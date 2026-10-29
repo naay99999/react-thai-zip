@@ -721,14 +721,14 @@ describe('addComponents — shadcn style', () => {
   it('writes the shadcn-variant file and does not install @base-ui/react', async () => {
     const cwd = await tempProjectWithConfigV2({ style: 'shadcn', shadcnUiAlias: '@/components/ui', shadcnUiDir: 'components/ui' })
     await mkdir(path.join(cwd, 'components/ui'), { recursive: true })
-    for (const name of ['popover', 'command', 'button']) {
+    for (const name of ['combobox', 'input-group', 'input', 'button']) {
       await writeFile(path.join(cwd, 'components/ui', `${name}.tsx`), '')
     }
 
     await addComponents({ cwd, targets: ['autocomplete'], yes: true })
 
     const content = await readFile(path.join(cwd, 'app/components', 'thai-address-autocomplete.tsx'), 'utf8')
-    expect(content).toContain("from '@/components/ui/popover'")
+    expect(content).toContain("from '@/components/ui/combobox'")
     expect(content).not.toContain('@base-ui/react')
     expect(mockedInstallPackage).not.toHaveBeenCalledWith(expect.arrayContaining(['@base-ui/react']), expect.anything())
   })
@@ -878,7 +878,7 @@ describe('addComponents — shadcn style, JS-target', () => {
       shadcnUiDir: 'components/ui',
     })
     await mkdir(path.join(cwd, 'components/ui'), { recursive: true })
-    for (const name of ['popover', 'command', 'button']) {
+    for (const name of ['combobox', 'input-group', 'input', 'button']) {
       await writeFile(path.join(cwd, 'components/ui', `${name}.jsx`), '')
     }
 
@@ -888,7 +888,7 @@ describe('addComponents — shadcn style, JS-target', () => {
     expect(await pathExists(destination)).toBe(true)
     expect(await pathExists(path.join(cwd, 'app/components', 'thai-address-autocomplete.tsx'))).toBe(false)
     const content = await readFile(destination, 'utf8')
-    expect(content).toContain("from '@/components/ui/popover'")
+    expect(content).toContain("from '@/components/ui/combobox'")
     expect(content).not.toMatch(/:\s*(string|boolean|number)\b/)
   })
 

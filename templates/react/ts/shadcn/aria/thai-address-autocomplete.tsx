@@ -5,8 +5,16 @@ import { useThaiAddressAutocomplete } from 'thaizip/react'
 import type { ResolvedThaiAddress, ThaiAddressSuggestion, TrigramIndex } from 'thaizip'
 import { cn } from '@/lib/utils'
 import { useThaiAddressIndex, type ThaiAddressIndexLoad } from '@/hooks/use-thai-address-index'
-import { Popover, PopoverTrigger } from '@/components/ui/popover'
-import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from '@/components/ui/combobox'
+import { InputGroupAddon, InputGroupButton } from '@/components/ui/input-group'
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 
 type AddressLocale = 'th' | 'en'
@@ -38,12 +46,7 @@ export type ThaiAddressAutocompleteProps = {
   threshold?: number
   disabled?: boolean
   required?: boolean
-  /**
-   * Unlike the vanilla template, the always-visible surface here is the
-   * trigger button (see the `ref` comment below), so this fires on the
-   * button, not on `CommandInput` — hence `HTMLButtonElement`.
-   */
-  onBlur?: React.FocusEventHandler<HTMLButtonElement>
+  onBlur?: React.FocusEventHandler<HTMLInputElement>
   onError?: (error: Error) => void
   'aria-invalid'?: React.AriaAttributes['aria-invalid']
   /** Applied to the root wrapper element. */
@@ -51,11 +54,7 @@ export type ThaiAddressAutocompleteProps = {
   inputClassName?: string
   popupClassName?: string
   itemClassName?: string
-  /**
-   * Forwarded to the search box rendered inside the popover (`CommandInput`).
-   * Unlike the vanilla template, this element only exists in the DOM while
-   * the popover is open — `ref.current` is `null` while closed.
-   */
+  /** Forwarded to the text input. */
   ref?: React.Ref<HTMLInputElement>
 }
 
@@ -129,14 +128,7 @@ export function ThaiAddressAutocomplete({
   if (!index) {
     return (
       <div ref={observe} className={cn('relative w-full', className)}>
-        <Button
-          variant="outline"
-          isDisabled
-          aria-busy="true"
-          className={cn('w-full justify-start font-normal', inputClassName)}
-        >
-          {resolvedTexts.loadingText}
-        </Button>
+        <Input disabled aria-busy="true" placeholder={resolvedTexts.loadingText} className={inputClassName} />
       </div>
     )
   }
@@ -203,175 +195,126 @@ function ThaiAddressAutocompleteReady({
     initialQuery,
   })
 
-  // thaizip's ThaiAddressSuggestion.id is a string (unlike the cascade
-  // hook's numeric option ids), so the lookup map — and the CommandList
-  // onAction handler below — key on the raw string, not `Number(key)`.
+  // thaizip's ThaiAddressSuggestion.id is a string, so the lookup map — and
+  // the onSelectionChange handler below — key on the raw string.
   const suggestionsById = React.useMemo(
     () => new Map(suggestions.map((item) => [item.id, item])),
     [suggestions],
   )
-
-  const [open, setOpen] = React.useState(false)
 
   React.useEffect(() => {
     if (!isControlled) return
     setQuerySilent(value ? addressLabel(value, locale) : '')
   }, [isControlled, value, locale, setQuerySilent])
 
+  // The key RAC's ComboBox treats as selected — only ever the suggestion just
+  // picked. RAC closes its popover when this changes; it has no controlled
+  // open state of its own, so a ComboBox whose selectedKey never moves stays
+  // open after a pick.
+  const [selectedKey, setSelectedKey] = React.useState<string | null>(null)
+
   function commitSelection(item: ThaiAddressSuggestion) {
     const result = selectSuggestion(item)
     if (!result) return
     setQuerySilent(item.label)
+    setSelectedKey(item.id)
     if (!isControlled) setInternalResolved(result)
     onValueChange?.(result)
-    setOpen(false)
   }
 
   function handleQueryChange(nextValue: string) {
+    // RAC echoes the picked item's textValue back through onInputChange once
+    // selectedKey moves; commitSelection already set that text silently, so
+    // re-running the search for it would only reopen the list.
+    if (nextValue === query) return
     setQuery(nextValue)
     if (nextValue === '' && resolvedAddress !== null) {
       if (!isControlled) setInternalResolved(null)
       onValueChange?.(null)
     }
-    if (!open) setOpen(true)
   }
 
   function handleClear() {
     clear()
+    setSelectedKey(null)
     if (!isControlled) setInternalResolved(null)
     onValueChange?.(null)
-    setOpen(false)
   }
-
-  // React Aria's Button (what the trigger below renders under the hood)
-  // filters its DOM props through an explicit allowlist before spreading
-  // them onto the real <button> — `aria-invalid` is not on that list, so
-  // passing it as a normal prop is silently dropped before it ever reaches
-  // the DOM (same gap the aria cascade select's SelectTrigger hits; see its
-  // own comment for the verified trace through filterDOMProps). Base and
-  // radix don't have this problem — their trigger is a thin wrapper around a
-  // real button that forwards arbitrary aria-* props straight through. So
-  // the only way to get a real `aria-invalid` attribute onto this engine's
-  // trigger — for the shadcn fixture's own `aria-invalid:border-destructive`
-  // Tailwind styling and for screen readers — is to set it on the DOM node
-  // directly. This must be `useLayoutEffect`, not `useEffect`: the trigger
-  // button only exists once `index` finishes loading and this component
-  // mounts for the first time, so the attribute write lands on the very
-  // commit that inserts the node into the DOM. `useEffect` defers that write
-  // to a later, unbatched tick, leaving a real (if brief) window where the
-  // trigger is in the DOM without `aria-invalid` — observable by an assistive
-  // technology, and by a test's `findByRole`, which can resolve on that
-  // in-between state and read a stale/missing attribute.
-  const isInvalid = ariaInvalid === true || ariaInvalid === 'true'
-  const internalTriggerRef = React.useRef<HTMLButtonElement>(null)
-  React.useLayoutEffect(() => {
-    const node = internalTriggerRef.current
-    if (!node) return
-    if (isInvalid) node.setAttribute('aria-invalid', 'true')
-    else node.removeAttribute('aria-invalid')
-  }, [isInvalid])
-
-  // See the comment at the CommandInput call site for why this indirection
-  // is needed to forward the public `ref` prop to the actual input element.
-  const setInputContainerRef = React.useCallback(
-    (node: HTMLDivElement | null) => {
-      const input = node?.querySelector<HTMLInputElement>('[data-slot="command-input"]') ?? null
-      if (typeof ref === 'function') ref(input)
-      else if (ref) (ref as React.RefObject<HTMLInputElement | null>).current = input
-    },
-    [ref],
-  )
 
   return (
     <div className={cn('relative w-full', className)}>
-      {/* React Aria's DialogTrigger-based PopoverTrigger takes the trigger and
-          the Popover as its two children, and the Popover *is* the content —
-          there is no PopoverContent in the aria-backed shadcn registry. Width
-          comes from RAC's own --trigger-width variable. */}
-      <PopoverTrigger isOpen={open} onOpenChange={setOpen}>
-        <Button
-          ref={internalTriggerRef}
-          variant="outline"
-          isDisabled={disabled}
-          // RAC's Button types onBlur against a generic `Element`, since the
-          // fixture doesn't pin it to a specific host element — it renders a
-          // real `<button>` at runtime, so this adapts the event back to the
-          // `HTMLButtonElement` shape our own public prop promises. Same
-          // pattern as the aria cascade select's SelectTrigger.
-          onBlur={onBlur && ((event: React.FocusEvent<Element>) => onBlur(event as React.FocusEvent<HTMLButtonElement>))}
-          className={cn(
-            'w-full justify-between pr-8 font-normal',
-            !query && 'text-muted-foreground',
-            inputClassName,
+      {/* `allowsCustomValue` keeps RAC from rewriting the input on blur to its
+          selected item's text (or '' when the list has moved on) — the
+          resolved address lives in this component, not in RAC's selection.
+          `items` is passed, so RAC applies no filter on top of thaizip's. */}
+      <Combobox
+        items={suggestions}
+        inputValue={query}
+        onInputChange={handleQueryChange}
+        selectedKey={selectedKey}
+        onSelectionChange={(key) => {
+          // `null` is RAC committing the typed text as a custom value — not a
+          // clear of the resolved address, which only the input does.
+          if (key == null) {
+            setSelectedKey(null)
+            return
+          }
+          // A stale key can arrive after `suggestions` moved on (a debounced
+          // query landing mid-press) — look it up and no-op rather than throw.
+          const item = suggestionsById.get(String(key))
+          if (item) commitSelection(item)
+        }}
+        allowsCustomValue
+        allowsEmptyCollection
+        aria-label={texts.placeholder}
+        isDisabled={disabled}
+        isRequired={required}
+        isInvalid={ariaInvalid === true || ariaInvalid === 'true'}
+        // RAC validates `isRequired` itself by default and would block a
+        // native form submit with its own message; leave that to the form.
+        validationBehavior="aria"
+      >
+        <ComboboxInput
+          ref={ref}
+          placeholder={texts.placeholder}
+          disabled={disabled}
+          onBlur={onBlur}
+          showTrigger={false}
+          className={cn('w-full', inputClassName)}
+        >
+          {query.length > 0 && !disabled && (
+            <InputGroupAddon align="inline-end">
+              {/* `slot={null}` opts out of the ButtonContext ComboBox gives
+                  every RAC Button inside it — without it this button would
+                  become the popover toggle instead of clearing. */}
+              <InputGroupButton
+                slot={null}
+                size="icon-xs"
+                excludeFromTabOrder
+                onPress={handleClear}
+                aria-label={texts.clearAriaLabel}
+              >
+                ✕
+              </InputGroupButton>
+            </InputGroupAddon>
           )}
-        >
-          <span className="truncate">{query || texts.placeholder}</span>
-        </Button>
+        </ComboboxInput>
 
-        <Popover placement="bottom start" className={cn('w-(--trigger-width) p-0', popupClassName)}>
-          {/* aria's Command always applies a filter (`filter={props.filter || contains}`),
-              and our suggestions arrive already filtered by thaizip — so an
-              explicit pass-through filter is mandatory here, not optional.
-              The query lives on the Autocomplete root as inputValue, not on
-              CommandInput as it does in the cmdk-backed engines. */}
-          <Command inputValue={query} onInputChange={handleQueryChange} filter={() => true}>
-            {/* CommandInput's own prop type is bare `InputProps` (no
-                `React.RefAttributes`) — unlike SelectTrigger in the aria
-                cascade template, whose type comes through
-                `ComponentProps<typeof ButtonPrimitive>` and does carry
-                RefAttributes, so passing `ref` straight to CommandInput
-                doesn't typecheck. Resolve the real `<input
-                data-slot="command-input">` DOM node once React has mounted
-                it instead: refs attach bottom-up during commit, so by the
-                time this wrapper div's callback ref fires, the nested input
-                already exists in the DOM. */}
-            <div ref={setInputContainerRef}>
-              <CommandInput placeholder={texts.placeholder} required={required} />
-            </div>
-            <CommandList
-              onAction={(key) => {
-                // A stale onAction can fire after `suggestions` (and this
-                // map) have already moved on — e.g. a debounced query
-                // lands between the press and this handler running. Look
-                // the id up and no-op rather than asserting it's still
-                // there, so a race never throws inside the host app.
-                const item = suggestionsById.get(String(key))
-                if (item) commitSelection(item)
-              }}
-            >
-              {suggestions.map((item) => (
-                <CommandItem
-                  key={item.id}
-                  id={item.id}
-                  textValue={locale === 'en' ? item.labelEn : item.labelTh}
-                  className={itemClassName}
-                >
-                  <span className="flex-1 truncate">{locale === 'en' ? item.labelEn : item.labelTh}</span>
-                  <span className="shrink-0 text-muted-foreground">{item.zipCode}</span>
-                </CommandItem>
-              ))}
-            </CommandList>
-            {suggestions.length === 0 && <CommandEmpty>{texts.emptyText}</CommandEmpty>}
-          </Command>
-        </Popover>
-      </PopoverTrigger>
-
-      {query.length > 0 && !disabled && (
-        // A plain button, not part of the trigger — visible whenever there's text,
-        // confirmed or not, same rule as the vanilla template's clear button. RAC
-        // has no onMouseDown-preventDefault need because pressing does not steal
-        // focus the way a native mousedown does.
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          excludeFromTabOrder
-          onPress={handleClear}
-          aria-label={texts.clearAriaLabel}
-          className="absolute right-1 top-1/2 -translate-y-1/2"
-        >
-          ✕
-        </Button>
-      )}
+        <ComboboxContent className={popupClassName}>
+          <ComboboxList<ThaiAddressSuggestion> renderEmptyState={() => <ComboboxEmpty>{texts.emptyText}</ComboboxEmpty>}>
+            {(item) => (
+              <ComboboxItem
+                id={item.id}
+                textValue={locale === 'en' ? item.labelEn : item.labelTh}
+                className={cn('justify-between gap-3', itemClassName)}
+              >
+                <span className="truncate">{locale === 'en' ? item.labelEn : item.labelTh}</span>
+                <span className="shrink-0 text-muted-foreground">{item.zipCode}</span>
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
 
       {name && (
         <>

@@ -20,7 +20,8 @@
       "@/components/ui/command": ["./templates/react/ts/shadcn/__fixtures__/base/components/ui/command.tsx"],
       "@/components/ui/dialog": ["./templates/react/ts/shadcn/__fixtures__/base/components/ui/dialog.tsx"],
       "@/components/ui/input-group": ["./templates/react/ts/shadcn/__fixtures__/base/components/ui/input-group.tsx"],
-      "@/components/ui/textarea": ["./templates/react/ts/shadcn/__fixtures__/base/components/ui/textarea.tsx"]
+      "@/components/ui/textarea": ["./templates/react/ts/shadcn/__fixtures__/base/components/ui/textarea.tsx"],
+      "@/components/ui/combobox": ["./templates/react/ts/shadcn/__fixtures__/base/components/ui/combobox.tsx"]
     }
   },
   "include": [
