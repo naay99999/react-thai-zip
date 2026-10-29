@@ -5,7 +5,7 @@
 
 A CLI that adds ready-to-use Thai address components to your React project, shadcn/ui-style — powered by [`thaizip`](https://www.npmjs.com/package/thaizip).
 
-📚 **[Documentation and live demos](https://thaizip.vercel.app/en/docs/react)** · Using a coding agent? Point it at [`llms.txt`](https://thaizip.vercel.app/llms.txt)
+📚 **[Documentation and live demos](https://react-thai-zip.vercel.app/en/docs/react)** · Using a coding agent? Point it at [`llms.txt`](https://react-thai-zip.vercel.app/llms.txt)
 
 ![react-thaizip demo — typing "ลาดพร้าว" and "ladprao" in the scaffolded ThaiAddressAutocomplete component and selecting a suggestion](.github/assets/demo.gif)
 
@@ -45,10 +45,10 @@ Works with plain Tailwind or your existing shadcn/ui setup (Base UI, Radix, or R
 
 ## Learn more
 
-- [Getting started](https://thaizip.vercel.app/en/docs/react)
-- [Components](https://thaizip.vercel.app/en/docs/react/autocomplete) — props and examples
-- [Customization](https://thaizip.vercel.app/en/docs/react/customization) · [CLI](https://thaizip.vercel.app/en/docs/react/cli)
-- [thaizip core API](https://thaizip.vercel.app/en/docs) — the search library underneath
+- [Getting started](https://react-thai-zip.vercel.app/en/docs/react)
+- [Components](https://react-thai-zip.vercel.app/en/docs/react/autocomplete) — props and examples
+- [Customization](https://react-thai-zip.vercel.app/en/docs/react/customization) · [CLI](https://react-thai-zip.vercel.app/en/docs/react/cli)
+- [thaizip core API](https://react-thai-zip.vercel.app/en/docs) — the search library underneath
 
 ## License
 

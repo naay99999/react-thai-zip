@@ -2,7 +2,7 @@ import type { Node, Root } from 'fumadocs-core/page-tree';
 import { renderInstallMarkdown, type DocsLocale } from './component-install';
 import { readExampleSource } from './examples';
 
-export const SITE_URL = 'https://thaizip.vercel.app';
+export const SITE_URL = 'https://react-thai-zip.vercel.app';
 
 export type DocsMarkdownPage = {
   url: string;
