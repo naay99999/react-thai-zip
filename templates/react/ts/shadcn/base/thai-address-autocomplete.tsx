@@ -5,9 +5,17 @@ import { useThaiAddressAutocomplete } from 'thaizip/react'
 import type { ResolvedThaiAddress, ThaiAddressSuggestion, TrigramIndex } from 'thaizip'
 import { cn } from '@/lib/utils'
 import { useThaiAddressIndex, type ThaiAddressIndexLoad } from '@/hooks/use-thai-address-index'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
-import { Button, buttonVariants } from '@/components/ui/button'
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from '@/components/ui/combobox'
+import { InputGroupAddon, InputGroupButton } from '@/components/ui/input-group'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
 type AddressLocale = 'th' | 'en'
 
@@ -38,12 +46,7 @@ export type ThaiAddressAutocompleteProps = {
   threshold?: number
   disabled?: boolean
   required?: boolean
-  /**
-   * Unlike the vanilla template, the always-visible surface here is the
-   * trigger button (see the `ref` comment below), so this fires on the
-   * button, not on `CommandInput` — hence `HTMLButtonElement`.
-   */
-  onBlur?: React.FocusEventHandler<HTMLButtonElement>
+  onBlur?: React.FocusEventHandler<HTMLInputElement>
   onError?: (error: Error) => void
   'aria-invalid'?: React.AriaAttributes['aria-invalid']
   /** Applied to the root wrapper element. */
@@ -51,11 +54,7 @@ export type ThaiAddressAutocompleteProps = {
   inputClassName?: string
   popupClassName?: string
   itemClassName?: string
-  /**
-   * Forwarded to the search box rendered inside the popover (`CommandInput`).
-   * Unlike the vanilla template, this element only exists in the DOM while
-   * the popover is open — `ref.current` is `null` while closed.
-   */
+  /** Forwarded to the text input. */
   ref?: React.Ref<HTMLInputElement>
 }
 
@@ -129,15 +128,7 @@ export function ThaiAddressAutocomplete({
   if (!index) {
     return (
       <div ref={observe} className={cn('relative w-full', className)}>
-        <Button
-          type="button"
-          variant="outline"
-          disabled
-          aria-busy="true"
-          className={cn('w-full justify-start font-normal', inputClassName)}
-        >
-          {resolvedTexts.loadingText}
-        </Button>
+        <Input disabled aria-busy="true" placeholder={resolvedTexts.loadingText} className={inputClassName} />
       </div>
     )
   }
@@ -204,8 +195,6 @@ function ThaiAddressAutocompleteReady({
     initialQuery,
   })
 
-  const [open, setOpen] = React.useState(false)
-
   React.useEffect(() => {
     if (!isControlled) return
     setQuerySilent(value ? addressLabel(value, locale) : '')
@@ -217,88 +206,83 @@ function ThaiAddressAutocompleteReady({
     setQuerySilent(item.label)
     if (!isControlled) setInternalResolved(result)
     onValueChange?.(result)
-    setOpen(false)
   }
 
-  function handleQueryChange(nextValue: string) {
+  // shadcn's Combobox is Base UI's Combobox.Root, so the same synthetic
+  // input-value writes the vanilla template guards against happen here too —
+  // only `reason === 'input-change'` is real typing (see the vanilla
+  // template's comment on this function for the full trace).
+  function handleInputValueChange(nextValue: string, reason: string) {
+    if (reason !== 'input-change') return
+
     setQuery(nextValue)
     if (nextValue === '' && resolvedAddress !== null) {
       if (!isControlled) setInternalResolved(null)
       onValueChange?.(null)
     }
-    if (!open) setOpen(true)
+  }
+
+  function handleComboboxValueChange(item: ThaiAddressSuggestion | null) {
+    // A mere close can report `null`; only a real press is a selection.
+    if (item) commitSelection(item)
   }
 
   function handleClear() {
     clear()
     if (!isControlled) setInternalResolved(null)
     onValueChange?.(null)
-    setOpen(false)
   }
 
   return (
     <div className={cn('relative w-full', className)}>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger
-          type="button"
+      <Combobox<ThaiAddressSuggestion>
+        items={suggestions}
+        filter={null}
+        inputValue={query}
+        onInputValueChange={(nextValue, eventDetails) => handleInputValueChange(nextValue, eventDetails.reason)}
+        onValueChange={handleComboboxValueChange}
+        disabled={disabled}
+      >
+        <ComboboxInput
+          ref={ref}
+          placeholder={texts.placeholder}
+          required={required}
           disabled={disabled}
           aria-invalid={ariaInvalid}
           onBlur={onBlur}
-          className={cn(
-            buttonVariants({ variant: 'outline' }),
-            'w-full justify-between pr-8 font-normal',
-            !query && 'text-muted-foreground',
-            inputClassName,
-          )}
+          showTrigger={false}
+          className={cn('w-full', inputClassName)}
         >
-          <span className="truncate">{query || texts.placeholder}</span>
-        </PopoverTrigger>
+          {query.length > 0 && !disabled && (
+            // Not shadcn's `showClear`: Base UI's Combobox.Clear tracks its own
+            // selected value, not "input has text" — same reason the vanilla
+            // template uses a plain button.
+            <InputGroupAddon align="inline-end">
+              <InputGroupButton
+                size="icon-xs"
+                tabIndex={-1}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={handleClear}
+                aria-label={texts.clearAriaLabel}
+              >
+                ✕
+              </InputGroupButton>
+            </InputGroupAddon>
+          )}
+        </ComboboxInput>
 
-        {query.length > 0 && !disabled && (
-          // A plain button, not part of the trigger — visible whenever there's text,
-          // confirmed or not, same rule as the vanilla template's clear button.
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            tabIndex={-1}
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={handleClear}
-            aria-label={texts.clearAriaLabel}
-            className="absolute right-1 top-1/2 -translate-y-1/2"
-          >
-            ✕
-          </Button>
-        )}
-
-        <PopoverContent align="start" className={cn('w-[var(--anchor-width)] p-0', popupClassName)}>
-          <Command shouldFilter={false}>
-            <CommandInput
-              ref={ref}
-              value={query}
-              onValueChange={handleQueryChange}
-              placeholder={texts.placeholder}
-              required={required}
-            />
-            <CommandList>
-              <CommandEmpty>{texts.emptyText}</CommandEmpty>
-              <CommandGroup>
-                {suggestions.map((item) => (
-                  <CommandItem
-                    key={item.id}
-                    value={String(item.id)}
-                    onSelect={() => commitSelection(item)}
-                    className={itemClassName}
-                  >
-                    <span className="flex-1 truncate">{locale === 'en' ? item.labelEn : item.labelTh}</span>
-                    <span className="shrink-0 text-muted-foreground">{item.zipCode}</span>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
+        <ComboboxContent className={popupClassName}>
+          <ComboboxEmpty>{texts.emptyText}</ComboboxEmpty>
+          <ComboboxList>
+            {(item: ThaiAddressSuggestion) => (
+              <ComboboxItem key={item.id} value={item} className={cn('justify-between gap-3', itemClassName)}>
+                <span className="truncate">{locale === 'en' ? item.labelEn : item.labelTh}</span>
+                <span className="shrink-0 text-muted-foreground">{item.zipCode}</span>
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
 
       {name && (
         <>

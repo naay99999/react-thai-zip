@@ -56,7 +56,7 @@ describe('addComponents — shadcn style x JS-target, end-to-end through the rea
   it('recognizes existing .jsx primitive files as present and never calls the dlx fetch', async () => {
     const cwd = await tempShadcnJsProject()
     await mkdir(path.join(cwd, 'components/ui'), { recursive: true })
-    for (const name of ['popover', 'command', 'button']) {
+    for (const name of ['combobox', 'input-group', 'input', 'button']) {
       await writeFile(path.join(cwd, 'components/ui', `${name}.jsx`), '')
     }
 
@@ -68,11 +68,12 @@ describe('addComponents — shadcn style x JS-target, end-to-end through the rea
   it('checks a genuinely-missing primitive at the .jsx path (not .tsx) and fetches only that one', async () => {
     const cwd = await tempShadcnJsProject()
     await mkdir(path.join(cwd, 'components/ui'), { recursive: true })
-    // popover/command exist as .jsx; button is missing entirely. A stray
+    // combobox/input-group/input exist as .jsx; button is missing entirely. A stray
     // .tsx file for button must NOT be mistaken for it being present under a
     // JS-target config, and must not be mistaken for satisfying it either.
-    await writeFile(path.join(cwd, 'components/ui', 'popover.jsx'), '')
-    await writeFile(path.join(cwd, 'components/ui', 'command.jsx'), '')
+    for (const name of ['combobox', 'input-group', 'input']) {
+      await writeFile(path.join(cwd, 'components/ui', `${name}.jsx`), '')
+    }
 
     await addComponents({ cwd, targets: ['autocomplete'], yes: true })
 
@@ -83,8 +84,8 @@ describe('addComponents — shadcn style x JS-target, end-to-end through the rea
   it('a .tsx primitive file left over from a prior TS-target run does not count as present under typescript: false', async () => {
     const cwd = await tempShadcnJsProject()
     await mkdir(path.join(cwd, 'components/ui'), { recursive: true })
-    for (const name of ['popover', 'command', 'button']) {
-      // All three exist, but only as .tsx — wrong extension for this JS-target project.
+    for (const name of ['combobox', 'input-group', 'input', 'button']) {
+      // All four exist, but only as .tsx — wrong extension for this JS-target project.
       await writeFile(path.join(cwd, 'components/ui', `${name}.tsx`), '')
     }
 
@@ -92,7 +93,7 @@ describe('addComponents — shadcn style x JS-target, end-to-end through the rea
 
     expect(mockedDlx).toHaveBeenCalledTimes(1)
     expect(mockedDlx).toHaveBeenCalledWith(
-      expect.arrayContaining(['shadcn@4.21.0', 'add', 'popover', 'command', 'button']),
+      expect.arrayContaining(['shadcn@4.21.0', 'add', 'combobox', 'input-group', 'input', 'button']),
       { cwd, pm: 'npm' },
     )
   })

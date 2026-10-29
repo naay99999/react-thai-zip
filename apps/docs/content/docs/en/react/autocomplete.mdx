@@ -92,12 +92,12 @@ Area names in the hidden inputs are always Thai, even when the UI is in English.
 | `disabled` | `boolean` | `false` | Disables the field. |
 | `required` | `boolean` | — | Marks the field as required. |
 | `aria-invalid` | `React.AriaAttributes['aria-invalid']` | — | Marks the field invalid. |
-| `onBlur` | `React.FocusEventHandler` | — | Vanilla: fires when the input loses focus. shadcn/ui: fires on the trigger button (`HTMLButtonElement`). |
+| `onBlur` | `React.FocusEventHandler<HTMLInputElement>` | — | Fires when the input loses focus. |
 | `onError` | `(error: Error) => void` | — | Runs if the address index cannot load. |
 | `className` | `string` | — | Root wrapper. |
 | `inputClassName` | `string` | — | Search input. |
 | `popupClassName` | `string` | — | Results popup. |
 | `itemClassName` | `string` | — | Each result item. |
-| `ref` | `React.Ref<HTMLInputElement>` | — | Forwarded to the input. In the shadcn/ui styles the input lives inside the popover, so `ref.current` is `null` while it is closed. |
+| `ref` | `React.Ref<HTMLInputElement>` | — | Forwarded to the input. |
 
 `limit`, `debounce`, and `threshold` are passed straight to thaizip's `useThaiAddressAutocomplete` hook.

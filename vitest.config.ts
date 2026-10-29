@@ -13,7 +13,7 @@ const sharedAliases = {
 // One alias map per shadcn component library: a scaffolded template imports
 // `@/components/ui/select` regardless of library, so the fixture trees can
 // never coexist in a single resolver.
-const UI_PRIMITIVES = ['button', 'input', 'label', 'popover', 'select', 'command', 'dialog', 'input-group', 'textarea']
+const UI_PRIMITIVES = ['button', 'input', 'label', 'popover', 'select', 'command', 'dialog', 'input-group', 'textarea', 'combobox']
 
 function uiAliases(base: string): Record<string, string> {
   return Object.fromEntries(

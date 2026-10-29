@@ -146,7 +146,7 @@ describe('selectVariant', () => {
       { source: 'react/ts/shadcn/base/thai-address-autocomplete.tsx', target: { dir: 'componentDir', file: 'thai-address-autocomplete.tsx' } },
     ])
     expect(variant.dependencies).toEqual(['thaizip'])
-    expect(variant.shadcnPrimitives).toEqual(['popover', 'command', 'button'])
+    expect(variant.shadcnPrimitives).toEqual(['combobox', 'input-group', 'input', 'button'])
   })
 
   it('returns the shadcn override for cascade-select under style: shadcn, base: base', () => {
