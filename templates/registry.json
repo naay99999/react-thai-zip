@@ -1,0 +1,444 @@
+{
+  "items": [
+    {
+      "name": "autocomplete",
+      "description": "Free-text Thai address autocomplete with a suggestion dropdown",
+      "aliases": [
+        "autocomplete",
+        "thai-address-autocomplete",
+        "ThaiAddressAutocomplete"
+      ],
+      "type": "component",
+      "files": [
+        {
+          "source": "react/ts/thai-address-autocomplete.tsx",
+          "target": {
+            "dir": "componentDir",
+            "file": "thai-address-autocomplete.tsx"
+          }
+        }
+      ],
+      "dependencies": [
+        "thaizip",
+        "@base-ui/react"
+      ],
+      "registryDependencies": [
+        "utils",
+        "use-thai-address-index"
+      ],
+      "exportName": "ThaiAddressAutocomplete",
+      "shadcn": {
+        "base": {
+          "files": [
+            {
+              "source": "react/ts/shadcn/base/thai-address-autocomplete.tsx",
+              "target": {
+                "dir": "componentDir",
+                "file": "thai-address-autocomplete.tsx"
+              }
+            }
+          ],
+          "dependencies": [
+            "thaizip"
+          ],
+          "shadcnPrimitives": [
+            "combobox",
+            "input-group",
+            "input",
+            "button"
+          ]
+        },
+        "radix": {
+          "files": [
+            {
+              "source": "react/ts/shadcn/radix/thai-address-autocomplete.tsx",
+              "target": {
+                "dir": "componentDir",
+                "file": "thai-address-autocomplete.tsx"
+              }
+            }
+          ],
+          "dependencies": [
+            "thaizip"
+          ],
+          "shadcnPrimitives": [
+            "combobox",
+            "input-group",
+            "input",
+            "button"
+          ]
+        },
+        "aria": {
+          "files": [
+            {
+              "source": "react/ts/shadcn/aria/thai-address-autocomplete.tsx",
+              "target": {
+                "dir": "componentDir",
+                "file": "thai-address-autocomplete.tsx"
+              }
+            }
+          ],
+          "dependencies": [
+            "thaizip"
+          ],
+          "shadcnPrimitives": [
+            "combobox",
+            "input-group",
+            "input",
+            "button"
+          ]
+        }
+      }
+    },
+    {
+      "name": "cascade-select",
+      "description": "Province > district > sub-district select flow",
+      "aliases": [
+        "cascade",
+        "cascade-select",
+        "thai-address-cascade-select",
+        "ThaiAddressCascadeSelect"
+      ],
+      "type": "component",
+      "files": [
+        {
+          "source": "react/ts/thai-address-cascade-select.tsx",
+          "target": {
+            "dir": "componentDir",
+            "file": "thai-address-cascade-select.tsx"
+          }
+        }
+      ],
+      "dependencies": [
+        "thaizip",
+        "@base-ui/react"
+      ],
+      "registryDependencies": [
+        "utils",
+        "use-thai-address-index",
+        "use-thai-address-cascade"
+      ],
+      "exportName": "ThaiAddressCascadeSelect",
+      "shadcn": {
+        "base": {
+          "files": [
+            {
+              "source": "react/ts/shadcn/base/thai-address-cascade-select.tsx",
+              "target": {
+                "dir": "componentDir",
+                "file": "thai-address-cascade-select.tsx"
+              }
+            }
+          ],
+          "dependencies": [
+            "thaizip"
+          ],
+          "shadcnPrimitives": [
+            "select",
+            "label",
+            "button",
+            "input"
+          ]
+        },
+        "radix": {
+          "files": [
+            {
+              "source": "react/ts/shadcn/radix/thai-address-cascade-select.tsx",
+              "target": {
+                "dir": "componentDir",
+                "file": "thai-address-cascade-select.tsx"
+              }
+            }
+          ],
+          "dependencies": [
+            "thaizip"
+          ],
+          "shadcnPrimitives": [
+            "select",
+            "label",
+            "button",
+            "input"
+          ]
+        },
+        "aria": {
+          "files": [
+            {
+              "source": "react/ts/shadcn/aria/thai-address-cascade-select.tsx",
+              "target": {
+                "dir": "componentDir",
+                "file": "thai-address-cascade-select.tsx"
+              }
+            }
+          ],
+          "dependencies": [
+            "thaizip"
+          ],
+          "shadcnPrimitives": [
+            "select",
+            "label",
+            "button",
+            "input"
+          ]
+        }
+      }
+    },
+    {
+      "name": "address-form",
+      "description": "House number + moo/soi/street free text, layered on the cascade select",
+      "aliases": [
+        "address-form",
+        "thai-address-form",
+        "ThaiAddressForm"
+      ],
+      "type": "component",
+      "files": [
+        {
+          "source": "react/ts/thai-address-form.tsx",
+          "target": {
+            "dir": "componentDir",
+            "file": "thai-address-form.tsx"
+          }
+        }
+      ],
+      "dependencies": [
+        "thaizip",
+        "@base-ui/react"
+      ],
+      "registryDependencies": [
+        "utils",
+        "use-thai-address-index",
+        "cascade-select"
+      ],
+      "exportName": "ThaiAddressForm",
+      "shadcn": {
+        "base": {
+          "files": [
+            {
+              "source": "react/ts/shadcn/base/thai-address-form.tsx",
+              "target": {
+                "dir": "componentDir",
+                "file": "thai-address-form.tsx"
+              }
+            }
+          ],
+          "dependencies": [
+            "thaizip"
+          ],
+          "shadcnPrimitives": [
+            "input",
+            "label"
+          ]
+        },
+        "radix": {
+          "files": [
+            {
+              "source": "react/ts/shadcn/radix/thai-address-form.tsx",
+              "target": {
+                "dir": "componentDir",
+                "file": "thai-address-form.tsx"
+              }
+            }
+          ],
+          "dependencies": [
+            "thaizip"
+          ],
+          "shadcnPrimitives": [
+            "input",
+            "label"
+          ]
+        },
+        "aria": {
+          "files": [
+            {
+              "source": "react/ts/shadcn/aria/thai-address-form.tsx",
+              "target": {
+                "dir": "componentDir",
+                "file": "thai-address-form.tsx"
+              }
+            }
+          ],
+          "dependencies": [
+            "thaizip"
+          ],
+          "shadcnPrimitives": [
+            "input",
+            "label"
+          ]
+        }
+      }
+    },
+    {
+      "name": "address-display",
+      "description": "Read-only <address> renderer for a resolved (optionally full) Thai address",
+      "aliases": [
+        "address-display",
+        "thai-address-display",
+        "ThaiAddressDisplay"
+      ],
+      "type": "component",
+      "files": [
+        {
+          "source": "react/ts/thai-address-display.tsx",
+          "target": {
+            "dir": "componentDir",
+            "file": "thai-address-display.tsx"
+          }
+        }
+      ],
+      "dependencies": [
+        "thaizip"
+      ],
+      "registryDependencies": [
+        "utils"
+      ],
+      "exportName": "ThaiAddressDisplay"
+    },
+    {
+      "name": "address-form-field",
+      "description": "react-hook-form Controller wrapper around the cascade select",
+      "aliases": [
+        "address-form-field",
+        "thai-address-form-field",
+        "ThaiAddressFormField"
+      ],
+      "type": "component",
+      "files": [
+        {
+          "source": "react/ts/thai-address-form-field.tsx",
+          "target": {
+            "dir": "componentDir",
+            "file": "thai-address-form-field.tsx"
+          }
+        }
+      ],
+      "dependencies": [
+        "thaizip",
+        "@base-ui/react",
+        "react-hook-form"
+      ],
+      "registryDependencies": [
+        "utils",
+        "use-thai-address-index",
+        "cascade-select"
+      ],
+      "exportName": "ThaiAddressFormField",
+      "shadcn": {
+        "base": {
+          "files": [
+            {
+              "source": "react/ts/shadcn/base/thai-address-form-field.tsx",
+              "target": {
+                "dir": "componentDir",
+                "file": "thai-address-form-field.tsx"
+              }
+            }
+          ],
+          "dependencies": [
+            "thaizip",
+            "react-hook-form"
+          ],
+          "shadcnPrimitives": []
+        },
+        "radix": {
+          "files": [
+            {
+              "source": "react/ts/shadcn/radix/thai-address-form-field.tsx",
+              "target": {
+                "dir": "componentDir",
+                "file": "thai-address-form-field.tsx"
+              }
+            }
+          ],
+          "dependencies": [
+            "thaizip",
+            "react-hook-form"
+          ],
+          "shadcnPrimitives": []
+        },
+        "aria": {
+          "files": [
+            {
+              "source": "react/ts/shadcn/aria/thai-address-form-field.tsx",
+              "target": {
+                "dir": "componentDir",
+                "file": "thai-address-form-field.tsx"
+              }
+            }
+          ],
+          "dependencies": [
+            "thaizip",
+            "react-hook-form"
+          ],
+          "shadcnPrimitives": []
+        }
+      }
+    },
+    {
+      "name": "utils",
+      "description": "cn() class-name helper (clsx + tailwind-merge)",
+      "aliases": [
+        "utils",
+        "cn"
+      ],
+      "type": "lib",
+      "files": [
+        {
+          "source": "react/ts/lib/utils.ts",
+          "target": {
+            "dir": "libDir",
+            "file": "utils.ts"
+          }
+        }
+      ],
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "use-thai-address-index",
+      "description": "Shared hook that loads the bundled thaizip address index",
+      "aliases": [
+        "use-thai-address-index",
+        "index-hook"
+      ],
+      "type": "hook",
+      "files": [
+        {
+          "source": "react/ts/hooks/use-thai-address-index.ts",
+          "target": {
+            "dir": "hooksDir",
+            "file": "use-thai-address-index.ts"
+          }
+        }
+      ],
+      "dependencies": [
+        "thaizip"
+      ],
+      "registryDependencies": []
+    },
+    {
+      "name": "use-thai-address-cascade",
+      "description": "Shared province > district > sub-district cascade state machine",
+      "aliases": [
+        "use-thai-address-cascade",
+        "cascade-hook"
+      ],
+      "type": "hook",
+      "files": [
+        {
+          "source": "react/ts/hooks/use-thai-address-cascade.ts",
+          "target": {
+            "dir": "hooksDir",
+            "file": "use-thai-address-cascade.ts"
+          }
+        }
+      ],
+      "dependencies": [
+        "thaizip"
+      ],
+      "registryDependencies": []
+    }
+  ]
+}
