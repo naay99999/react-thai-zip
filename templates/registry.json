@@ -42,8 +42,9 @@
             "thaizip"
           ],
           "shadcnPrimitives": [
-            "popover",
-            "command",
+            "combobox",
+            "input-group",
+            "input",
             "button"
           ]
         },
@@ -61,8 +62,9 @@
             "thaizip"
           ],
           "shadcnPrimitives": [
-            "popover",
-            "command",
+            "combobox",
+            "input-group",
+            "input",
             "button"
           ]
         },
@@ -80,8 +82,9 @@
             "thaizip"
           ],
           "shadcnPrimitives": [
-            "popover",
-            "command",
+            "combobox",
+            "input-group",
+            "input",
             "button"
           ]
         }
