@@ -31,7 +31,7 @@
     "type": "git",
     "url": "git+https://github.com/naay99999/react-thai-zip.git"
   },
-  "homepage": "https://thaizip.vercel.app/docs/react",
+  "homepage": "https://react-thai-zip.vercel.app/docs/react",
   "author": "narablyat",
   "license": "MIT",
   "engines": {

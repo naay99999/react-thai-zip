@@ -3,7 +3,7 @@ import { getPageMarkdownUrl, renderDocsIndex, renderFullDocs, renderPageMarkdown
 import { getComponentStyles, getInstallVariants } from '../apps/docs/lib/component-install.js'
 import { toPackageManager } from '../apps/docs/lib/package-manager.js'
 
-const SITE = 'https://thaizip.vercel.app'
+const SITE = 'https://react-thai-zip.vercel.app'
 
 type Root = Parameters<typeof renderDocsIndex>[1]['th']
 
@@ -64,7 +64,7 @@ describe('docs Markdown output', () => {
     expect(index).toContain(`[Full documentation](${SITE}/llms-full.txt)`)
     expect(index).toContain(`[บทนำ](${SITE}/docs.md)`)
     expect(index).toContain(`[Introduction](${SITE}/en/docs.md)`)
-    expect(index).toMatch(/### คอมโพเนนต์\n\n- \[ค้นหา\]\(https:\/\/thaizip\.vercel\.app\/docs\/react\/autocomplete\.md\)/)
+    expect(index).toMatch(/### คอมโพเนนต์\n\n- \[ค้นหา\]\(https:\/\/react-thai-zip\.vercel\.app\/docs\/react\/autocomplete\.md\)/)
     expect(index.indexOf('### คอมโพเนนต์')).toBeLessThan(index.indexOf('### คู่มือ'))
     expect(index).not.toMatch(/\]\(\//)
   })
