@@ -17,7 +17,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "typecheck:templates": "tsc -p tsconfig.templates.json && tsc -p tsconfig.templates.base.json && tsc -p tsconfig.templates.radix.json && tsc -p tsconfig.templates.aria.json",
-    "sandbox": "node scripts/sandbox.mjs"
+    "sandbox": "node scripts/sandbox.mjs",
+    "generate-registry": "node scripts/generate-registry.mjs"
   },
   "keywords": [
     "thai",
