@@ -7,10 +7,9 @@ dist/
 
 # Generated/local-only workspaces (see CLAUDE.md)
 apps/sandbox/
-.worktrees/
 
 # SDD planning docs (specs/plans/reports) — internal workflow notes, not needed to build/run the project
-superpowers/
+/docs/superpowers/
 
 # Test / lint artifacts
 coverage/
@@ -28,9 +27,6 @@ pnpm-debug.log*
 .env.local
 .env.*.local
 
-# Vercel CLI (created by `vercel link`/`vercel dev`)
-.vercel/
-
 # Editor / IDE
 .vscode/
 .idea/
@@ -42,5 +38,7 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 
-# Per-developer agent config (not shared)
+# Per-developer agent config and locally installed agent skills (not shared)
 .claude/
+.agents/
+skills-lock.json
