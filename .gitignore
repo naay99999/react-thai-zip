@@ -1,12 +1,8 @@
 # Dependencies
 node_modules/
-apps/docs/node_modules/
 
 # Build output
 dist/
-apps/docs/.next/
-apps/docs/.source/
-apps/docs/.generated/
 *.tsbuildinfo
 
 # Generated/local-only workspaces (see CLAUDE.md)
@@ -48,5 +44,3 @@ Thumbs.db
 
 # Per-developer agent config (not shared)
 .claude/
-apps/docs/AGENTS.md
-apps/docs/CLAUDE.md

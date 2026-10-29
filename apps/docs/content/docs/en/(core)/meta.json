@@ -1,6 +1,0 @@
-{
-  "title": "thaizip",
-  "description": "Core Thai address search API",
-  "root": true,
-  "pages": ["index", "search", "cascade", "format", "react-hook", "data"]
-}

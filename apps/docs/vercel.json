@@ -1,3 +1,0 @@
-{
-  "installCommand": "cd ../.. && npm ci && cd apps/docs && npm ci"
-}
