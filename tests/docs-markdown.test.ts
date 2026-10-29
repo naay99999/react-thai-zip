@@ -113,7 +113,7 @@ describe('docs Markdown output', () => {
     expect(output).toContain("import { ThaiAddressAutocomplete } from '@/components/thai-address-autocomplete'")
     expect(output).toContain('npx react-thaizip add autocomplete')
     expect(output).toContain('**Manual — shadcn/ui · React Aria**')
-    expect(output).toContain('npx shadcn@latest add popover command button')
+    expect(output).toContain('npx shadcn@latest add combobox input-group input button')
     expect(output).toContain('templates/react/ts/shadcn/aria/thai-address-autocomplete.tsx')
     expect(output).not.toContain('\0')
   })

@@ -311,7 +311,8 @@ function ThaiAddressAutocompleteReady({
                 popupClassName,
               )}
             >
-              <Combobox.Empty className="px-2 py-4 text-center text-sm text-muted-foreground">
+              {/* Always mounted (it's Base UI's live region), so drop its padding while it has no text. */}
+              <Combobox.Empty className="px-2 py-4 text-center text-sm text-muted-foreground empty:p-0">
                 {texts.emptyText}
               </Combobox.Empty>
               <Combobox.List>
