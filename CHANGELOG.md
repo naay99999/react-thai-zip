@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.4.0](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.12...react-thaizip-v0.4.0) (2026-10-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* the shadcn autocomplete now needs the combobox, input-group, input and button primitives instead of popover, command and button. `onBlur` fires on the input (HTMLInputElement), `ref` points at the input as soon as it mounts, and `inputClassName` applies to the InputGroup wrapping it.
+
+### Features
+
+* type straight into the shadcn autocomplete ([c9a84bc](https://github.com/naay99999/react-thai-zip/commit/c9a84bcfd9521eb5d008c12474dae613a1b315e0))
+
+
+### Bug Fixes
+
+* remove blank gap above vanilla autocomplete results ([48eeb28](https://github.com/naay99999/react-thai-zip/commit/48eeb28f70c26f0c7c0c656337990a18d1b9e992))
+
 ## [0.3.12](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.11...react-thaizip-v0.3.12) (2026-10-15)
 
 
