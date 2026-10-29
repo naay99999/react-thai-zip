@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execSync } from 'node:child_process'
-import { access, constants, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { access, constants, mkdir, rm, writeFile } from 'node:fs/promises'
 import readline from 'node:readline/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -11,13 +11,15 @@ const force = process.argv.includes('--force')
 const npmArg = process.argv.find((a) => a === '--npm' || a.startsWith('--npm='))
 const npmTag = npmArg ? (npmArg.includes('=') ? npmArg.split('=')[1] : 'latest') : null
 
-const docsPkg = JSON.parse(await readFile(path.join(root, 'apps/docs/package.json'), 'utf8'))
-const pick = (name) => docsPkg.dependencies?.[name] ?? docsPkg.devDependencies?.[name]
-const versions = {}
-for (const name of ['next', 'react', 'react-dom', 'tailwindcss', '@tailwindcss/postcss']) {
-  const range = pick(name)
-  if (!range) throw new Error(`apps/docs/package.json is missing ${name}`)
-  versions[name] = range
+// The Next.js + Tailwind stack the sandbox is generated with. Keep it on the
+// docs site's stack (naay99999/thai-zip-documents' package.json) so the
+// sandbox exercises the scaffolded components where the live demos run them.
+const versions = {
+  next: '^16.4.3',
+  react: '^19.3.1',
+  'react-dom': '^19.3.1',
+  tailwindcss: '^4.3.3',
+  '@tailwindcss/postcss': '^4.3.3',
 }
 
 async function exists(p) {

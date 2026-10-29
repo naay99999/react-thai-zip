@@ -38,27 +38,3 @@ jobs:
           ln -s "$PWD/dist/cli.js" /tmp/react-thaizip
           test "$(node /tmp/react-thaizip --version)" = "$(node -p 'require("./package.json").version')"
 
-  docs:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: |
-            package-lock.json
-            apps/docs/package-lock.json
-
-      # apps/docs imports templates/react/ts/**/* directly; Node resolves
-      # their bare imports (thaizip, clsx, tailwind-merge, @base-ui/react) by
-      # walking up from templates/ to this repo's own node_modules, so it
-      # has to be installed too, not just apps/docs/node_modules.
-      - run: npm ci --ignore-scripts
-      - run: npm ci --ignore-scripts
-        working-directory: apps/docs
-      - run: npm run build
-        working-directory: apps/docs

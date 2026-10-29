@@ -11,16 +11,6 @@ updates:
       # TypeScript 7 (native compiler) breaks tsup's rollup-plugin-dts; upgrade deliberately.
       - dependency-name: typescript
         update-types: ['version-update:semver-major']
-  - package-ecosystem: npm
-    directory: /apps/docs
-    schedule:
-      interval: weekly
-    groups:
-      docs:
-        patterns: ['*']
-    ignore:
-      - dependency-name: typescript
-        update-types: ['version-update:semver-major']
   - package-ecosystem: github-actions
     directory: /
     schedule:
