@@ -14,7 +14,7 @@
 | P2 | Performance | Low | TypeScript is lazy at runtime but remains a 23 MB installed dependency for every CLI consumer. |
 | S3 | Release hardening | Low | Publishing uses tag-pinned GitHub Actions and an npm token, without trusted publishing/provenance. |
 
-The earlier [August security/performance audit](../../superpowers/reports/2026-08-28-security-performance-audit.md) and [September measured performance audit](../../superpowers/reports/2026-09-11-performance-audit-measured.md) are useful history, but several conclusions are stale for this revision. `add` now rejects unsafe configured destinations, the CLI loads TypeScript only on JavaScript-target scaffolds, the published CLI has no sourcemap, and installed `thaizip@0.7.5` has a separate dynamic `defaultData.js` module. The remaining index issue is **when** that separate module is requested and built, not a claim that it remains bundled into initial JavaScript.
+The earlier [August security/performance audit](../superpowers/reports/2026-08-28-security-performance-audit.md) and [September measured performance audit](../superpowers/reports/2026-09-11-performance-audit-measured.md) are useful history, but several conclusions are stale for this revision. `add` now rejects unsafe configured destinations, the CLI loads TypeScript only on JavaScript-target scaffolds, the published CLI has no sourcemap, and installed `thaizip@0.7.5` has a separate dynamic `defaultData.js` module. The remaining index issue is **when** that separate module is requested and built, not a claim that it remains bundled into initial JavaScript.
 
 ## Findings
 
