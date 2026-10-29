@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.4.0...react-thaizip-v0.4.1) (2026-10-29)
+
+
+### Features
+
+* ship the component registry as templates/registry.json ([c4b6f8b](https://github.com/naay99999/react-thai-zip/commit/c4b6f8b51965cdc3e9bb6872559899d3bd431529))
+
 ## [0.4.0](https://github.com/naay99999/react-thai-zip/compare/react-thaizip-v0.3.12...react-thaizip-v0.4.0) (2026-10-29)
 
 
